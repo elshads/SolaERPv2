@@ -1,0 +1,31 @@
+﻿@using System.Net.Http
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Microsoft.AspNetCore.WebUtilities
+@using Microsoft.JSInterop
+@using SolaERPv2.Server
+@using SolaERPv2.Server.Shared
+@using SolaERPv2.Server.Shared.Components
+
+@using Telerik.Blazor
+@using Telerik.Blazor.Components
+@using Telerik.DataSource
+@using MudBlazor
+
+@inject UserManager<AppUser> UserManager
+@inject AppUserService AppUserService
+@inject BusinessUnitService BusinessUnitService
+@inject SettingService SettingService
+@inject AttachmentService AttachmentService
+@inject SessionData SessionData
+@inject PageData PageData
+
+@inject IJSRuntime JSRuntime
+@inject SessionData SessionData
+@inject PageData PageData
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar

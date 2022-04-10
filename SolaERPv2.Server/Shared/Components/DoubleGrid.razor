@@ -1,0 +1,373 @@
+﻿@typeparam TItem where TItem : IBaseModel, new()
+
+<MudGrid>
+    <MudItem xs="12" sm="6">
+        <TelerikGrid Data="@LeftGridData"
+                     @bind-SelectedItems="@leftGridSelectedItems"
+                     @ref="leftGridRef"
+                     @key="@leftGridKey"
+                     OnRowDrop="@((GridRowDropEventArgs<TItem> args) => OnLeftGridRowDropHandler(args))"
+                     OnRowClick="@OnLeftGridRowClickHandler"
+                     OnRowDoubleClick="@OnLeftGridRowDoubleClickHandler"
+                     Height="@(MobileView ? "auto" : Height)"
+                     Pageable="false"
+                     Sortable="true"
+                     Navigable="true"
+                     Groupable="false"
+                     Resizable="true"
+                     Reorderable="true"
+                     ShowColumnMenu="true"
+                     FilterMode="@GridFilterMode.FilterMenu"
+                     SelectionMode="@GridSelectionMode.Multiple"
+                     RowDraggable="@(RowDraggable && !MobileView)">
+            <GridToolBar>
+                @if (LeftGridTitle != null)
+                {
+                    <text>@LeftGridTitle</text>
+                }
+                <span class="k-toolbar-spacer" />
+                @if (RowDraggable)
+                {
+                    <GridCommandButton Icon="chevron-right" Enabled="@(leftGridSelectedItems.Count() > 0)" OnClick="@(() => MoveAllItemsRight(leftGridSelectedItems))">Move Right</GridCommandButton>
+                }
+                <span class="k-textbox k-input k-input-solid k-rounded-md k-input-md customsearch">
+                    <span class="k-icon k-input-icon k-i-search" />
+                    <input class="k-input-inner" placeholder="Search..." value="@leftGridSearchString" @oninput="@OnLeftGridSearchInput" @onkeydown="@OnLeftGridKeyPressed" />
+                    @if (!string.IsNullOrEmpty(leftGridSearchString))
+                    {
+                        <span class="k-clear-value" @onclick="@OnLeftGridSearchClear">
+                            <span class="k-icon k-i-x"></span>
+                        </span>
+                    }
+                </span>
+            </GridToolBar>
+            <GridColumns>
+                <GridCommandColumn Width="55px"
+                                   ShowColumnMenu="false" Reorderable="false"
+                                   Visible="@(RowDraggable && !MobileView)">
+
+                    @if (RowDraggable)
+                    {
+                        <GridCommandButton Icon="chevron-right" ShowInEdit="false" OnClick="@((e) => MoveItemRight(e))" />
+                    }
+                </GridCommandColumn>
+                <GridCheckboxColumn ShowColumnMenu="false" VisibleInColumnChooser="false" Reorderable="false" Locked="true" Width="42px" Visible="@(RowDraggable)" />
+                @ChildContent
+            </GridColumns>
+        </TelerikGrid>
+    </MudItem>
+    <MudItem xs="12" sm="6">
+        <TelerikGrid Data="@RightGridData"
+                     @bind-SelectedItems="@rightGridSelectedItems"
+                     @ref="rightGridRef"
+                     @key="@rightGridKey"
+                     OnRowDrop="@((GridRowDropEventArgs<TItem> args) => OnRightGridRowDropHandler(args))"
+                     OnRowClick="@OnRightGridRowClickHandler"
+                     OnRowDoubleClick="@OnRightGridRowDoubleClickHandler"
+                     Height="@(MobileView ? "auto" : Height)"
+                     Pageable="false"
+                     Sortable="true"
+                     Navigable="true"
+                     Groupable="false"
+                     Resizable="true"
+                     Reorderable="true"
+                     ShowColumnMenu="true"
+                     FilterMode="@GridFilterMode.FilterMenu"
+                     SelectionMode="@GridSelectionMode.Multiple"
+                     RowDraggable="@(RowDraggable && !MobileView)">
+
+            <GridToolBar>
+                @if (RightGridTitle != null)
+                {
+                    <text>@RightGridTitle</text>
+                }
+                <span class="k-toolbar-spacer" />
+                @if (RowDraggable)
+                {
+                    <GridCommandButton Icon="chevron-left" Enabled="@(rightGridSelectedItems.Count() > 0)" OnClick="@(() => MoveAllItemsLeft(rightGridSelectedItems))">Move Left</GridCommandButton>
+                }
+                <span class="k-textbox k-input k-input-solid k-rounded-md k-input-md customsearch">
+                    <span class="k-icon k-input-icon k-i-search" />
+                    <input class="k-input-inner" placeholder="Search..." value="@rightGridSearchString" @oninput="@OnRightGridSearchInput" @onkeydown="@OnRightGridKeyPressed" />
+                    @if (!string.IsNullOrEmpty(rightGridSearchString))
+                    {
+                        <span class="k-clear-value" @onclick="@OnRightGridSearchClear">
+                            <span class="k-icon k-i-x"></span>
+                        </span>
+                    }
+                </span>
+            </GridToolBar>
+            <GridColumns>
+                <GridCommandColumn Width="55px"
+                                   ShowColumnMenu="false" Reorderable="false"
+                                   Visible="@(RowDraggable && !MobileView)">
+
+                    @if (RowDraggable)
+                    {
+                        <GridCommandButton Icon="chevron-left" ShowInEdit="false" OnClick="@((e) => MoveItemLeft(e))" />
+                    }
+                </GridCommandColumn>
+                <GridCheckboxColumn ShowColumnMenu="false" VisibleInColumnChooser="false" Reorderable="false" Locked="true" Width="42px" Visible="@(RowDraggable)" />
+                @ChildContent
+            </GridColumns>
+        </TelerikGrid>
+    </MudItem>
+</MudGrid>
+
+<TelerikMediaQuery Media="(max-width: 768px)" OnChange="@( (bool mobileView) => OnMobileViewChanged(mobileView) )"></TelerikMediaQuery>
+
+
+@code {
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    [Parameter] public string Height { get; set; } = "calc(100vh - 320px)";
+    [Parameter] public IEnumerable<string> SearchFields { get; set; } = new List<string> { "RowIndex" };
+    [Parameter] public bool MobileView { get; set; } = false;
+    [Parameter] public EventCallback<bool> MobileViewChanged { get; set; }
+
+    [Parameter] public bool RowDraggable { get; set; } = true;
+
+    [Parameter] public string LeftGridTitle { get; set; }
+    [Parameter] public string RightGridTitle { get; set; }
+
+
+    [Parameter] public List<TItem> LeftGridData { get; set; } = new List<TItem>();
+    [Parameter] public EventCallback<List<TItem>> LeftGridDataChanged { get; set; }
+    [Parameter] public List<TItem> RightGridData { get; set; } = new List<TItem>();
+    [Parameter] public EventCallback<List<TItem>> RightGridDataChanged { get; set; }
+
+    Guid leftGridKey;
+    Guid rightGridKey;
+
+    TelerikGrid<TItem> leftGridRef;
+    TelerikGrid<TItem> rightGridRef;
+
+    string leftGridSearchString;
+    string rightGridSearchString;
+
+    List<TItem> originalLeftGridData = new List<TItem>();
+    List<TItem> originalRightGridData = new List<TItem>();
+
+    IEnumerable<TItem> leftGridSelectedItems = new List<TItem>();
+    IEnumerable<TItem> rightGridSelectedItems = new List<TItem>();
+    TItem leftGridSelectedItem;
+    TItem rightGridSelectedItem;
+
+    protected override void OnParametersSet()
+    {
+        originalLeftGridData = new List<TItem>(LeftGridData);
+        originalRightGridData = new List<TItem>(RightGridData);
+    }
+
+    async Task OnLeftGridRowDropHandler(GridRowDropEventArgs<TItem> args)
+    {
+        var argsItems = args.Items;
+
+        foreach (var item in args.Items)
+        {
+            LeftGridData.Remove(item);
+        }
+        await InsertOnRowDrop(args);
+    }
+
+    async Task OnRightGridRowDropHandler(GridRowDropEventArgs<TItem> args)
+    {
+        var argsItems = args.Items;
+
+        foreach (var item in args.Items)
+        {
+            RightGridData.Remove(item);
+        }
+        await InsertOnRowDrop(args);
+    }
+
+    async Task InsertOnRowDrop(GridRowDropEventArgs<TItem> args)
+    {
+        var argsItems = args.Items;
+        var destinationItem = args.DestinationItem;
+        var destinationIndex = 0;
+        var destinationData = args.DestinationGrid == leftGridRef ? LeftGridData : RightGridData;
+        if (destinationItem != null)
+        {
+            destinationIndex = destinationData.IndexOf(destinationItem);
+            if (args.DropPosition == GridRowDropPosition.After)
+            {
+                destinationIndex += 1;
+            }
+        }
+
+        if (destinationIndex < 0)
+        {
+            destinationIndex = 0;
+        }
+
+        destinationData.InsertRange(destinationIndex, argsItems);
+        await LeftGridDataChanged.InvokeAsync(LeftGridData);
+        await RightGridDataChanged.InvokeAsync(RightGridData);
+    }
+
+    void OnLeftGridRowClickHandler(GridRowClickEventArgs args)
+    {
+        leftGridSelectedItem = (TItem)args.Item;
+    }
+
+    void OnRightGridRowClickHandler(GridRowClickEventArgs args)
+    {
+        rightGridSelectedItem = (TItem)args.Item;
+    }
+
+    void OnLeftGridRowDoubleClickHandler(GridRowClickEventArgs args)
+    {
+        //
+    }
+
+    void OnRightGridRowDoubleClickHandler(GridRowClickEventArgs args)
+    {
+        //
+    }
+
+    async Task OnMobileViewChanged(bool mobileView)
+    {
+        MobileView = mobileView;
+        await MobileViewChanged.InvokeAsync(MobileView);
+    }
+
+    void OnLeftGridSearchInput(ChangeEventArgs args)
+    {
+        leftGridSearchString = args.Value.ToString();
+
+        if (!string.IsNullOrEmpty(leftGridSearchString))
+        {
+            LeftGridData = originalLeftGridData.Where(e => SearchFields.Any(p => e.GetType().GetProperty(p).GetValue(e).ToString().ToLower().Contains(leftGridSearchString.ToLower()))).ToList();
+        }
+        else
+        {
+            LeftGridData = originalLeftGridData.ToList();
+        }
+    }
+
+    void OnLeftGridKeyPressed(KeyboardEventArgs args)
+    {
+        var pressedKey = args.Key;
+        if (pressedKey == "Escape")
+        {
+            OnLeftGridSearchClear();
+        }
+    }
+
+    void OnLeftGridSearchClear()
+    {
+        leftGridSearchString = null;
+        if (originalLeftGridData != null && originalLeftGridData.Any())
+        {
+            LeftGridData = originalLeftGridData.ToList();
+        }
+    }
+
+    void OnRightGridSearchInput(ChangeEventArgs args)
+    {
+        rightGridSearchString = args.Value.ToString();
+
+        if (!string.IsNullOrEmpty(rightGridSearchString))
+        {
+            RightGridData = originalRightGridData.Where(e => SearchFields.Any(p => e.GetType().GetProperty(p).GetValue(e).ToString().ToLower().Contains(rightGridSearchString.ToLower()))).ToList();
+        }
+        else
+        {
+            RightGridData = originalRightGridData.ToList();
+        }
+    }
+
+    void OnRightGridKeyPressed(KeyboardEventArgs args)
+    {
+        var pressedKey = args.Key;
+        if (pressedKey == "Escape")
+        {
+            OnRightGridSearchClear();
+        }
+    }
+
+    void OnRightGridSearchClear()
+    {
+        rightGridSearchString = null;
+        if (originalRightGridData != null && originalRightGridData.Any())
+        {
+            RightGridData = originalRightGridData.ToList();
+        }
+    }
+
+    async Task MoveItemLeft(GridCommandEventArgs args)
+    {
+        var argsItem = (TItem)args.Item;
+        RightGridData.Remove(argsItem);
+        LeftGridData.Add(argsItem);
+        await RightGridDataChanged.InvokeAsync(RightGridData);
+        await LeftGridDataChanged.InvokeAsync(LeftGridData);
+        rightGridSelectedItems = new List<TItem>();
+        leftGridSelectedItems = new List<TItem>();
+        rightGridKey = Guid.NewGuid();
+        leftGridKey = Guid.NewGuid();
+    }
+
+    async Task MoveAllItemsLeft(IEnumerable<TItem> selectedItems)
+    {
+        foreach (var item in selectedItems)
+        {
+            RightGridData.Remove(item);
+            LeftGridData.Add(item);
+
+        }
+        rightGridSelectedItems = new List<TItem>();
+        leftGridSelectedItems = new List<TItem>();
+        await RightGridDataChanged.InvokeAsync(RightGridData);
+        await LeftGridDataChanged.InvokeAsync(LeftGridData);
+        rightGridKey = Guid.NewGuid();
+        leftGridKey = Guid.NewGuid();
+    }
+
+    async Task MoveItemRight(GridCommandEventArgs args)
+    {
+        var argsItem = (TItem)args.Item;
+        LeftGridData.Remove(argsItem);
+        RightGridData.Add(argsItem);
+        await RightGridDataChanged.InvokeAsync(RightGridData);
+        await LeftGridDataChanged.InvokeAsync(LeftGridData);
+        rightGridSelectedItems = new List<TItem>();
+        leftGridSelectedItems = new List<TItem>();
+        rightGridKey = Guid.NewGuid();
+        leftGridKey = Guid.NewGuid();
+    }
+
+    async Task MoveAllItemsRight(IEnumerable<TItem> selectedItems)
+    {
+        foreach (var item in selectedItems)
+        {
+            LeftGridData.Remove(item);
+            RightGridData.Add(item);
+
+        }
+        rightGridSelectedItems = new List<TItem>();
+        leftGridSelectedItems = new List<TItem>();
+        await RightGridDataChanged.InvokeAsync(RightGridData);
+        await LeftGridDataChanged.InvokeAsync(LeftGridData);
+        rightGridKey = Guid.NewGuid();
+        leftGridKey = Guid.NewGuid();
+    }
+}
+
+<style>
+    @@media (min-width: 600px) {
+        .mud-grid-item-sm-6 {
+            flex-grow: 0;
+            max-width: 100%;
+            flex-basis: 100%;
+        }
+    }
+
+    @@media (min-width: 768px) {
+        .mud-grid-item-sm-6 {
+            flex-grow: 0;
+            max-width: 50% !important;
+            flex-basis: 50% !important;
+        }
+    }
+</style>

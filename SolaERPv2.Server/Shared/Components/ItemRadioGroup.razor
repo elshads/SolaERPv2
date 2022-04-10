@@ -1,0 +1,61 @@
+﻿@typeparam TItem where TItem : IBaseModel, new()
+@typeparam TValue
+
+<TelerikRadioGroup Data="@Data"
+                   Value="@Value"
+                   ValueChanged="@( (TValue value) => ValueChangedHandler(value) )"
+                   ValueExpression="@( () => Value )"
+                   OnChange="OnChangeHandler"
+                   ValueField="@UniqueField"
+                   TextField="@TextField"
+                   Layout="@Layout" 
+                   LabelPosition="@LabelPosition"
+                   Enabled="@Enabled" 
+                   Id="@Id" 
+                   Class="@Class"
+                   TItem="TItem" 
+                   TValue="TValue">
+</TelerikRadioGroup>
+
+
+@code {
+    [Parameter] public IEnumerable<TItem> Data { get; set; } = new List<TItem>();
+    [Parameter] public string UniqueField { get; set; }
+    [Parameter] public string TextField { get; set; }
+
+    [Parameter] public TItem Item { get; set; }
+    [Parameter] public EventCallback<TItem> ItemChanged { get; set; }
+
+    [Parameter] public EventCallback<TValue> OnChange { get; set; }
+
+    [Parameter] public bool Enabled { get; set; } = true;
+    [Parameter] public string Id { get; set; } = "";
+    [Parameter] public string Class { get; set; } = "";
+    [Parameter] public RadioGroupLayout Layout { get; set; } = RadioGroupLayout.Horizontal;
+    [Parameter] public RadioGroupLabelPosition LabelPosition { get; set; } = RadioGroupLabelPosition.After;
+
+    protected override void OnParametersSet()
+    {
+        Value = (TValue)(typeof(TItem).GetProperty(UniqueField).GetValue(Item));
+    }
+
+    async Task ItemChangedHandler(TItem item)
+    {
+        Item = item;
+        await ItemChanged.InvokeAsync(item);
+    }
+
+    TValue Value;
+    async Task ValueChangedHandler(TValue value)
+    {
+        Value = value;
+        var item = Data.FirstOrDefault(e => ((TValue)typeof(TItem).GetProperty(UniqueField).GetValue(e)).Equals(value));
+        await ItemChangedHandler(item);
+    }
+
+    async Task OnChangeHandler(object value)
+    {
+        await OnChange.InvokeAsync((TValue)value);
+    }
+
+}

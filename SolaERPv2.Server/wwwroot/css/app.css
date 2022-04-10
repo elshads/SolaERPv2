@@ -1,0 +1,68 @@
+﻿@import url('fonts/JetBrainsMono-Regular.woff2');
+@import url('fonts/DINPro.woff2');
+
+
+html, body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+.dev-font {
+    font-family: 'JetBrainsMono', monospace;
+}
+
+.din-font {
+    font-family: 'DINPro', sans-serif;
+}
+
+.mud-drawer:not(.mud-drawer-fixed) {
+    position: fixed;
+}
+
+.mud-drawer.mud-drawer-mini.mud-drawer-pos-left.mud-drawer--closed {
+    width: 64px;
+}
+
+    .mud-drawer.mud-drawer-mini.mud-drawer-pos-left.mud-drawer--closed ~ div:not(.mud-main-content) {
+        margin-left: 64px;
+    }
+
+@media(max-width:768px) {
+    .mud-drawer.mud-drawer-mini.mud-drawer--closed {
+        display: none !important;
+    }
+
+    .mud-drawer.mud-drawer-mini.mud-drawer-pos-left.mud-drawer--closed ~ div:not(.mud-main-content) {
+        margin-left: 0;
+    }
+}
+
+.flex-center-y {
+    display: flex;
+    align-items: center;
+}
+
+.flex-nowrap{
+    flex-wrap: nowrap;
+}
+
+.font-italic{
+    font-style: italic;
+}
+
+.text-right, .text-right .k-input-inner {
+    text-align: right;
+}
+
+.input-padding{
+    padding: 4px 8px !important;
+}
+
+.k-upload .k-upload-files {
+    display: none;
+}
+
+.invalid-form {
+    outline: 1px solid #d51923;
+    border-radius: 2px;
+}
+

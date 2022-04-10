@@ -1,0 +1,97 @@
+﻿@layout TelerikLayout
+@inherits LayoutComponentBase
+@implements IDisposable
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+
+<HeadContent>
+    <link rel="stylesheet" href="@(SessionData != null ? $"/css/kendo/{SessionData?.CurrentUser?.Theme}.css" : "/css/kendo/light.css")">
+</HeadContent>
+<MudThemeProvider IsDarkMode="@(SessionData != null && SessionData.CurrentUser?.Theme == "dark")" />
+
+
+<MudSnackbarProvider />
+<MudDialogProvider FullWidth="false"
+                   MaxWidth="MaxWidth.Large"
+                   CloseButton="true"
+                   DisableBackdropClick="true"
+                   NoHeader="false"
+                   Position="DialogPosition.Center" />
+
+
+<CascadingValue Value="appState">
+        <AuthorizeView>
+            <Authorized>
+                <AppBar @bind-Open="@appState.OpenDrawer" />
+                <NavMenu @bind-Open="@appState.OpenDrawer" />
+                <ReadAccess>
+                    <MenuBar />
+                    <div class="body-content">
+                        @Body
+                    </div>
+                </ReadAccess>
+            </Authorized>
+            <NotAuthorized>
+                <div>Loading...</div>
+            </NotAuthorized>
+        </AuthorizeView>
+        <TelerikLoaderContainer Visible="@(appState.Loading)" LoaderType="LoaderType.InfiniteSpinner" />
+        <TelerikMediaQuery Media="(max-width: 768px)" OnChange="@( (bool mobileView) => OnMobileViewChanged(mobileView) )"></TelerikMediaQuery>
+    </CascadingValue>
+
+
+
+@code {
+    AppState? appState = new();
+
+    protected override void OnInitialized()
+    {
+        appState = new AppState(Snackbar);
+        appState.OnRefreshClick += Refresh;
+        //appState.Loading = true;
+        //SessionData.CurrentUserMenuAccessList = await Http.GetFromJsonAsync<List<UserMenuAccess>>("UserMenuAccess");
+        //appState.Loading = false;
+    }
+
+    void IDisposable.Dispose()
+    {
+        appState.OnRefreshClick -= Refresh;
+    }
+
+    async void Refresh()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var isAuthenticated = authenticationState.User.Identity.IsAuthenticated;
+        if (firstRender && !isAuthenticated)
+        {
+            NavigationManager.NavigateTo("Identity/Account/Login", true);
+        }
+    }
+
+    void OnMobileViewChanged(bool mobileView)
+    {
+        appState.MobileView = mobileView;
+    }
+}
+
+<style>
+    .body-content {
+        padding: 1.25rem;
+        width: 100%;
+        height: calc(100vh - 132px);
+        overflow: auto;
+    }
+
+    .k-pager-sizes .k-dropdown-list, .k-pager-sizes .k-dropdown, .k-pager-sizes .k-dropdownlist, .k-pager-sizes > select {
+        width: 6em;
+    }
+
+    .k-toolbar .k-button {
+        min-height: 30px;
+    }
+</style>

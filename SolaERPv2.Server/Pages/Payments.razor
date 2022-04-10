@@ -1,0 +1,575 @@
+﻿@page "/payments"
+@implements IDisposable
+@inject PaymentDocumentService PaymentDocumentService
+@using Model = PaymentDocumentMain
+
+
+<PageTitle>Payment Documents</PageTitle>
+
+
+<div class="k-pb-4">
+    <label for="bu_list">Business Unit:</label>
+    <ItemDropDownList Id="bu_list"
+                      Data="@businessUnitList"
+                      Item="@selectedBusinessUnit"
+                      ItemChanged="@BusinessUnitChanged"
+                      UniqueField="BusinessUnitId"
+                      TextField="BusinessUnitCode"
+                      TValue="int"
+                      TItem="BusinessUnit"
+                      SearchFields="@(new List<string> { "BusinessUnitCode", "BusinessUnitName"})"
+                      Width="300px"
+                      PopupWidth="100%"
+                      PopupMaxWidth="500px" />
+</div>
+
+<TelerikTabStrip ActiveTabIndex="@activeTabIndex" ActiveTabIndexChanged="@ActiveTabIndexChanged">
+    <TabStripTab Title="Waiting for Approval">
+        <Content>
+            <DataGrid Data="@modelList"
+                      CanExport="true"
+                      Height="calc(100vh - 285px)"
+                      ShowSearchBar="false"
+                      OnRowDoubleClick="@OnRowDoubleClickHandler"
+                      SearchFields="@(new List<string> { "VendorCode", "VendorName", "Reference", "StatusName", "CurrencyCode", "Comment" })"
+                      @bind-SelectedItems="@selectedItems">
+                <GridColumn Field="@(nameof(Model.PaymentDocumentMainId))" Title="Id" Width="70px" Editable="false" TextAlign="ColumnTextAlign.Right" Visible="false" />
+                <GridColumn Field="@(nameof(Model.VendorCode))" Title="Vendor Code" Width="130px" />
+                <GridColumn Field="@(nameof(Model.VendorName))" Title="Vendor Name" Width="300px" />
+                <GridColumn Field="@(nameof(Model.Reference))" Title="Reference" Width="240px" />
+                <GridColumn Field="@(nameof(Model.StatusName))" Title="Status" Width="110px" />
+                <GridColumn Field="@(nameof(Model.Amount))" Title="Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="200px" />
+                <GridColumn Field="@(nameof(Model.VAT))" Title="VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="200px" />
+                <GridColumn Field="@(nameof(Model.CurrencyCode))" Title="Currency" Width="110px" />
+                <GridColumn Field="@(nameof(Model.PaymentDocumentPriorityId))" Title="Priority" Width="108px">
+                    <Template>
+                        @{
+                            var priority = (context as Model).PaymentDocumentPriorityId;
+                            <div class="input-height item-width flex-center-y">
+                                <MudIcon Icon="@(priority == 1 ? Icons.Filled.North : priority == 2 || priority == 0 ? Icons.Filled.East : Icons.Filled.South)" Color="@(priority == 1 ? Color.Success : priority == 2 || priority == 0 ? Color.Warning : Color.Error)" />
+                                <span class="k-px-1">@(priority == 1 ? "High" : priority == 2 ? "Normal" : priority == 3 ? "Low" : "")</span>
+                            </div>
+                        }
+                    </Template>
+                </GridColumn>
+                <GridColumn Field="@(nameof(Model.Comment))" Title="Comment" Width="400px" />
+                <GridColumn Field="@(nameof(Model.Sequence))" Title="Sequence" Width="110px" Visible="false" />
+            </DataGrid>
+        </Content>
+    </TabStripTab>
+    <TabStripTab Title="Draft">
+        <Content>
+            <DataGrid Data="@modelList"
+                      CanDelete="true"
+                      CanExport="true"
+                      Height="calc(100vh - 285px)"
+                      ShowSearchBar="false"
+                      OnRowDoubleClick="@OnRowDoubleClickHandler"
+                      SearchFields="@(new List<string> { "VendorCode", "VendorName", "Reference", "StatusName", "CurrencyCode", "Comment" })"
+                      OnDelete="@((IEnumerable<Model> items) => DeleteHandler(items))"
+                      @bind-SelectedItems="@selectedItems">
+                <GridColumn Field="@(nameof(Model.PaymentDocumentMainId))" Title="Id" Width="70px" Editable="false" TextAlign="ColumnTextAlign.Right" Visible="false" />
+                <GridColumn Field="@(nameof(Model.VendorCode))" Title="Vendor Code" Width="130px" />
+                <GridColumn Field="@(nameof(Model.VendorName))" Title="Vendor Name" Width="300px" />
+                <GridColumn Field="@(nameof(Model.Reference))" Title="Reference" Width="240px" />
+                <GridColumn Field="@(nameof(Model.StatusName))" Title="Status" Width="110px" />
+                <GridColumn Field="@(nameof(Model.Amount))" Title="Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="200px" />
+                <GridColumn Field="@(nameof(Model.VAT))" Title="VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="200px" />
+                <GridColumn Field="@(nameof(Model.CurrencyCode))" Title="Currency" Width="110px" />
+                <GridColumn Field="@(nameof(Model.PaymentDocumentPriorityId))" Title="Priority" Width="108px">
+                    <Template>
+                        @{
+                            var priority = (context as Model).PaymentDocumentPriorityId;
+                            <div class="input-height item-width flex-center-y">
+                                <MudIcon Icon="@(priority == 1 ? Icons.Filled.North : priority == 2 || priority == 0 ? Icons.Filled.East : Icons.Filled.South)" Color="@(priority == 1 ? Color.Success : priority == 2 || priority == 0 ? Color.Warning : Color.Error)" />
+                                <span class="k-px-1">@(priority == 1 ? "High" : priority == 2 ? "Normal" : priority == 3 ? "Low" : "")</span>
+                            </div>
+                        }
+                    </Template>
+                </GridColumn>
+                <GridColumn Field="@(nameof(Model.Comment))" Title="Comment" Width="400px" />
+            </DataGrid>
+        </Content>
+    </TabStripTab>
+    <TabStripTab Title="All">
+        <Content>
+            <DataGrid Data="@modelList"
+                      CanExport="true"
+                      Height="calc(100vh - 285px)"
+                      ShowSearchBar="false"
+                      OnRowDoubleClick="@OnRowDoubleClickHandler"
+                      SearchFields="@(new List<string> { "VendorCode", "VendorName", "Reference", "StatusName", "CurrencyCode","Comment" })"
+                      @bind-SelectedItems="@selectedItems">
+                <GridColumn Field="@(nameof(Model.PaymentDocumentMainId))" Title="Id" Width="70px" Editable="false" TextAlign="ColumnTextAlign.Right" Visible="false" />
+                <GridColumn Field="@(nameof(Model.VendorCode))" Title="Vendor Code" Width="130px" />
+                <GridColumn Field="@(nameof(Model.VendorName))" Title="Vendor Name" Width="300px" />
+                <GridColumn Field="@(nameof(Model.Reference))" Title="Reference" Width="240px" />
+                <GridColumn Field="@(nameof(Model.StatusName))" Title="Status" Width="110px" />
+                <GridColumn Field="@(nameof(Model.Amount))" Title="Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="200px" />
+                <GridColumn Field="@(nameof(Model.VAT))" Title="VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="200px" />
+                <GridColumn Field="@(nameof(Model.CurrencyCode))" Title="Currency" Width="110px" />
+                <GridColumn Field="@(nameof(Model.PaymentDocumentPriorityId))" Title="Priority" Width="108px">
+                    <Template>
+                        @{
+                            var priority = (context as Model).PaymentDocumentPriorityId;
+                            <div class="input-height item-width flex-center-y">
+                                <MudIcon Icon="@(priority == 1 ? Icons.Filled.North : priority == 2 || priority == 0 ? Icons.Filled.East : Icons.Filled.South)" Color="@(priority == 1 ? Color.Success : priority == 2 || priority == 0 ? Color.Warning : Color.Error)" />
+                                <span class="k-px-1">@(priority == 1 ? "High" : priority == 2 ? "Normal" : priority == 3 ? "Low" : "")</span>
+                            </div>
+                        }
+                    </Template>
+                </GridColumn>
+                <GridColumn Field="@(nameof(Model.Comment))" Title="Comment" Width="400px" />
+            </DataGrid>
+        </Content>
+    </TabStripTab>
+    <TabStripTab Title="Approved">
+        <Content>
+            <DataGrid Data="@modelList"
+                      CanExport="true"
+                      Height="calc(100vh - 285px)"
+                      ShowSearchBar="false"
+                      OnRowDoubleClick="@OnRowDoubleClickHandler"
+                      SearchFields="@(new List<string> { "VendorCode", "VendorName", "Reference", "StatusName", "CurrencyCode","Comment" })"
+                      @bind-SelectedItems="@selectedItems">
+                <GridColumn Field="@(nameof(Model.PaymentDocumentMainId))" Title="Id" Width="70px" Editable="false" TextAlign="ColumnTextAlign.Right" Visible="false" />
+                <GridColumn Field="@(nameof(Model.VendorCode))" Title="Vendor Code" Width="130px" />
+                <GridColumn Field="@(nameof(Model.VendorName))" Title="Vendor Name" Width="300px" />
+                <GridColumn Field="@(nameof(Model.Reference))" Title="Reference" Width="240px" />
+                <GridColumn Field="@(nameof(Model.StatusName))" Title="Status" Width="110px" />
+                <GridColumn Field="@(nameof(Model.Amount))" Title="Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="200px" />
+                <GridColumn Field="@(nameof(Model.VAT))" Title="VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="200px" />
+                <GridColumn Field="@(nameof(Model.CurrencyCode))" Title="Currency" Width="110px" />
+                <GridColumn Field="@(nameof(Model.PaymentDocumentPriorityId))" Title="Priority" Width="108px">
+                    <Template>
+                        @{
+                            var priority = (context as Model).PaymentDocumentPriorityId;
+                            <div class="input-height item-width flex-center-y">
+                                <MudIcon Icon="@(priority == 1 ? Icons.Filled.North : priority == 2 || priority == 0 ? Icons.Filled.East : Icons.Filled.South)" Color="@(priority == 1 ? Color.Success : priority == 2 || priority == 0 ? Color.Warning : Color.Error)" />
+                                <span class="k-px-1">@(priority == 1 ? "High" : priority == 2 ? "Normal" : priority == 3 ? "Low" : "")</span>
+                            </div>
+                        }
+                    </Template>
+                </GridColumn>
+                <GridColumn Field="@(nameof(Model.Comment))" Title="Comment" Width="400px" />
+            </DataGrid>
+        </Content>
+    </TabStripTab>
+    <TabStripTab Title="Bank">
+        <Content>
+            <DataGrid Data="@modelList"
+                      CanExport="true"
+                      Height="calc(100vh - 285px)"
+                      ShowSearchBar="false"
+                      OnRowDoubleClick="@OnRowDoubleClickHandler"
+                      ShowCheckBoxColumn="false"
+                      SearchFields="@(new List<string> { "VendorCode", "VendorName", "Reference", "StatusName", "CurrencyCode","Comment" })"
+                      @bind-SelectedItems="@selectedItems">
+                <GridColumn Field="@(nameof(Model.PaymentDocumentMainId))" Title="Id" Width="70px" Editable="false" TextAlign="ColumnTextAlign.Right" Visible="false" />
+                <GridColumn Field="@(nameof(Model.VendorCode))" Title="Vendor Code" Width="130px" />
+                <GridColumn Field="@(nameof(Model.VendorName))" Title="Vendor Name" Width="300px" />
+                <GridColumn Field="@(nameof(Model.Reference))" Title="Reference" Width="240px" />
+                <GridColumn Field="@(nameof(Model.StatusName))" Title="Status" Width="110px" />
+                <GridColumn Field="@(nameof(Model.Amount))" Title="Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="200px" />
+                <GridColumn Field="@(nameof(Model.VAT))" Title="VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="200px" />
+                <GridColumn Field="@(nameof(Model.CurrencyCode))" Title="Currency" Width="110px" />
+                <GridColumn Field="@(nameof(Model.PaymentDocumentPriorityId))" Title="Priority" Width="108px">
+                    <Template>
+                        @{
+                            var priority = (context as Model).PaymentDocumentPriorityId;
+                            <div class="input-height item-width flex-center-y">
+                                <MudIcon Icon="@(priority == 1 ? Icons.Filled.North : priority == 2 || priority == 0 ? Icons.Filled.East : Icons.Filled.South)" Color="@(priority == 1 ? Color.Success : priority == 2 || priority == 0 ? Color.Warning : Color.Error)" />
+                                <span class="k-px-1">@(priority == 1 ? "High" : priority == 2 ? "Normal" : priority == 3 ? "Low" : "")</span>
+                            </div>
+                        }
+                    </Template>
+                </GridColumn>
+                <GridColumn Field="@(nameof(Model.Comment))" Title="Comment" Width="400px" />
+            </DataGrid>
+        </Content>
+    </TabStripTab>
+</TelerikTabStrip>
+
+
+<TelerikDialog Visible="@showApproveDialog"
+               @ref="approveDialogRef"
+               VisibleChanged="@ShowApproveDialogChanged"
+               Title="@(approveSelected ? "Approve?" : "Reject?")"
+               Width="440px"
+               CloseOnOverlayClick="false"
+               ShowCloseButton="true">
+    <DialogContent>
+        <div class="fixed-width k-form">
+            <div class="k-form-field">
+                <div class="k-form-field-wrap">
+                    <label for="approve-comment" class="k-label k-form-label">Comment:</label>
+                    <div class="k-form-field-wrap">
+                        <TelerikTextArea Id="approve-comment"
+                                         AutoSize="true"
+                                         PlaceHolder="Enter your text here"
+                                         @bind-Value="@approveComment">
+                        </TelerikTextArea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </DialogContent>
+    <DialogButtons>
+        <TelerikButton OnClick="@(() => ApproveRejectConfirmed())" ThemeColor="@(approveSelected ? ThemeConstants.Button.ThemeColor.Primary : ThemeConstants.Button.ThemeColor.Error)">@(approveSelected ? "Approve" : "Reject")</TelerikButton>
+        <TelerikButton OnClick="@(() => ApproveDialogClosed())">Close</TelerikButton>
+    </DialogButtons>
+</TelerikDialog>
+
+
+@code {
+    // Grid specific variables - start
+    Guid gridKey;
+    TelerikGrid<Model> gridRef;
+    List<Model> modelList = new();
+    IEnumerable<Model> selectedModelList = new List<Model>();
+    List<Model> deletedModelList = new List<Model>();
+    Model selectedModel;
+    bool showRowButtons = false;
+    bool showDecimals = false;
+    bool showGroup = false;
+    bool showCheckBox = false;
+    int gridPageSize = 20;
+    bool gridReadOnly = false;
+    bool editMode = false;
+    // Grid specific variables - end
+
+    // Page specific variables - start
+    IEnumerable<BusinessUnit>? businessUnitList = new List<BusinessUnit>();
+    BusinessUnit? selectedBusinessUnit = new();
+
+    bool showApproveDialog = false;
+    string approveComment = "";
+    bool approveSelected = false;
+    TelerikDialog approveDialogRef;
+    // Page specific variables - end
+
+    int activeTabIndex = 0;
+
+    [CascadingParameter] public AppState AppState { get; set; }
+    [CascadingParameter] public DialogFactory Dialogs { get; set; }
+
+    List<Model> deletedItems = new List<Model>();
+    IEnumerable<Model> selectedItems = new List<Model>();
+    void DeleteHandler(IEnumerable<Model> items)
+    {
+        deletedItems = items.ToList();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        OnAppStateInitialized();
+        await LoadData();
+    }
+
+    void OnAppStateInitialized()
+    {
+        AppState.SetDefaults();
+        AppState.AddButtonVisible = true;
+        SetMenuButtonsVisibility();
+        AppState.CustomButton4Title = "Send to Approval";
+        AppState.CustomButton5Title = "Retrieve";
+        AppState.CustomButton6Title = "Send to Bank";
+        AppState.CustomButton7Title = "Pay";
+        AppState.CustomButton8Title = "Return to Approved";
+        AppState.OnAddClick += AddClick;
+        AppState.OnReloadClick += ReloadClick;
+
+        AppState.OnApproveClick += ApproveClick;
+        AppState.OnRejectClick += RejectClick;
+        AppState.OnCustomButton4Click += ChangeApproveStatus;
+        AppState.OnCustomButton5Click += ChangeApproveStatus;
+        AppState.OnCustomButton6Click += ChangeApproveStatus;
+        AppState.OnCustomButton7Click += PayClick;
+        AppState.OnCustomButton8Click += ChangeApproveStatus;
+    }
+
+    void IDisposable.Dispose()
+    {
+        AppState.OnAddClick -= AddClick;
+        AppState.OnReloadClick -= ReloadClick;
+
+        AppState.OnApproveClick -= ApproveClick;
+        AppState.OnRejectClick -= RejectClick;
+        AppState.OnCustomButton4Click -= ChangeApproveStatus;
+        AppState.OnCustomButton5Click -= ChangeApproveStatus;
+        AppState.OnCustomButton6Click -= ChangeApproveStatus;
+        AppState.OnCustomButton7Click -= PayClick;
+        AppState.OnCustomButton8Click -= ChangeApproveStatus;
+    }
+
+    void SetMenuButtonsVisibility()
+    {
+        if (activeTabIndex == 0)
+        {
+            AppState.ApproveButtonVisible = true;
+            AppState.RejectButtonVisible = true;
+            AppState.CustomButton4Visible = false;
+            AppState.CustomButton5Visible = false;
+            AppState.CustomButton6Visible = false;
+            AppState.CustomButton7Visible = false;
+            AppState.CustomButton8Visible = false;
+        }
+        else if (activeTabIndex == 1)
+        {
+            AppState.ApproveButtonVisible = false;
+            AppState.RejectButtonVisible = false;
+            AppState.CustomButton4Visible = true;
+            AppState.CustomButton5Visible = false;
+            AppState.CustomButton6Visible = false;
+            AppState.CustomButton7Visible = false;
+            AppState.CustomButton8Visible = false;
+        }
+        else if (activeTabIndex == 2)
+        {
+            AppState.ApproveButtonVisible = false;
+            AppState.RejectButtonVisible = false;
+            AppState.CustomButton4Visible = false;
+            AppState.CustomButton5Visible = true;
+            AppState.CustomButton6Visible = false;
+            AppState.CustomButton7Visible = false;
+            AppState.CustomButton8Visible = false;
+        }
+        else if (activeTabIndex == 3)
+        {
+            AppState.ApproveButtonVisible = false;
+            AppState.RejectButtonVisible = false;
+            AppState.CustomButton4Visible = false;
+            AppState.CustomButton5Visible = false;
+            AppState.CustomButton6Visible = true;
+            AppState.CustomButton7Visible = false;
+            AppState.CustomButton8Visible = false;
+        }
+        else if (activeTabIndex == 4)
+        {
+            AppState.ApproveButtonVisible = false;
+            AppState.RejectButtonVisible = false;
+            AppState.CustomButton4Visible = false;
+            AppState.CustomButton5Visible = false;
+            AppState.CustomButton6Visible = false;
+            AppState.CustomButton7Visible = true;
+            AppState.CustomButton8Visible = true;
+        }
+        else
+        {
+            AppState.ApproveButtonVisible = false;
+            AppState.RejectButtonVisible = false;
+            AppState.CustomButton4Visible = false;
+            AppState.CustomButton5Visible = false;
+            AppState.CustomButton6Visible = false;
+            AppState.CustomButton7Visible = false;
+            AppState.CustomButton8Visible = false;
+        }
+    }
+
+    async Task LoadData()
+    {
+        AppState.Loading = true;
+        await GetBusinessUnitList();
+        await GetPaymentDocumentList();
+        AppState.Loading = false;
+    }
+
+    async void ReloadClick()
+    {
+        await LoadData();
+    }
+
+    async Task GetBusinessUnitList()
+    {
+        businessUnitList = await BusinessUnitService.GetAllAsync();
+        selectedBusinessUnit = businessUnitList.Any() ? businessUnitList.FirstOrDefault() : new();
+    }
+
+    async Task GetPaymentDocumentList()
+    {
+        var _modelList = await PaymentDocumentService.GetAll(selectedBusinessUnit.BusinessUnitId, activeTabIndex);
+        modelList = _modelList.ToList();
+    }
+
+    void GoToDetails(int id)
+    {
+        NavigationManager.NavigateTo($"/payments/card?id={id}");
+    }
+
+    void OnRowClickHandler(GridRowClickEventArgs args)
+    {
+    //
+    }
+
+    void OnRowDoubleClickHandler(GridRowClickEventArgs args)
+    {
+        var argsItem = args.Item as Model;
+        GoToDetails(argsItem.PaymentDocumentMainId);
+    }
+
+    void AddClick()
+    {
+        AppState.Loading = true;
+        NavigationManager.NavigateTo($"/payments/generate?bu={selectedBusinessUnit.BusinessUnitId}");
+    }
+
+    async Task BusinessUnitChanged(BusinessUnit businessUnit)
+    {
+        AppState.Loading = true;
+        selectedBusinessUnit = businessUnit;
+        await GetPaymentDocumentList();
+        AppState.Loading = false;
+    }
+
+    async Task ActiveTabIndexChanged(int tabIndex)
+    {
+        AppState.Loading = true;
+        activeTabIndex = tabIndex;
+        selectedItems = new List<Model>();
+        SetMenuButtonsVisibility();
+        await GetPaymentDocumentList();
+        AppState.Loading = false;
+    }
+
+    void ShowApproveDialogChanged(bool visible)
+    {
+        showApproveDialog = visible;
+        if (!visible)
+        {
+            ApproveDialogClosed();
+        }
+    }
+
+    void ApproveDialogClosed()
+    {
+        approveComment = "";
+        showApproveDialog = false;
+    }
+
+    void ApproveClick()
+    {
+        if (selectedItems.Any())
+        {
+            approveSelected = true;
+            showApproveDialog = true;
+            AppState.Refresh();
+        }
+        else
+        {
+            AppState.ShowAlert("Please select item(s) first", Severity.Warning);
+        }
+    }
+
+    void RejectClick()
+    {
+        if (selectedItems.Any())
+        {
+            approveSelected = false;
+            showApproveDialog = true;
+            AppState.Refresh();
+        }
+        else
+        {
+            AppState.ShowAlert("Please select item(s) first", Severity.Warning);
+        }
+    }
+
+    async Task ApproveRejectConfirmed()
+    {
+        var approveDataList = new List<ApproveData>();
+        foreach (var item in selectedItems)
+        {
+            var newItem = new ApproveData { ModelId = item.PaymentDocumentMainId, ApproveStatusId = (approveSelected ? 1 : 99), Comment = approveComment, Sequence = item.Sequence };
+            approveDataList.Add(newItem);
+        }
+        var result = await PaymentDocumentService.Approve(approveDataList);
+        if (result.InsertedResultMessage == null)
+        {
+            await GetPaymentDocumentList();
+            AppState.ShowAlert("Successfully updated", Severity.Success);
+        }
+        else
+        {
+            AppState.ShowAlert(result.InsertedResultMessage, Severity.Error);
+        }
+        ApproveDialogClosed();
+    }
+
+    async void ChangeApproveStatus()
+    {
+        var statusToChange = -1;
+        var title = "Change Status";
+        switch (activeTabIndex)
+        {
+            case 0:
+                statusToChange = -1;
+                title = "see code for errors";
+                break;
+            case 1:
+                statusToChange = 1;
+                title = "Send to Approve";
+                break;
+            case 2:
+                statusToChange = 0;
+                title = "Retrieve";
+                break;
+            case 3:
+                statusToChange = 2;
+                title = "Send to Bank";
+                break;
+            case 4:
+                statusToChange = 1;
+                title = "Return to Approved";
+                break;
+            default: break;
+        }
+        if (selectedItems.Any())
+        {
+            var confirmed = await Dialogs.ConfirmAsync($"Are you sure you want to change status of {selectedItems.Count()} item(s)?", title);
+            if (confirmed)
+            {
+                AppState.Loading = true;
+                var statusDataList = new List<ApproveData>();
+                foreach (var item in selectedItems)
+                {
+                    var newItem = new ApproveData { ModelId = item.PaymentDocumentMainId, ApproveStatusId = statusToChange };
+                    statusDataList.Add(newItem);
+                }
+                var result = await PaymentDocumentService.ChangeApproveStatus(statusDataList);
+                if (result.InsertedResultMessage == null)
+                {
+                    await GetPaymentDocumentList();
+                    AppState.ShowAlert("Successfully updated", Severity.Success);
+                }
+                else
+                {
+                    AppState.ShowAlert(result.InsertedResultMessage, Severity.Error);
+                }
+                AppState.Loading = false;
+            }
+        }
+        else
+        {
+            AppState.ShowAlert("Please select item(s) first", Severity.Warning);
+        }
+    }
+
+    async void PayClick()
+    {
+        if (selectedItems.Any())
+        {
+            NavigationManager.NavigateTo($"/payments/post?id={selectedItems.FirstOrDefault().PaymentDocumentMainId}");
+        }
+        else
+        {
+            AppState.ShowAlert("Please select an item first", Severity.Warning);
+        }
+    }
+
+}
+
+<style>
+    .mud-checkbox .mud-icon-button {
+        padding: 0;
+    }
+</style>

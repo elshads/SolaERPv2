@@ -1,0 +1,42 @@
+﻿@if (Href == null)
+{
+    <button class="link-text" @onclick="@((e) => ClickHandler(e))">
+        @ChildContent
+    </button>
+}
+else
+{
+    <a class="link-text" href="@Href">
+        @ChildContent
+    </a>
+}
+
+
+@code {
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    [Parameter] public string Href { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    async Task ClickHandler(MouseEventArgs args)
+    {
+        try
+        {
+            await OnClick.InvokeAsync(args);
+        }
+        catch (Exception e)
+        {
+            var message = e.Message;
+        }
+    }
+}
+
+<style>
+    .link-text {
+        text-decoration: none;
+        color: var(--mud-palette-primary) !important;
+    }
+
+    .link-text:hover {
+        text-decoration: underline !important;
+    }
+</style>

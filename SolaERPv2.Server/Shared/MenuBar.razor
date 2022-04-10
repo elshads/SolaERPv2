@@ -1,0 +1,113 @@
+﻿
+<TelerikToolBar>
+    <ToolBarSeparator/>
+    <ToolBarButton Icon="@AppState.CustomButton1Icon" Enabled="@AppState.CustomButton1Enabled" Visible="@AppState.CustomButton1Visible" OnClick="@CustomButton1Click">@(AppState.CustomButton1Title)</ToolBarButton>
+    <ToolBarButton Icon="@AppState.CustomButton2Icon" Enabled="@AppState.CustomButton2Enabled" Visible="@AppState.CustomButton2Visible" OnClick="@CustomButton2Click">@(AppState.CustomButton2Title)</ToolBarButton>
+    <ToolBarButton Icon="@AppState.CustomButton3Icon" Enabled="@AppState.CustomButton3Enabled" Visible="@AppState.CustomButton3Visible" OnClick="@CustomButton3Click">@(AppState.CustomButton3Title)</ToolBarButton>
+    <ToolBarSeparator Visible="@(AppState.CustomButton1Visible || AppState.CustomButton2Visible || AppState.CustomButton3Visible)"/>
+    <ToolBarButton Icon="add" Enabled="@AppState.AddButtonEnabled" Visible="@AppState.AddButtonVisible" OnClick="@AddClick">Add</ToolBarButton>
+    <ToolBarButton Icon="delete" Enabled="@AppState.DeleteButtonEnabled" Visible="@AppState.DeleteButtonVisible" OnClick="@DeleteClick">Delete</ToolBarButton>
+    <ToolBarButton Icon="save" Enabled="@AppState.SaveButtonEnabled" Visible="@AppState.SaveButtonVisible" OnClick="@SaveClick">Save</ToolBarButton>
+    <ToolBarSeparator Visible="@(AppState.AddButtonVisible || AppState.DeleteButtonVisible || AppState.SaveButtonVisible)"/>
+    <ToolBarButton Icon="@AppState.CustomButton4Icon" Enabled="@AppState.CustomButton4Enabled" Visible="@AppState.CustomButton4Visible" OnClick="@CustomButton4Click">@(AppState.CustomButton4Title)</ToolBarButton>
+    <ToolBarButton Icon="@AppState.CustomButton5Icon" Enabled="@AppState.CustomButton5Enabled" Visible="@AppState.CustomButton5Visible" OnClick="@CustomButton5Click">@(AppState.CustomButton5Title)</ToolBarButton>
+    <ToolBarButton Icon="@AppState.CustomButton6Icon" Enabled="@AppState.CustomButton6Enabled" Visible="@AppState.CustomButton6Visible" OnClick="@CustomButton6Click">@(AppState.CustomButton6Title)</ToolBarButton>
+    <ToolBarButton Icon="@AppState.CustomButton7Icon" Enabled="@AppState.CustomButton7Enabled" Visible="@AppState.CustomButton7Visible" OnClick="@CustomButton7Click">@(AppState.CustomButton7Title)</ToolBarButton>
+    <ToolBarButton Icon="@AppState.CustomButton8Icon" Enabled="@AppState.CustomButton8Enabled" Visible="@AppState.CustomButton8Visible" OnClick="@CustomButton8Click">@(AppState.CustomButton8Title)</ToolBarButton>
+    <ToolBarButton Icon="@AppState.CustomButton9Icon" Enabled="@AppState.CustomButton9Enabled" Visible="@AppState.CustomButton9Visible" OnClick="@CustomButton9Click">@(AppState.CustomButton9Title)</ToolBarButton>
+    <ToolBarSeparator Visible="@(AppState.CustomButton4Visible || AppState.CustomButton5Visible || AppState.CustomButton6Visible || AppState.CustomButton7Visible || AppState.CustomButton8Visible || AppState.CustomButton9Visible)"/>
+    <ToolBarButton Icon="track-changes-accept" ThemeColor="@(ThemeConstants.Button.ThemeColor.Primary)" Enabled="@AppState.ApproveButtonEnabled" Visible="@AppState.ApproveButtonVisible" OnClick="@ApproveClick">Approve</ToolBarButton>
+    <ToolBarButton Icon="track-changes-reject" ThemeColor="@(ThemeConstants.Button.ThemeColor.Error)" Enabled="@AppState.RejectButtonEnabled" Visible="@AppState.RejectButtonVisible" OnClick="@RejectClick">Reject</ToolBarButton>
+    <ToolBarSeparator Visible="@(AppState.ApproveButtonVisible || AppState.RejectButtonVisible)"/>
+    <ToolBarButton Icon="reload" Enabled="@AppState.ReloadButtonEnabled" Visible="@AppState.ReloadButtonVisible" OnClick="@ReloadClick">Reload</ToolBarButton>
+    <ToolBarSeparator Visible="@(AppState.ReloadButtonVisible)"/>
+    <ToolBarButton Icon="printer" Enabled="@AppState.ReportButtonEnabled" Visible="@AppState.ReportButtonVisible" OnClick="@ReportClick">Report</ToolBarButton>
+    <ToolBarSeparator Visible="@(AppState.ReportButtonVisible)"/>
+    <ToolBarSpacer/>
+</TelerikToolBar>
+
+
+@code {
+    [CascadingParameter] public AppState AppState { get; set; }
+
+
+    void AddClick(MouseEventArgs args)
+    {
+        AppState.AddClick();
+    }
+
+    void DeleteClick(MouseEventArgs args)
+    {
+        AppState.DeleteClick();
+    }
+
+    void SaveClick(MouseEventArgs args)
+    {
+        AppState.SaveClick();
+    }
+
+    void ReloadClick(MouseEventArgs args)
+    {
+        AppState.ReloadClick();
+    }
+
+    void ReportClick(MouseEventArgs args)
+    {
+        AppState.ReportClick();
+    }
+
+    void ApproveClick(MouseEventArgs args)
+    {
+        AppState.ApproveClick();
+    }
+
+    void RejectClick(MouseEventArgs args)
+    {
+        AppState.RejectClick();
+    }
+
+    void CustomButton1Click(MouseEventArgs args)
+    {
+        AppState.CustomButton1Click();
+    }
+
+    void CustomButton2Click(MouseEventArgs args)
+    {
+        AppState.CustomButton2Click();
+    }
+
+    void CustomButton3Click(MouseEventArgs args)
+    {
+        AppState.CustomButton3Click();
+    }
+
+    void CustomButton4Click(MouseEventArgs args)
+    {
+        AppState.CustomButton4Click();
+    }
+
+    void CustomButton5Click(MouseEventArgs args)
+    {
+        AppState.CustomButton5Click();
+    }
+
+    void CustomButton6Click(MouseEventArgs args)
+    {
+        AppState.CustomButton6Click();
+    }
+
+    void CustomButton7Click(MouseEventArgs args)
+    {
+        AppState.CustomButton7Click();
+    }
+
+    void CustomButton8Click(MouseEventArgs args)
+    {
+        AppState.CustomButton8Click();
+    }
+
+    void CustomButton9Click(MouseEventArgs args)
+    {
+        AppState.CustomButton9Click();
+    }
+}

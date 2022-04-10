@@ -1,0 +1,807 @@
+﻿@typeparam TItem where TItem : IBaseModel, new()
+
+@implements IDisposable
+
+<TelerikGrid @ref="@Ref"
+             @key="@Key"
+             Data="@Data"
+             Height="@Height"
+             Width="@Width"
+             Pageable="@Pageable"
+             Sortable="true"
+             Navigable="true"
+             Groupable="@showGroup"
+             Resizable="true"
+             Reorderable="true"
+             ShowColumnMenu="true"
+             ConfirmDelete="true"
+             @bind-PageSize="@pageSize"
+             FilterMode="@GridFilterMode.FilterMenu"
+             SelectionMode="@GridSelectionMode.Multiple"
+             EditMode="@GridEditMode"
+             SelectedItems="@SelectedItems"
+             EnableLoaderContainer="true"
+             SelectedItemsChanged="@((IEnumerable<TItem> selectedItems) => SelectedItemsChangedHandler(selectedItems))"
+             RowDraggable="@(RowDraggable && !ReadOnly && !AppState.MobileView)"
+             OnRowDrop="@((GridRowDropEventArgs<TItem> args) => OnRowDropHandler(args))"
+             OnRowClick="@OnRowClickHandler"
+             OnRowDoubleClick="@OnRowDoubleClickHandler"
+             OnRowContextMenu="@(ShowContextMenu ? OnRowContextMenu : null)"
+             OnCreate="@OnCreateHandler"
+             OnEdit="@OnEditHandler"
+             OnCancel="@OnCancelHandler"
+             OnUpdate="@OnUpdateHandler"
+             OnDelete="@OnRowDeleteHandler">
+    <GridSettings>
+        <GridPagerSettings PageSizes="@(new List<int?> { 1, 10, 20, 50, 100, 1000, null })" ButtonCount="5" InputType="PagerInputType.Buttons" />
+    </GridSettings>
+    <GridToolBar>
+        @if (Title != null)
+        {
+            <text>@Title</text>
+        }
+        @if (!ReadOnly)
+        {
+            @if (ShowToolbar && ShowCheckBoxColumn)
+            {
+                <GridCommandButton Icon="checkbox-checked" OnClick="@(() => showCheckBox = !showCheckBox)" />
+            }
+            @if (CanAdd)
+            {
+                <GridCommandButton Command="Add" Icon="add" Enabled="@(!inEditMode)" OnClick="OnAddHandler">Add</GridCommandButton>
+            }
+            @if (CanDelete)
+            {
+                <GridCommandButton Icon="delete" Enabled="@(!inEditMode && SelectedItems.Count() > 0)" OnClick="@OnDeleteSelectedItemsHandler">Delete</GridCommandButton>
+            }
+
+        }
+        <span class="k-toolbar-spacer" />
+        @if (CanMoveLeft)
+        {
+            <GridCommandButton Icon="chevron-left" Enabled="@(!inEditMode && SelectedItems.Count() > 0)" OnClick="@(() => MoveAllLeftHandler(SelectedItems))">Move Left</GridCommandButton>
+        }
+        @if (CanMoveRight)
+        {
+            <GridCommandButton Icon="chevron-right" Enabled="@(!inEditMode && SelectedItems.Count() > 0)" OnClick="@(() => MoveAllRightHandler(SelectedItems))">Move Right</GridCommandButton>
+        }
+        @if (CanMoveUp)
+        {
+            <GridCommandButton Icon="chevron-up" Enabled="@(!inEditMode && SelectedItems.Count() > 0)" OnClick="@(() => MoveAllUpHandler(SelectedItems))">Move Up</GridCommandButton>
+        }
+        @if (CanMoveDown)
+        {
+            <GridCommandButton Icon="chevron-down" Enabled="@(!inEditMode && SelectedItems.Count() > 0)" OnClick="@(() => MoveAllDownHandler(SelectedItems))">Move Down</GridCommandButton>
+        }
+        @if (ShowToolbar)
+        {
+            @if (CanExport)
+            {
+                <GridCommandButton Command="CsvExport" Icon="csv" Enabled="@(!inEditMode)">@(!AppState.MobileView ? "Export to CSV" : "")</GridCommandButton>
+            }
+            @if (!AppState.MobileView && (CanEdit || CanDelete || CanMoveLeft || CanMoveRight || CanMoveUp || CanMoveDown))
+            {
+                <GridCommandButton Icon="button" OnClick="@(() => showRowButtons = !showRowButtons)" Enabled="@(!inEditMode)">Row buttons</GridCommandButton>
+            }
+            <GridCommandButton Icon="layout" OnClick="@(() => showGroup = !showGroup)" Enabled="@(!inEditMode)">@(!AppState.MobileView ? "Group" : "")</GridCommandButton>
+        }
+        @if (ShowSearchBar)
+        {
+            <span class="k-textbox k-input k-input-solid k-rounded-md k-input-md customsearch">
+                <span class="k-icon k-input-icon k-i-search" />
+                <input class="k-input-inner" placeholder="Search..." value="@searchString" @oninput="@OnSearchInput" @onkeydown="@OnKeyPressed" disabled="@(inEditMode)" />
+                @if (!string.IsNullOrEmpty(searchString) && !inEditMode)
+                {
+                    <span class="k-clear-value" @onclick="@OnSearchClear">
+                        <span class="k-icon k-i-x"></span>
+                    </span>
+                }
+            </span>
+        }
+    </GridToolBar>
+    <GridColumns>
+        <GridCommandColumn Width="@(Convert.ToInt32(CanEdit) + Convert.ToInt32(CanDelete) + Convert.ToInt32(CanMoveLeft) + Convert.ToInt32(CanMoveRight) + Convert.ToInt32(CanMoveUp)  + Convert.ToInt32(CanMoveDown) > 1 ? "90px" : "55px")"
+                           ShowColumnMenu="false" Reorderable="false"
+                           Visible="@(showRowButtons && !ReadOnly && !AppState.MobileView && (CanEdit || CanDelete || CanMoveLeft || CanMoveRight || CanMoveUp || CanMoveDown))">
+            @if (CanEdit)
+            {
+                <GridCommandButton Command="Edit" Icon="edit" ShowInEdit="false" Enabled="(!inEditMode)" />
+                <GridCommandButton Command="Save" Icon="save" ShowInEdit="true" />
+                <GridCommandButton Command="Cancel" Icon="cancel" ShowInEdit="true" />
+            }
+            @if (CanDelete)
+            {
+                <GridCommandButton Command="Delete" Icon="delete" ShowInEdit="false" Enabled="(!inEditMode)" />
+            }
+            @if (CanMoveLeft)
+            {
+                <GridCommandButton Icon="chevron-left" ShowInEdit="false" Enabled="(!inEditMode)" OnClick="@((e) => MoveLeftHandler(e))" />
+            }
+            @if (CanMoveRight)
+            {
+                <GridCommandButton Icon="chevron-right" ShowInEdit="false" Enabled="(!inEditMode)" OnClick="@((e) => MoveRightHandler(e))" />
+            }
+            @if (CanMoveUp)
+            {
+                <GridCommandButton Icon="chevron-up" ShowInEdit="false" Enabled="(!inEditMode)" OnClick="@((e) => MoveUpHandler(e))" />
+            }
+            @if (CanMoveDown)
+            {
+                <GridCommandButton Icon="chevron-down" ShowInEdit="false" Enabled="(!inEditMode)" OnClick="@((e) => MoveDownHandler(e))" />
+            }
+        </GridCommandColumn>
+        <GridCheckboxColumn CheckBoxOnlySelection="@CheckBoxOnlySelection" ShowColumnMenu="false" VisibleInColumnChooser="false" Reorderable="false" Locked="true" Width="42px" Visible="@(!inEditMode && !ReadOnly && ShowCheckBoxColumn && showCheckBox)" />
+        @ChildContent
+    </GridColumns>
+</TelerikGrid>
+
+@if (ShowContextMenu)
+{
+    <TelerikContextMenu @ref="@contextMenuRef" Data="@contextMenuItemList"
+                    OnClick="@((ContextMenuItem argsItem) => ContextMenuClickHandler(argsItem))">
+    </TelerikContextMenu>
+}
+
+
+@code {
+    // parameters - start
+    [CascadingParameter] public AppState AppState { get; set; }
+    [CascadingParameter] public DialogFactory Dialogs { get; set; }
+
+    [Parameter] public RenderFragment ChildContent { get; set; }
+
+    [Parameter] public Guid Key { get; set; }
+    [Parameter] public TelerikGrid<TItem> Ref { get; set; }
+
+    [Parameter] public Guid DestinationGridKey { get; set; }
+    [Parameter] public EventCallback<Guid> DestinationGridKeyChanged { get; set; }
+
+    [Parameter] public List<TItem> Data { get; set; } = new();
+    [Parameter] public EventCallback<List<TItem>> DataChanged { get; set; }
+    [Parameter] public List<TItem> DestinationGridData { get; set; } = new();
+    [Parameter] public EventCallback<List<TItem>> DestinationGridDataChanged { get; set; }
+    [Parameter] public IEnumerable<TItem> SelectedItems { get; set; } = new List<TItem>();
+    [Parameter] public EventCallback<IEnumerable<TItem>> SelectedItemsChanged { get; set; }
+    [Parameter] public TItem SelectedItem { get; set; }
+    [Parameter] public EventCallback<TItem> SelectedItemChanged { get; set; }
+
+    [Parameter] public GridEditMode GridEditMode { get; set; } = GridEditMode.Inline;
+
+    [Parameter] public string Height { get; set; } = "calc(100vh - 160px)";
+    [Parameter] public string Width { get; set; }
+    [Parameter] public string Media { get; set; } = "(max-width: 768px)";
+    [Parameter] public IEnumerable<string> SearchFields { get; set; } = new List<string> { "RowIndex" };
+
+    [Parameter] public EventCallback<GridRowClickEventArgs> OnRowClick { get; set; }
+    [Parameter] public EventCallback<GridRowClickEventArgs> OnRowDoubleClick { get; set; }
+
+    [Parameter] public EventCallback<GridRowDropEventArgs<TItem>> OnRowDrop { get; set; }
+
+    [Parameter] public EventCallback<GridCommandEventArgs> OnAdd { get; set; }
+    [Parameter] public EventCallback<GridCommandEventArgs> OnCreate { get; set; }
+    [Parameter] public EventCallback<GridCommandEventArgs> OnEdit { get; set; }
+    [Parameter] public EventCallback<GridCommandEventArgs> OnUpdate { get; set; }
+    [Parameter] public EventCallback<GridCommandEventArgs> OnCancel { get; set; }
+    [Parameter] public EventCallback<IEnumerable<TItem>> OnDelete { get; set; }
+
+    [Parameter] public EventCallback<IEnumerable<TItem>> OnMoveAllLeft { get; set; }
+    [Parameter] public EventCallback<IEnumerable<TItem>> OnMoveAllRight { get; set; }
+    [Parameter] public EventCallback<IEnumerable<TItem>> OnMoveAllUp { get; set; }
+    [Parameter] public EventCallback<IEnumerable<TItem>> OnMoveAllDown { get; set; }
+
+    [Parameter] public EventCallback<GridCommandEventArgs> OnMoveLeft { get; set; }
+    [Parameter] public EventCallback<GridCommandEventArgs> OnMoveRight { get; set; }
+    [Parameter] public EventCallback<GridCommandEventArgs> OnMoveUp { get; set; }
+    [Parameter] public EventCallback<GridCommandEventArgs> OnMoveDown { get; set; }
+
+    [Parameter] public string Title { get; set; }
+    [Parameter] public bool CheckBoxOnlySelection { get; set; } = false;
+    [Parameter] public bool RowDraggable { get; set; } = false;
+    [Parameter] public bool ShowToolbar { get; set; } = true;
+    [Parameter] public bool ShowCheckBoxColumn { get; set; } = true;
+    [Parameter] public bool ShowSearchBar { get; set; } = true;
+    [Parameter] public bool Pageable { get; set; } = true;
+
+    [Parameter] public bool ShowContextMenu { get; set; } = true;
+    [Parameter] public bool ShowContextMenuDetails { get; set; } = true;
+
+    [Parameter] public bool ReadOnly { get; set; } = false;
+    [Parameter] public bool CanAdd { get; set; } = false;
+    [Parameter] public bool CanEdit { get; set; } = false;
+    [Parameter] public bool CanDelete { get; set; } = false;
+    [Parameter] public bool CanExport { get; set; } = false;
+    [Parameter] public bool CanMoveLeft { get; set; } = false;
+    [Parameter] public bool CanMoveRight { get; set; } = false;
+    [Parameter] public bool CanMoveUp { get; set; } = false;
+    [Parameter] public bool CanMoveDown { get; set; } = false;
+
+    [Parameter] public bool CustomAdd { get; set; } = false;
+    [Parameter] public bool CustomCreate { get; set; } = false;
+    [Parameter] public bool CustomEdit { get; set; } = false;
+    [Parameter] public bool CustomUpdate { get; set; } = false;
+    [Parameter] public bool CustomCancel { get; set; } = false;
+    [Parameter] public bool CustomMoveItem { get; set; } = false;
+
+    // parameters - end
+
+    // -----------------------
+
+    // local variables - start
+
+    TelerikContextMenu<ContextMenuItem> contextMenuRef;
+    List<ContextMenuItem> contextMenuItemList;
+    IEnumerable<TItem> originalData = new List<TItem>();
+    List<TItem> deletedItems = new();
+
+    bool showCheckBox = true;
+    bool showRowButtons = true;
+    bool showDecimals = false;
+    bool showGroup = false;
+    int pageSize = 20;
+    bool inEditMode = false;
+    string? searchString;
+
+    // local variables - end
+
+    // -----------------------
+
+    protected override void OnInitialized()
+    {
+        AppState.OnMobileViewChanged += OnMobileViewChanged;
+    }
+
+    void IDisposable.Dispose()
+    {
+        AppState.OnMobileViewChanged -= OnMobileViewChanged;
+    }
+
+    protected override void OnParametersSet()
+    {
+        contextMenuItemList = new();
+
+        if (ShowContextMenuDetails) contextMenuItemList.Add(new ContextMenuItem { Text = "Go to Details", Icon = "hyperlink", CommandName = "GoToDetails" });
+        if (CanEdit) contextMenuItemList.Add(new ContextMenuItem { Text = "Edit", Icon = "edit", CommandName = "BeginEdit" });
+        if (CanDelete) contextMenuItemList.Add(new ContextMenuItem { Text = "Delete", Icon = "delete", CommandName = "BeginDelete" });
+        if (Pageable) contextMenuItemList.Add(new ContextMenuItem
+            {
+                Text = "Rows per page",
+                Icon = "rows",
+                Items = new List<ContextMenuItem>()
+                {
+                    new ContextMenuItem { Text="All", CommandName="All" },
+                    new ContextMenuItem { Text="1", CommandName="1" },
+                    new ContextMenuItem { Text="10", CommandName="10" },
+                    new ContextMenuItem { Text="20", CommandName="20" },
+                    new ContextMenuItem { Text="50", CommandName="50" },
+                    new ContextMenuItem { Text="100", CommandName="100" },
+                    new ContextMenuItem { Text="1000", CommandName="1000" },
+                }
+            });
+
+        originalData = new List<TItem>(Data);
+    }
+
+    // grid events - start
+
+    async Task SelectedItemsChangedHandler(IEnumerable<TItem> selectedItems)
+    {
+        SelectedItems = selectedItems;
+        await SelectedItemsChanged.InvokeAsync(SelectedItems);
+    }
+
+    async Task SelectedItemChangedHandler(TItem selectedItem)
+    {
+        SelectedItem = selectedItem;
+        await SelectedItemChanged.InvokeAsync(SelectedItem);
+    }
+
+    // grid events - end
+
+    // -----------------------
+
+    // row clicks - start
+
+    async Task OnRowClickHandler(GridRowClickEventArgs args)
+    {
+        if (!inEditMode)
+        {
+            await SelectedItemChangedHandler((TItem)args.Item);
+        }
+        await OnRowClick.InvokeAsync(args);
+    }
+
+    async Task OnRowDoubleClickHandler(GridRowClickEventArgs args)
+    {
+        await OnRowDoubleClick.InvokeAsync(args);
+    }
+
+    async Task OnRowDropHandler(GridRowDropEventArgs<TItem> args)
+    {
+        await RowDrop(args);
+        await OnRowDrop.InvokeAsync(args);
+    }
+
+    // row clicks - end
+
+    // -----------------------
+
+    // CRUD event handlers - start
+
+    async Task OnAddHandler(GridCommandEventArgs args)
+    {
+        if (!CustomAdd)
+        {
+            await Add(args);
+        }
+        await OnAdd.InvokeAsync(args);
+    }
+
+    async Task OnCreateHandler(GridCommandEventArgs args)
+    {
+        if (!CustomCreate)
+        {
+            await Create(args);
+        }
+        await OnCreate.InvokeAsync(args);
+    }
+
+    async Task OnEditHandler(GridCommandEventArgs args)
+    {
+        if (!CustomEdit)
+        {
+            await Edit(args);
+        }
+        await OnEdit.InvokeAsync(args);
+    }
+
+    async Task OnUpdateHandler(GridCommandEventArgs args)
+    {
+        if (!CustomUpdate)
+        {
+            await Update(args);
+        }
+        await OnUpdate.InvokeAsync(args);
+    }
+
+    async Task OnCancelHandler(GridCommandEventArgs args)
+    {
+        if (!CustomCancel)
+        {
+            Cancel(args);
+        }
+        await OnCancel.InvokeAsync(args);
+    }
+
+    async Task OnRowDeleteHandler(GridCommandEventArgs args)
+    {
+        var argsItem = (TItem)args.Item;
+        await DeleteRow(argsItem);
+        await OnDelete.InvokeAsync(deletedItems);
+    }
+
+    async Task OnDeleteSelectedItemsHandler()
+    {
+        await DeleteSelectedItems(SelectedItems);
+        await OnDelete.InvokeAsync(deletedItems);
+    }
+
+    async Task OnDeleteFromContextMenuHandler(GridCommandEventArgs args)
+    {
+        var argsItem = (TItem)args.Item;
+        await DeleteFromContextMenu(argsItem);
+        await OnDelete.InvokeAsync(deletedItems);
+    }
+
+    // CRUD event handlers - end
+
+    // -----------------------
+
+    // Move button handlers - start
+
+    async Task MoveAllLeftHandler(IEnumerable<TItem> selectedItems)
+    {
+        if (!CustomMoveItem)
+        {
+            await MoveAllItems(selectedItems.ToList());
+        }
+        await OnMoveAllLeft.InvokeAsync(selectedItems);
+    }
+
+    async Task MoveAllRightHandler(IEnumerable<TItem> selectedItems)
+    {
+        if (!CustomMoveItem)
+        {
+            await MoveAllItems(selectedItems.ToList());
+        }
+        await OnMoveAllRight.InvokeAsync(selectedItems);
+    }
+
+    async Task MoveAllUpHandler(IEnumerable<TItem> selectedItems)
+    {
+        if (!CustomMoveItem)
+        {
+            // default method
+        }
+        await OnMoveAllUp.InvokeAsync(selectedItems);
+    }
+
+    async Task MoveAllDownHandler(IEnumerable<TItem> selectedItems)
+    {
+        if (!CustomMoveItem)
+        {
+            // default method
+        }
+        await OnMoveAllDown.InvokeAsync(selectedItems);
+    }
+
+    async Task MoveLeftHandler(GridCommandEventArgs args)
+    {
+        if (!CustomMoveItem)
+        {
+            await MoveItem(args);
+        }
+        await OnMoveLeft.InvokeAsync(args);
+    }
+
+    async Task MoveRightHandler(GridCommandEventArgs args)
+    {
+        if (!CustomMoveItem)
+        {
+            await MoveItem(args);
+        }
+        await OnMoveRight.InvokeAsync(args);
+    }
+
+    async Task MoveUpHandler(GridCommandEventArgs args)
+    {
+        if (!CustomMoveItem)
+        {
+            // default method
+        }
+        await OnMoveUp.InvokeAsync(args);
+    }
+
+    async Task MoveDownHandler(GridCommandEventArgs args)
+    {
+        if (!CustomMoveItem)
+        {
+            // default method
+        }
+        await OnMoveDown.InvokeAsync(args);
+    }
+
+    // Move button handlers - end
+
+    // -----------------------
+
+    // default CRUD functions - start
+
+    async Task MoveItem(GridCommandEventArgs args)
+    {
+        var argsItem = (TItem)args.Item;
+        Data.Remove(argsItem);
+        DestinationGridData.Add(argsItem);
+        await DataChanged.InvokeAsync(Data);
+        await DestinationGridDataChanged.InvokeAsync(DestinationGridData);
+        Key = Guid.NewGuid();
+        DestinationGridKey = Guid.NewGuid();
+        await DestinationGridKeyChanged.InvokeAsync(DestinationGridKey);
+    }
+
+    async Task MoveAllItems(List<TItem> selectedItems)
+    {
+        foreach (var item in selectedItems)
+        {
+            Data.Remove(item);
+            DestinationGridData.Add(item);
+
+        }
+        SelectedItems = new List<TItem>();
+        await DataChanged.InvokeAsync(Data);
+        await DestinationGridDataChanged.InvokeAsync(DestinationGridData);
+        Key = Guid.NewGuid();
+        DestinationGridKey = Guid.NewGuid();
+        await DestinationGridKeyChanged.InvokeAsync(DestinationGridKey);
+    }
+
+    async Task RowDrop(GridRowDropEventArgs<TItem> args)
+    {
+        var argsItems = args.Items;
+        var destinationGrid = args.DestinationGrid;
+        var destinationItem = args.DestinationItem;
+        var destinationIndex = 0;
+        var destinationData = destinationGrid == Ref ? Data : DestinationGridData;
+
+        foreach (var item in args.Items)
+        {
+            Data.Remove(item);
+        }
+
+        if (destinationItem != null)
+        {
+            destinationIndex = destinationData.IndexOf(destinationItem);
+            if (args.DropPosition == GridRowDropPosition.After)
+            {
+                destinationIndex += 1;
+            }
+        }
+
+        if (destinationIndex < 0)
+        {
+            destinationIndex = 0;
+        }
+
+        destinationData.InsertRange(destinationIndex, argsItems);
+        await DataChanged.InvokeAsync(Data);
+        await DestinationGridDataChanged.InvokeAsync(DestinationGridData);
+    }
+
+    async Task Add(GridCommandEventArgs args)
+    {
+        // on Add click (has no an actual args)
+        await SetEditMode();
+    }
+
+    async Task Create(GridCommandEventArgs args)
+    {
+        // on Save click for new items
+        SelectedItem = (TItem)args.Item;
+        Data.Add(SelectedItem);
+        await DataChanged.InvokeAsync(Data);
+        inEditMode = false;
+    }
+
+    async Task Edit(GridCommandEventArgs args)
+    {
+        // on Edit click for existing items
+        await SetEditMode();
+        var argsItem = (TItem)args.Item;
+        SelectedItem = argsItem;
+        var rowIndex = Data.IndexOf(argsItem);
+        SelectedItem.RowIndex = rowIndex;
+    }
+
+    async Task Update(GridCommandEventArgs args)
+    {
+        // on Save click for updated items
+        var argsItem = (TItem)args.Item;
+        if (SelectedItem.RowIndex > -1)
+        {
+            Data[SelectedItem.RowIndex] = argsItem;
+            await DataChanged.InvokeAsync(Data);
+        }
+
+        SelectedItem = default(TItem);
+        inEditMode = false;
+    }
+
+
+    void Cancel(GridCommandEventArgs args)
+    {
+        // on Cancel click for new and existing items
+        SelectedItem = default(TItem);
+        inEditMode = false;
+    }
+
+    async Task DeleteRow(TItem item)
+    {
+        //var rowIndex = Data.FindIndex(e => e == item);
+
+        deletedItems.Add(item);
+        Data.Remove(item);
+        SelectedItems = new List<TItem>();
+        await SelectedItemsChanged.InvokeAsync(SelectedItems);
+        await DataChanged.InvokeAsync(Data);
+        Key = Guid.NewGuid();
+    }
+
+    async Task DeleteSelectedItems(IEnumerable<TItem> itemList)
+    {
+        var count = itemList.Count();
+        var isConfirmed = await Dialogs.ConfirmAsync($"Are you sure you want to delete {count} record(s)?", "Delete!");
+
+        if (isConfirmed)
+        {
+            foreach (var item in itemList)
+            {
+                //var rowIndex = Data.FindIndex(e => e == item);
+                deletedItems.Add(item);
+                Data.Remove(item);
+            }
+            SelectedItems = new List<TItem>();
+            await SelectedItemsChanged.InvokeAsync(SelectedItems);
+            await DataChanged.InvokeAsync(Data);
+            Key = Guid.NewGuid();
+        }
+    }
+
+    async Task DeleteFromContextMenu(TItem item)
+    {
+        //var rowIndex = Data.FindIndex(e => e == item);
+        var isConfirmed = await Dialogs.ConfirmAsync($"Are you sure you want to delete a record?", "Delete!");
+
+        if (isConfirmed)
+        {
+            deletedItems.Add(item);
+            Data.Remove(item);
+            Key = Guid.NewGuid();
+            SelectedItems = new List<TItem>();
+            await SelectedItemsChanged.InvokeAsync(SelectedItems);
+            await DataChanged.InvokeAsync(Data);
+        }
+        else
+        {
+            SelectedItem = default(TItem);
+        }
+    }
+
+    // default CRUD functions - end
+
+    // -----------------------
+
+    // component functions - start
+
+    async Task OnRowContextMenu(GridRowClickEventArgs args)
+    {
+        if (!inEditMode)
+        {
+            var argsItem = (TItem)args.Item;
+            SelectedItem = argsItem;
+            var rowIndex = Data.IndexOf(argsItem);
+            SelectedItem.RowIndex = rowIndex;
+            if (args.EventArgs is MouseEventArgs mouseEventArgs)
+            {
+                await contextMenuRef.ShowAsync(mouseEventArgs.ClientX, mouseEventArgs.ClientY);
+            }
+        }
+    }
+
+    async Task ContextMenuClickHandler(ContextMenuItem contextMenuItem)
+    {
+        if (contextMenuItem.Action != null)
+        {
+            contextMenuItem.Action.Invoke();
+        }
+        else
+        {
+            switch (contextMenuItem.CommandName)
+            {
+                case "GoToDetails":
+                    //
+                    break;
+                case "BeginEdit":
+                    await BeginEdit(SelectedItem);
+                    break;
+                case "BeginDelete":
+                    await OnDeleteFromContextMenuHandler(new GridCommandEventArgs() { Item = SelectedItem });
+                    break;
+                case "All":
+                    pageSize = Data.Count();
+                    break;
+                case "1":
+                    pageSize = 1;
+                    break;
+                case "10":
+                    pageSize = 10;
+                    break;
+                case "20":
+                    pageSize = 20;
+                    break;
+                case "50":
+                    pageSize = 50;
+                    break;
+                case "100":
+                    pageSize = 100;
+                    break;
+                case "1000":
+                    pageSize = 1000;
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    async Task BeginEdit(TItem selectedItem)
+    {
+        await SetEditMode();
+        var currState = Ref.GetState();
+        currState.InsertedItem = default(TItem);
+        TItem itemToEdit = GetInstanceClone(selectedItem);
+        currState.OriginalEditItem = selectedItem;
+        currState.EditItem = itemToEdit;
+        await Ref.SetState(currState);
+    }
+
+    async Task SetEditMode()
+    {
+        inEditMode = true;
+        SelectedItems = new List<TItem>();
+        await SelectedItemsChanged.InvokeAsync(SelectedItems);
+    }
+
+    TItem GetInstanceClone(TItem originalItem)
+    {
+        TItem newItem = new();
+        var properties = typeof(TItem).GetProperties();
+        foreach (var property in properties)
+        {
+            property.SetValue(newItem, property.GetValue(originalItem));
+        }
+        return newItem;
+    }
+
+    void OnMobileViewChanged(bool mobileView)
+    {
+        if (mobileView)
+        {
+            showCheckBox = false;
+            showRowButtons = false;
+        }
+        else
+        {
+            showCheckBox = true;
+            showRowButtons = true;
+        }
+    }
+
+    void OnSearchInput(ChangeEventArgs args)
+    {
+        searchString = args.Value.ToString();
+
+        if (!string.IsNullOrEmpty(searchString))
+        {
+            Data = originalData.Where(e => SearchFields.Any(p => e.GetType().GetProperty(p).GetValue(e).ToString().ToLower().Contains(searchString.ToLower()))).ToList();
+        }
+        else
+        {
+            Data = originalData?.ToList();
+        }
+    }
+
+    void OnKeyPressed(KeyboardEventArgs args)
+    {
+        var pressedKey = args.Key;
+        if (pressedKey == "Escape")
+        {
+            OnSearchClear();
+        }
+    }
+
+    void OnSearchClear()
+    {
+        searchString = null;
+        if (originalData != null && originalData.Any())
+        {
+            Data = originalData.ToList();
+        }
+    }
+
+    async Task OnDataChangedHandler()
+    {
+        await DataChanged.InvokeAsync(Data);
+    }
+
+
+    // component functions - start
+
+    public class ContextMenuItem
+    {
+        public string Text { get; set; }
+        public string Icon { get; set; }
+        public Action Action { get; set; }
+        public string CommandName { get; set; }
+        public bool Disabled { get; set; }
+        public IEnumerable<ContextMenuItem> Items { get; set; }
+    }
+}
+
+<style>
+    .customsearch .k-input.k-focus {
+        box-shadow: none;
+    }
+
+    .k-pager-info, .k-pager-sizes {
+        white-space: nowrap !important;
+    }
+</style>

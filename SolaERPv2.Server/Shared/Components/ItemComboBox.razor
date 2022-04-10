@@ -1,0 +1,172 @@
+﻿@typeparam TItem where TItem : IBaseModel, new()
+@typeparam TValue
+
+
+<TelerikComboBox Data="@Data"
+                 @ref="@Ref"
+                 ValueField="@UniqueField"
+                 TextField="@TextField"
+                 Value="@Value"
+                 ValueChanged="@ValueChangedHandler"
+                 ValueExpression="@( () => Value )"
+                 OnChange="@OnChangeHandler"
+                 Enabled="@Enabled"
+                 Width="@Width"
+                 Id="@Id"
+                 Class="@Class"
+                 ScrollMode="@ScrollMode"
+                 PageSize="@PageSize"
+                 Placeholder="Select ..."
+                 ClearButton="@ClearButton"
+                 Filterable="true"
+                 FilterOperator="StringFilterOperator.Contains"
+                 TValue="TValue"
+                 TItem="TItem"
+                 OnRead="FilterCombo">
+    <ComboBoxSettings>
+        <ComboBoxPopupSettings Width="@PopupWidth" MinWidth="@PopupMinWidth" MaxWidth="@PopupMaxWidth" Height="@PopupHeight" MinHeight="@PopupMinHeight" MaxHeight="@PopupMaxHeight" />
+    </ComboBoxSettings>
+    <HeaderTemplate>
+        @if (ShowHeader)
+        {
+            var headerFields = HeaderNames == null ? SearchFields : HeaderNames;
+            <div class="combo-table combo-header">
+                @foreach (var item in headerFields)
+                {
+                    <div class="combo-column">@(item)</div>
+                }
+            </div>
+        }
+    </HeaderTemplate>
+    <ItemTemplate Context="context">
+        @{
+            var columns = ColumnNames != null ? ColumnNames : SearchFields;
+            <div class="combo-table combo-items">
+                @foreach (var item in columns)
+                {
+                    <div class="combo-column">@(typeof(TItem).GetProperty(item).GetValue(context))</div>
+                }
+            </div>
+        }
+    </ItemTemplate>
+    <FooterTemplate>
+        @if (ShowFooter)
+        {
+            <div class="combo-footer">Count: @Data.Count()</div>
+        }
+    </FooterTemplate>
+</TelerikComboBox>
+
+
+
+@code {
+    [Parameter] public IEnumerable<TItem> Data { get; set; } = new List<TItem>();
+    [Parameter] public IEnumerable<string> SearchFields { get; set; } = new List<string> { "RowIndex" };
+    [Parameter] public IEnumerable<string> ColumnNames { get; set; }
+    [Parameter] public string UniqueField { get; set; }
+    [Parameter] public string TextField { get; set; }
+
+    [Parameter] public TelerikComboBox<TItem, TValue> Ref { get; set; } = new();
+
+    [Parameter] public TItem Item { get; set; }
+    [Parameter] public EventCallback<TItem> ItemChanged { get; set; }
+
+    [Parameter] public EventCallback<TValue> OnChange { get; set; }
+
+    [Parameter] public IEnumerable<string> HeaderNames { get; set; }
+    [Parameter] public string Width { get; set; } = "460px";
+    [Parameter] public string PopupWidth { get; set; }
+    [Parameter] public string PopupMinWidth { get; set; }
+    [Parameter] public string PopupMaxWidth { get; set; }
+    [Parameter] public string PopupHeight { get; set; } = "auto";
+    [Parameter] public string PopupMinHeight { get; set; } = "150px";
+    [Parameter] public string PopupMaxHeight { get; set; } = "400px";
+    [Parameter] public bool ClearButton { get; set; } = false;
+    [Parameter] public bool Enabled { get; set; } = true;
+    [Parameter] public string Id { get; set; } = "";
+    [Parameter] public string Class { get; set; } = "";
+    [Parameter] public bool ShowHeader { get; set; } = true;
+    [Parameter] public bool ShowFooter { get; set; } = true;
+    [Parameter] public DropDownScrollMode ScrollMode { get; set; } = DropDownScrollMode.Scrollable;
+    [Parameter] public int PageSize { get; set; } = 50;
+
+    protected override void OnParametersSet()
+    {
+        Ref.Rebind();
+        Value = (TValue)(typeof(TItem).GetProperty(UniqueField).GetValue(Item));
+    }
+
+    async Task ItemChangedHandler(TItem item)
+    {
+        Item = item;
+        await ItemChanged.InvokeAsync(Item);
+    }
+
+    TValue Value;
+    async Task ValueChangedHandler(TValue value)
+    {
+        Value = value;
+        var itemFromValue = Data.FirstOrDefault(e => ((TValue)typeof(TItem).GetProperty(UniqueField).GetValue(e)).Equals(value));
+        var item = itemFromValue == null ? new TItem() : itemFromValue;
+        await ItemChangedHandler(item);
+    }
+
+    async Task OnChangeHandler(object value)
+    {
+        await OnChange.InvokeAsync((TValue)value);
+    }
+
+    void FilterCombo(ComboBoxReadEventArgs args)
+    {
+        var argsFilter = args.Request.Filters;
+        FilterDescriptor filter = (FilterDescriptor)argsFilter.FirstOrDefault();
+        var searchString = (filter != null ? filter.Value.ToString().ToLower() : "");
+
+        if (argsFilter.Count() > 0)
+        {
+            args.Data = Data.Where(e => SearchFields.Any(p => e.GetType().GetProperty(p).GetValue(e).ToString().ToLower().Contains(searchString.ToLower()))).ToList();
+        }
+        else
+        {
+            args.Data = Data;
+        }
+    }
+}
+
+<style>
+    .combo-table {
+        display: flex;
+        flex-wrap: nowrap;
+        width: 100%;
+    }
+
+    .combo-header {
+        background: var(--mud-palette-header-background);
+        font-weight: 600;
+    }
+
+    .combo-items {
+    }
+
+    .combo-column {
+        width: @($"{100 / (ColumnNames != null ? ColumnNames.Count() : SearchFields.Count())}%");
+        padding: 8px 4px;
+        margin-left: 4px;
+        margin-right: 4px;
+        overflow: hidden;
+        border-left: 1px solid rgba(0,0,0,.08);
+    }
+
+    .combo-footer {
+        padding: 8px;
+        background: var(--mud-palette-header-background);
+    }
+
+    .combo-column:first-child {
+        border-left-width: 0;
+    }
+
+    .k-list-md .k-list-item, .k-list-md .k-list-optionlabel {
+        padding: 0;
+    }
+</style>

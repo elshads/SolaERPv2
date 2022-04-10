@@ -1,0 +1,71 @@
+﻿@inject ThemeService ThemeService
+
+<MudAppBar Color="Color.Primary" Fixed="false">
+    <MudIconButton OnClick="@OpenHandler" Icon="@Icons.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" />
+    <a class="brand-wrapper" href="/">
+        <span class="brand-name1">Sola</span>
+        <span class="brand-name2">ERP</span>
+    </a>
+    <MudSpacer />
+    <MudTooltip Text="Change theme" Duration="500">
+        <MudToggleIconButton Icon="@Icons.Filled.DarkMode" Color="@Color.Inherit"
+                             ToggledIcon="@Icons.Filled.LightMode" ToggledColor="@Color.Inherit" Toggled="@(SessionData.CurrentUser?.Theme == "dark")" ToggledChanged="@ChangeTheme" />
+    </MudTooltip>
+    <form method="post" action="Identity/Account/Logout">
+        <MudTooltip Text="Log out" Duration="500">
+            <MudIconButton Icon="@Icons.Filled.Logout" Color="Color.Inherit" ButtonType="MudBlazor.ButtonType.Submit"></MudIconButton>
+        </MudTooltip>
+    </form>
+</MudAppBar>
+
+@code {
+    [CascadingParameter] public AppState AppState { get; set; }
+    [Parameter] public bool Open { get; set; }
+    [Parameter] public EventCallback<bool> OpenChanged { get; set; }
+
+
+    async Task OpenHandler()
+    {
+        Open = !Open;
+        await OpenChanged.InvokeAsync(Open);
+    }
+
+    async Task ChangeTheme(bool toggle)
+    {
+        SessionData.CurrentUser.Theme = SessionData.CurrentUser?.Theme == "light" ? "dark" : "light";
+        var result = await ThemeService.UpdateUserTheme(SessionData.CurrentUser.Theme);
+        if (result.UpdatedResultMessage == null)
+        {
+            AppState.ShowAlert($"{SessionData.CurrentUser.Theme} theme is on", Severity.Success);
+        }
+        else
+        {
+            AppState.ShowAlert(result.UpdatedResultMessage, Severity.Error);
+        }
+        AppState.Refresh();
+    }
+}
+
+<style>
+    .brand-wrapper {
+        font-size: 1rem;
+        padding-left: 10px;
+        padding-right: 10px;
+        text-decoration: none;
+        color: inherit;
+    }
+
+        .brand-wrapper:hover {
+            color: inherit;
+        }
+
+            .brand-wrapper:hover .brand-name1 {
+                margin-left: -2px;
+                transition: all .2s ease;
+            }
+
+            .brand-wrapper:hover .brand-name2 {
+                margin-left: 4px;
+                transition: all .2s ease;
+            }
+</style>

@@ -1,0 +1,74 @@
+﻿@page "/pagetemplate"
+@implements IDisposable
+@using Model = BaseModel
+
+<PageTitle>Page Template</PageTitle>
+
+<TelerikTabStrip @bind-ActiveTabIndex="@activeTabIndex">
+    <TabStripTab Title="Users">
+        <HeaderTemplate>
+            <MudIcon Icon="@Icons.Filled.AccountCircle" />
+            <span class="k-pl-2">
+                <div>Users</div>
+            </span>
+        </HeaderTemplate>
+        <Content>
+            <div>Content</div>
+        </Content>
+    </TabStripTab>
+</TelerikTabStrip>
+
+@code {
+    int activeTabIndex = 0;
+
+    [CascadingParameter] public AppState AppState { get; set; }
+    [CascadingParameter] public DialogFactory Dialogs { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        SetQueryVariables();
+        OnAppStateInitialized();
+        await LoadData();
+    }
+
+    void OnAppStateInitialized()
+    {
+        AppState.SetDefaults();
+        AppState.OnReloadClick += ReloadClick;
+    }
+
+    void IDisposable.Dispose()
+    {
+        AppState.OnReloadClick -= ReloadClick;
+    }
+
+    void SetQueryVariables()
+    {
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+
+        var _modelId = 0;
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("id", out var _id))
+        {
+            _modelId = Convert.ToInt32(_id);
+        }
+
+        var _modelCode = "";
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("code", out var _code))
+        {
+            _modelCode = _code;
+        }
+    }
+
+    async Task LoadData()
+    {
+        AppState.Loading = true;
+        // do something
+        AppState.Loading = false;
+    }
+
+    async void ReloadClick()
+    {
+        await LoadData();
+    }
+
+}

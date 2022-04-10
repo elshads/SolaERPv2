@@ -1,0 +1,490 @@
+﻿@page "/payments/card"
+
+@implements IDisposable
+@inject PaymentDocumentService PaymentDocumentService
+@inject ApproveStageService ApproveStageService
+@using Model = PaymentDocumentDetail
+
+
+<PageTitle>Payment Document</PageTitle>
+
+<TelerikGridLayout RowSpacing="8px" ColumnSpacing="8px" VerticalAlign="GridLayoutVerticalAlign.Top">
+    <GridLayoutColumns>
+        <GridLayoutColumn Width="140px" />
+        <GridLayoutColumn Width="300px" />
+        <GridLayoutColumn />
+    </GridLayoutColumns>
+    <GridLayoutItems>
+        <GridLayoutItem Row="1" Column="1">
+            <label class="k-input-label pb-1" for="attachment-type">Payment:</label>
+            <ItemRadioGroup Id="attachment-type"
+                            Data="@attachmentTypeList"
+                            Item="@selectedAttachmentType"
+                            ItemChanged="@AttachmentTypeChanged"
+                            UniqueField="AttachmentTypeId"
+                            TextField="AttachmentTypeName"
+                            TItem="AttachmentType"
+                            TValue="int"
+                            Layout="RadioGroupLayout.Vertical">
+            </ItemRadioGroup>
+        </GridLayoutItem>
+        <GridLayoutItem Row="1" Column="2">
+            <div class="attachment-subtype">
+                <TelerikGrid Data="@attachmentSubTypeList"
+                             Height="205px"
+                             Width="260px"
+                             Sortable="false"
+                             Groupable="false"
+                             Resizable="false"
+                             Reorderable="false"
+                             SelectionMode="GridSelectionMode.None">
+                    <GridColumns>
+                        <GridColumn Field="@(nameof(AttachmentSubType.AttachmentSubTypeId))" Title="Id" Visible="false" />
+                        <GridColumn Field="@(nameof(AttachmentSubType.HasItems))" Title="Files" Width="55px">
+                            <Template>
+                                @{
+                                    var rowContext = context as AttachmentSubType;
+                                    var hasItems = paymentDocumentMain?.AttachmentList?.Any(e => e.AttachmentSubTypeId == rowContext.AttachmentSubTypeId);
+                                    <TelerikCheckBox Value="@hasItems" Enabled="false"></TelerikCheckBox>
+                                }
+                            </Template>
+                        </GridColumn>
+                        <GridColumn Field="@(nameof(AttachmentSubType.AttachmentSubTypeName))" Title="Type">
+                            <Template>
+                                @{
+                                    var rowContext = context as AttachmentSubType;
+                                    <LinkText OnClick="@(() => AttachmentSubTypeClick(rowContext))">@(rowContext.AttachmentSubTypeName)</LinkText>
+                                }
+                            </Template>
+                        </GridColumn>
+                    </GridColumns>
+                </TelerikGrid>
+            </div>
+        </GridLayoutItem>
+        <GridLayoutItem Row="@(!AppState.MobileView ? 1 : 2)" Column="@(!AppState.MobileView ? 3 : 1)" ColumnSpan="@(!AppState.MobileView ? 1 : 3)">
+            <div class="k-pb-3">
+                <label class="k-input-label k-pb-1" for="priority_radio">Priority:</label>
+                <ItemRadioGroup Id="priority_radio"
+                                Data="@paymentDocumentPriorityList"
+                                Item="@selectedPaymentDocumentPriority"
+                                ItemChanged="@PaymentDocumentPriorityChanged"
+                                UniqueField="PaymentDocumentPriorityId"
+                                TextField="PaymentDocumentPriorityName"
+                                TItem="PaymentDocumentPriority"
+                                TValue="int"
+                                Layout="RadioGroupLayout.Horizontal">
+                </ItemRadioGroup>
+            </div>
+            <div class="k-pb-3">
+                <label class="k-input-label k-pb-1" for="reference">Reference:</label>
+                <TelerikTextBox Id="reference" @bind-Value="@paymentDocumentMain.Reference" Title="Reference" PlaceHolder="Type here..."></TelerikTextBox>
+            </div>
+            <div>
+                <label class="k-input-label k-pb-1" for="comment">Comment:</label>
+                <TelerikTextArea Id="comment" @bind-Value="@paymentDocumentMain.Comment" Title="Comment" PlaceHolder="Type here..."></TelerikTextArea>
+            </div>
+        </GridLayoutItem>
+    </GridLayoutItems>
+</TelerikGridLayout>
+
+<div class="k-mt-2">
+    <TelerikGridLayout RowSpacing="8px" ColumnSpacing="8px">
+        <GridLayoutItems>
+            <GridLayoutItem Row="1" Column="1">
+                <DataGrid Title="Summary"
+                          Data="@poSummaryList"
+                          ShowContextMenu="false"
+                          ShowToolbar="false"
+                          Pageable="false"
+                          ShowCheckBoxColumn="false"
+                          CheckBoxOnlySelection="false"
+                          Width="@(AppState.MobileView ? "calc(100vw - 40px)" : AppState.OpenDrawer ? "calc((100vw - 288px) / 2)" : "calc((100vw - 112px) / 2)")"
+                          Height="267px"
+                          SearchFields="@(new List<string> {"PONum"})">
+                    <GridColumn Field="@(nameof(Model.PONum))" Title="PO Num" Locked="true" Width="110px" />
+                    <GridColumn Field="@(nameof(Model.POAmount))" Title="PO Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="120px" />
+                    <GridColumn Field="@(nameof(Model.PO_VAT))" Title="PO VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="100px" />
+                    <GridColumn Field="@(nameof(Model.AdvanceAmount))" Title="Advance Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="157px" />
+                    <GridColumn Field="@(nameof(Model.AdvanceVAT))" Title="Advance VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="133px" />
+                    <GridColumn Field="@(nameof(Model.PaidPaymentDocumentAmount))" Title="Paid Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="130px" />
+                    <GridColumn Field="@(nameof(Model.PaidPaymentDocumentVAT))" Title="Paid VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="110px" />
+                    <GridColumn Field="@(nameof(Model.AmountToPay))" Title="Amount To Pay" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="145px" />
+                    <GridColumn Field="@(nameof(Model.VATToPay))" Title="VAT To Pay" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="122px" />
+                    <GridColumn Field="@(nameof(Model.RemainingAmount))" Title="Remaining Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="155px" />
+                    <GridColumn Field="@(nameof(Model.RemainingVAT))" Title="Remaining VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="145px" />
+                </DataGrid>
+            </GridLayoutItem>
+            <GridLayoutItem Row="@(!AppState.MobileView? 1 : 3)" Column="@(!AppState.MobileView? 2 : 1)">
+                <DataGrid Title="Approval stages"
+                          Data="@approveStageList"
+                          ShowContextMenu="false"
+                          ShowToolbar="false"
+                          Pageable="false"
+                          ShowCheckBoxColumn="false"
+                          CheckBoxOnlySelection="true"
+                          Width="@(AppState.MobileView ? "calc(100vw - 40px)" : AppState.OpenDrawer ? "calc((100vw - 288px) / 2)" : "calc((100vw - 112px) / 2)")"
+                          Height="267px"
+                          SearchFields="@(new List<string> {"ApproveStageDetailsName", "FullName", "ApproveStatusName", "Comment"})">
+                    <GridColumn Field="@(nameof(ApproveStage.ApproveStageDetailsName))" Title="Stage Name" Width="140px" />
+                    <GridColumn Field="@(nameof(ApproveStage.Sequence))" Title="Sequence" Width="115px" />
+                    <GridColumn Field="@(nameof(ApproveStage.FullName))" Title="Approver" Width="140px" />
+                    <GridColumn Field="@(nameof(ApproveStage.ApproveStatusName))" Title="Approve Status" Width="145px" />
+                    <GridColumn Field="@(nameof(ApproveStage.ApproveDate))" Title="Approve Date" TextAlign="ColumnTextAlign.Right" Width="135px">
+                        <Template>
+                            @{
+                                var rowContext = context as ApproveStage;
+                                <text>@(rowContext.ApproveDate > new DateTime(1, 1, 1) ? rowContext.ApproveDate.ToString("dd.MM.yyyy") : "n.a.")</text>
+                            }
+                        </Template>
+                    </GridColumn>
+                    <GridColumn Field="@(nameof(ApproveStage.Comment))" Title="Comment" Width="500px" />
+                </DataGrid>
+            </GridLayoutItem>
+            <GridLayoutItem Row="2" Column="1" ColumnSpan="@(!AppState.MobileView? 2 : 1)">
+                <DataGrid Title="Invoice lines"
+                          @bind-Data="@paymentDocumentMain.PaymentDocumentDetailList"
+                          ShowContextMenu="false"
+                          ShowToolbar="false"
+                          Pageable="false"
+                          ShowCheckBoxColumn="false"
+                          CheckBoxOnlySelection="false"
+                          Width="@(AppState.MobileView ? "calc(100vw - 40px)" : AppState.OpenDrawer ? "calc(100vw - 280px)" : "calc(100vw - 104px)")"
+                          Height="@(!AppState.MobileView ? "calc(100vh - 660px)" : "auto")"
+                          SearchFields="@(new List<string> { "PONum", "Voucher"})">
+                    <GridColumn Field="@(nameof(Model.VendorCode))" Title="Vendor Code" Width="130px" Visible="false" Editable="false" />
+                    <GridColumn Field="@(nameof(Model.VendorName))" Title="Vendor Name" Width="135px" Visible="false" Editable="false" />
+                    <GridColumn Field="@(nameof(Model.PaymentDocumentTypeName))" Title="Document Type" Width="150px" Visible="false" Editable="false" />
+                    <GridColumn Field="@(nameof(Model.PONum))" Title="PO Num" Width="110px" Locked="true" Editable="false" />
+                    <GridColumn Field="@(nameof(Model.Voucher))" Title="Voucher" Width="100px" Locked="true" Editable="false" />
+                    <GridColumn Field="@(nameof(Model.POAmount))" Title="PO Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="120px" Editable="false" />
+                    <GridColumn Field="@(nameof(Model.PO_VAT))" Title="PO VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="100px" Editable="false" />
+                    <GridColumn Field="@(nameof(Model.VoucherAmount))" Title="Voucher Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="154px" Editable="false" />
+                    <GridColumn Field="@(nameof(Model.VoucherVAT))" Title="Voucher VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="130px" Editable="false" />
+                    <GridColumn Field="@(nameof(Model.AdvanceAmount))" Title="Advance Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="157px" Editable="false" />
+                    <GridColumn Field="@(nameof(Model.AdvanceVAT))" Title="Advance VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="133px" Editable="false" />
+                    <GridColumn Field="@(nameof(Model.PaidAmount))" Title="Paid Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="130px" Editable="false" />
+                    <GridColumn Field="@(nameof(Model.PaidVAT))" Title="Paid VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="110px" Editable="false" />
+                    <GridColumn Field="@(nameof(Model.PaymentDocumentAmount))" Title="Paym. Doc. Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="177px" Editable="false" />
+                    <GridColumn Field="@(nameof(Model.PaymentDocumentVAT))" Title="Paym. Doc. VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="155px" Editable="false" />
+                    <GridColumn Field="@(nameof(Model.AmountToPay))" Title="Amount To Pay" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="145px" Editable="true" />
+                    <GridColumn Field="@(nameof(Model.VATToPay))" Title="VAT To Pay" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="122px" Editable="true" />
+                    <GridColumn Field="@(nameof(Model.TotalToPay))" Title="Total To Pay" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="130px" Editable="false" />
+                    <GridColumn Field="@(nameof(Model.IsVAT))" Title="VAT" TextAlign="ColumnTextAlign.Right" Width="75px" />
+                </DataGrid>
+            </GridLayoutItem>
+        </GridLayoutItems>
+    </TelerikGridLayout>
+</div>
+
+<TelerikDialog Visible="@showAttachmentSubType"
+               @ref="attachmentDialogRef"
+               VisibleChanged="@ShowAttachmentSubTypeChanged"
+               Title="@($"Attachments - {selectedAttachmentSubType?.AttachmentSubTypeName}")"
+               CloseOnOverlayClick="false"
+               ShowCloseButton="true">
+    <DialogContent>
+        <MudProgressLinear Color="@(fileSelectLoading ? Color.Primary : Color.Transparent)" Indeterminate="true" />
+        <TelerikFileSelect AllowedExtensions="@(SettingService.Setting.AllowedFileExtensions)"
+                           MaxFileSize="@(SettingService.Setting.MaxFileSize)"
+                           Enabled="@(!fileSelectLoading)"
+                           Multiple="true"
+                           OnSelect="@OnAttachmentSelect">
+        </TelerikFileSelect>
+        <div class="k-form-hint pb-1">
+            @if (fileSelectLoading)
+            {
+                <div class="k-text-error">File: @(currentFile.Name) Size: @(Math.Round((currentFile.Size / 1024 / 1024), 2) + (currentFile.Size > 1048575 ? "MB " : currentFile.Size > 1023 ? "KB " : "BYTES "))</div>
+                <div class="k-text-error">Do not close this window while uploading file(s)</div>
+            }
+            else
+            {
+                <div>Allowed files: @(SettingService.Setting.AllowedFileExtensions != null ? String.Join(", ", SettingService.Setting.AllowedFileExtensions) : "") up to @(SettingService.Setting.MaxFileSizeMb)MB</div>
+            }
+        </div>
+        <TelerikGrid Data="@filteredAttachmentList"
+                     Height="265px"
+                     Sortable="false"
+                     Groupable="false"
+                     Resizable="false"
+                     Reorderable="false"
+                     SelectionMode="GridSelectionMode.Multiple"
+                     OnDelete="@DeleteAttachment">
+            <GridColumns>
+                <GridColumn Field="@(nameof(Attachment.FileName))" Title="Files" Width="@(AppState.MobileView ? "360px" : "auto")" />
+                <GridCommandColumn ShowColumnMenu="false" Reorderable="false" Visible="true" Width="90px">
+                    <GridCommandButton Icon="download" ShowInEdit="false" Enabled="@(!fileSelectLoading)" Title="Download" OnClick="@(() => DownloadAttachment(context as Attachment))" />
+                    <GridCommandButton Command="Delete" Icon="delete" ShowInEdit="false" Enabled="@(!fileSelectLoading)" Title="Delete" />
+                </GridCommandColumn>
+            </GridColumns>
+        </TelerikGrid>
+    </DialogContent>
+    <DialogButtons>
+        <TelerikButton OnClick="@(() => ShowAttachmentSubTypeClosed())">Close</TelerikButton>
+    </DialogButtons>
+</TelerikDialog>
+
+@code {
+
+    [CascadingParameter] AppState AppState { get; set; }
+
+    TelerikDialog attachmentDialogRef;
+
+    int modelId = 0;
+    PaymentDocumentMain paymentDocumentMain = new() { PaymentDocumentDetailList = new(), AttachmentList = new() { new Attachment { AttachmentSubTypeId = 2, FileName = "InvoiceA_20220402 SomeLongDescription here for test purposes.pdf" }, new Attachment { AttachmentSubTypeId = 2, FileName = "InvoiceB_20220402.pdf" }, new Attachment { AttachmentSubTypeId = 2, FileName = "InvoiceC_20220402.pdf" }, new Attachment { AttachmentSubTypeId = 2, FileName = "InvoiceD_20220402.pdf" }, new Attachment { AttachmentSubTypeId = 2, FileName = "InvoiceE_20220402.pdf" }, new Attachment { AttachmentSubTypeId = 2, FileName = "InvoiceF_20220402.pdf" }, new Attachment { AttachmentSubTypeId = 2, FileName = "InvoiceG_20220402.pdf" }, new Attachment { AttachmentSubTypeId = 6, FileName = "InvoiceH_20220402.pdf" } } };
+    List<Attachment> filteredAttachmentList = new();
+    PaymentDocumentDetail selectedPaymentDocumentDetail = new();
+
+    IEnumerable<PaymentDocumentPriority> paymentDocumentPriorityList = PaymentDocumentPriority.PaymentDocumentPriorityList;
+    PaymentDocumentPriority selectedPaymentDocumentPriority = PaymentDocumentPriority.PaymentDocumentPriorityList.FirstOrDefault(e => e.PaymentDocumentPriorityId == 2);
+
+    IEnumerable<AttachmentType> attachmentTypeList = AttachmentType.AttachmentTypeList;
+    AttachmentType selectedAttachmentType = AttachmentType.AttachmentTypeList.FirstOrDefault();
+
+    List<PaymentDocumentDetail> poSummaryList = new();
+
+    List<ApproveStage> approveStageList = new();
+
+    List<AttachmentSubType> attachmentSubTypeList = AttachmentSubType.AttachmentSubTypeList.Where(e => AttachmentType.AttachmentTypeList.FirstOrDefault().AttachmentSubTypeList.Select(s => s.AttachmentSubTypeId).Contains(e.AttachmentSubTypeId)).ToList();
+    AttachmentSubType selectedAttachmentSubType = new();
+    List<int> deletedAttachmentIdList = new();
+
+    bool showAttachmentSubType = false;
+    bool fileSelectLoading = false;
+
+    (double Size, string Name) currentFile = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        SetQueryVariables();
+        OnAppStateInitialized();
+        await LoadData();
+    }
+
+    void SetQueryVariables()
+    {
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("id", out var _id))
+        {
+            modelId = Convert.ToInt32(_id);
+        }
+    }
+
+    void OnAppStateInitialized()
+    {
+        AppState.SetDefaults();
+
+        AppState.SaveButtonVisible = true;
+        AppState.OnSaveClick += Save;
+        AppState.OnReloadClick += ReloadClick;
+    }
+
+    void IDisposable.Dispose()
+    {
+        AppState.OnSaveClick -= Save;
+        AppState.OnReloadClick -= ReloadClick;
+    }
+
+    async Task LoadData()
+    {
+        AppState.Loading = true;
+
+        await GetPaymentDocument(modelId);
+        SessionData.PaymentDocumentMain = new();
+        await GetApproveStageList();
+
+        AppState.Loading = false;
+    }
+
+    async void ReloadClick()
+    {
+        //await LoadData();
+    }
+
+    async Task GetPaymentDocument(int _modelId)
+    {
+        if (_modelId > 0)
+        {
+            try
+            {
+                paymentDocumentMain = await PaymentDocumentService.GetById(_modelId);
+            }
+            catch (Exception e)
+            {
+                AppState.ShowAlert(e.Message, Severity.Error);
+            }
+        }
+        paymentDocumentMain = SessionData.PaymentDocumentMain != null && SessionData.PaymentDocumentMain.PaymentDocumentDetailList.Any() ? SessionData.PaymentDocumentMain : modelId > 0 ? paymentDocumentMain : new();
+        selectedPaymentDocumentPriority = paymentDocumentMain.PaymentDocumentMainId > 0 ? PaymentDocumentPriority.PaymentDocumentPriorityList.FirstOrDefault(e => e.PaymentDocumentPriorityId == paymentDocumentMain.PaymentDocumentPriorityId) : PaymentDocumentPriority.PaymentDocumentPriorityList.FirstOrDefault(e => e.PaymentDocumentPriorityId == 2);
+        var attachmentTypeId = paymentDocumentMain.AttachmentList.Any() ? paymentDocumentMain.AttachmentList.FirstOrDefault().AttachmentTypeId : 0;
+        selectedAttachmentType = paymentDocumentMain.PaymentDocumentMainId > 0 && attachmentTypeId > 0 ? AttachmentType.AttachmentTypeList.FirstOrDefault(e => e.AttachmentTypeId == attachmentTypeId) : AttachmentType.AttachmentTypeList.FirstOrDefault();
+        if (paymentDocumentMain.PaymentDocumentDetailList.Any())
+        {
+            poSummaryList = paymentDocumentMain.PaymentDocumentDetailList.OrderBy(e => e.PONum).GroupBy(g => g.PONum).Select(s => new Model
+                {
+                    PONum = s.Key,
+                    POAmount = s.FirstOrDefault().POAmount,
+                    PO_VAT = s.FirstOrDefault().PO_VAT,
+                    AdvanceAmount = s.FirstOrDefault().AdvanceAmount,
+                    AdvanceVAT = s.FirstOrDefault().AdvanceVAT,
+                    PaidPaymentDocumentAmount = s.Sum(e => e.PaidAmount + e.PaymentDocumentAmount),
+                    PaidPaymentDocumentVAT = s.Sum(e => e.PaidVAT + e.PaymentDocumentVAT),
+                    AmountToPay = s.Sum(e => e.AmountToPay),
+                    VATToPay = s.Sum(e => e.VATToPay),
+                    RemainingAmount = s.Sum(e => e.POAmount - e.AdvanceAmount - e.PaidAmount - e.PaymentDocumentAmount - e.AmountToPay),
+                    RemainingVAT = s.Sum(e => e.PO_VAT - e.AdvanceVAT - e.PaidVAT - e.PaymentDocumentVAT - e.VATToPay),
+                }).ToList();
+        }
+    }
+
+    async Task GetApproveStageList()
+    {
+        var _approveStageList = await ApproveStageService.GetAllAsync(paymentDocumentMain.PaymentDocumentMainId);
+        approveStageList = _approveStageList.ToList();
+    }
+
+    void PaymentDocumentPriorityChanged(PaymentDocumentPriority paymentDocumentPriority)
+    {
+        selectedPaymentDocumentPriority = paymentDocumentPriority;
+        paymentDocumentMain.PaymentDocumentPriorityId = selectedPaymentDocumentPriority.PaymentDocumentPriorityId;
+    }
+
+    void AttachmentTypeChanged(AttachmentType attachmentType)
+    {
+        selectedAttachmentType = attachmentType;
+        paymentDocumentMain.AttachmentList.ForEach(e => e.AttachmentTypeId = selectedAttachmentType.AttachmentTypeId);
+        attachmentSubTypeList = AttachmentSubType.AttachmentSubTypeList.Where(e => selectedAttachmentType.AttachmentSubTypeList.Select(s => s.AttachmentSubTypeId).Contains(e.AttachmentSubTypeId)).ToList();
+    }
+
+    void AttachmentSubTypeClick(AttachmentSubType attachmentSubType)
+    {
+        selectedAttachmentSubType = attachmentSubType;
+        FilterAttachmentList(selectedAttachmentSubType.AttachmentSubTypeId);
+        showAttachmentSubType = true;
+    }
+
+    void FilterAttachmentList(int attachmentSubTypeId)
+    {
+        filteredAttachmentList = paymentDocumentMain.AttachmentList.Where(e => e.AttachmentSubTypeId == attachmentSubTypeId).ToList();
+    }
+
+    void ShowAttachmentSubTypeChanged(bool visible)
+    {
+        showAttachmentSubType = visible;
+        if (!visible)
+        {
+            selectedAttachmentSubType = new();
+            fileSelectLoading = false;
+        }
+    }
+
+    void ShowAttachmentSubTypeClosed()
+    {
+        selectedAttachmentSubType = new();
+        showAttachmentSubType = false;
+        fileSelectLoading = false;
+    }
+
+    async Task OnAttachmentSelect(FileSelectEventArgs args)
+    {
+        fileSelectLoading = true;
+        attachmentDialogRef.Refresh();
+
+        foreach (var file in args.Files)
+        {
+            if (!file.InvalidExtension && !file.InvalidMaxFileSize)
+            {
+                currentFile = new();
+                currentFile.Size = file.Size;
+                currentFile.Name = file.Name;
+                attachmentDialogRef.Refresh();
+                await using MemoryStream ms = new();
+                await file.Stream.CopyToAsync(ms);
+                var fileData = ms.ToArray();
+                var attachment = new Attachment
+                    {
+                        AttachmentId = 0,
+                        AttachmentTypeId = selectedAttachmentType.AttachmentTypeId,
+                        AttachmentSubTypeId = selectedAttachmentSubType.AttachmentSubTypeId,
+                        Reference = paymentDocumentMain.Reference,
+                        ExtensionType = file.Extension,
+                        FileName = file.Name,
+                        FileData = fileData
+                    };
+                paymentDocumentMain.AttachmentList.Add(attachment);
+            }
+            else if (file.InvalidExtension && file.InvalidMaxFileSize)
+            {
+                AppState.ShowAlert("File exceeds allowed size | Selected file type not allowed", Severity.Error);
+            }
+            else if (file.InvalidExtension)
+            {
+                AppState.ShowAlert("Selected file type not allowed", Severity.Error);
+            }
+            else if (file.InvalidMaxFileSize)
+            {
+                AppState.ShowAlert("File exceeds allowed size", Severity.Error);
+            }
+        }
+        FilterAttachmentList(selectedAttachmentSubType.AttachmentSubTypeId);
+
+        fileSelectLoading = false;
+        attachmentDialogRef.Refresh();
+    }
+
+    void DeleteAttachment(GridCommandEventArgs args)
+    {
+        var argsItem = args.Item as Attachment;
+        var index = paymentDocumentMain.AttachmentList.IndexOf(argsItem);
+        paymentDocumentMain.AttachmentList.RemoveAt(index);
+        deletedAttachmentIdList.Add(argsItem.AttachmentId);
+        FilterAttachmentList(selectedAttachmentSubType.AttachmentSubTypeId);
+        attachmentDialogRef.Refresh();
+    }
+
+    async void Save()
+    {
+        AppState.Loading = true;
+
+        var validated = Validate();
+
+        if (validated)
+        {
+            var result = await PaymentDocumentService.Save(paymentDocumentMain);
+            if (result.InsertedResultMessage == null)
+            {
+                var id = result.ReturnId > 0 ? result.ReturnId : modelId;
+                NavigationManager.NavigateTo($"/payments/card?id={id}");
+                await GetPaymentDocument(id);
+                AppState.ShowAlert("Successfully saved", Severity.Success);
+            }
+            else
+            {
+                AppState.ShowAlert(result.InsertedResultMessage, Severity.Error);
+            }
+        }
+        AppState.Loading = false;
+    }
+
+    bool Validate()
+    {
+        if (string.IsNullOrEmpty(paymentDocumentMain.Reference))
+        {
+            AppState.ShowAlert("Enter document Reference", Severity.Error);
+            return false;
+        }
+        return true;
+    }
+
+    async Task DownloadAttachment(Attachment attachment)
+    {
+        var file = attachment.AttachmentId > 0 ? await AttachmentService.GetByIdAsync(attachment.AttachmentId) : attachment;
+        await JSRuntime.InvokeVoidAsync("downloadFile", file.FileName, file.FileData);
+    }
+}
+
+<style>
+    .attachment-subtype .k-grid th, .attachment-subtype .k-grid td {
+        padding: 4px 12px;
+    }
+</style>

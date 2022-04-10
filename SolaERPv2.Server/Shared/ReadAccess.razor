@@ -1,0 +1,36 @@
+﻿
+@if (readAccess)
+{
+    <div>
+        @ChildContent
+    </div>
+}
+else
+{
+    <div>
+        NoAccess
+    </div>
+}
+
+
+@code {
+    [Parameter] public RenderFragment ChildContent { get; set; }
+
+    bool readAccess = true;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await SetReadAccess();
+    }
+
+    async Task SetReadAccess()
+    {
+        var pageCode = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        if (SessionData.CurrentUserMenuAccessList != null)
+        {
+            var _readAccess = SessionData.CurrentUserMenuAccessList.First(e => e.MenuCode == pageCode);
+            if (_readAccess != null) { readAccess = _readAccess.ReadAccess; } else { readAccess = true; }
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+}

@@ -1,0 +1,434 @@
+﻿@page "/payments/generate"
+
+@implements IDisposable
+@inject PaymentDocumentService PaymentDocumentService
+@inject VendorService VendorService
+@using Model = PaymentDocumentDetail
+
+<PageTitle>Generate Payment Document</PageTitle>
+
+<TelerikGridLayout RowSpacing="8px" ColumnSpacing="8px" VerticalAlign="GridLayoutVerticalAlign.Center">
+    <GridLayoutColumns>
+        <GridLayoutColumn Width="115px" />
+        <GridLayoutColumn Width="325px" />
+        <GridLayoutColumn />
+    </GridLayoutColumns>
+    <GridLayoutItems>
+        <GridLayoutItem Row="1" Column="1">
+            <label for="bu_list">Business Unit:</label>
+        </GridLayoutItem>
+        <GridLayoutItem Row="1" Column="2">
+            <ItemDropDownList Id="bu_list"
+                              Data="@businessUnitList"
+                              Item="@selectedBusinessUnit"
+                              ItemChanged="@BusinessUnitChanged"
+                              UniqueField="BusinessUnitId"
+                              TextField="BusinessUnitCode"
+                              TValue="int"
+                              TItem="BusinessUnit"
+                              SearchFields="@(new List<string> { "BusinessUnitCode", "BusinessUnitName"})"
+                              Width="100%"
+                              PopupWidth="100%"
+                              PopupMaxWidth="500px" />
+        </GridLayoutItem>
+        <GridLayoutItem Row="@(!AppState.MobileView ? 1 : 2)" Column="@(!AppState.MobileView ? 3 : 2)">
+            <div class="font-italic">@(selectedBusinessUnit != null && selectedBusinessUnit.BusinessUnitName != null ? selectedBusinessUnit.BusinessUnitName : "")</div>
+        </GridLayoutItem>
+        <GridLayoutItem Row="@(!AppState.MobileView ? 2 : 3)" Column="1">
+            <label for="vendor_list">Vendor:</label>
+        </GridLayoutItem>
+        <GridLayoutItem Row="@(!AppState.MobileView ? 2 : 3)" Column="2">
+            <ItemComboBox Id="vendor_list"
+                          Data="@vendorList"
+                          Item="@selectedVendor"
+                          ItemChanged="@VendorChanged"
+                          UniqueField="VendorCode"
+                          TextField="VendorCode"
+                          TValue="string"
+                          TItem="Vendor"
+                          SearchFields="@(new List<string> { "VendorCode", "VendorName" })"
+                          Width="100%"
+                          PopupWidth="100%"
+                          PopupMaxWidth="500px" />
+        </GridLayoutItem>
+        <GridLayoutItem Row="@(!AppState.MobileView ? 2 : 4)" Column="@(!AppState.MobileView ? 3 : 2)">
+            <div class="font-italic">@(selectedVendor != null && selectedVendor.VendorName != null ? selectedVendor.VendorName : "")</div>
+        </GridLayoutItem>
+        <GridLayoutItem Row="@(!AppState.MobileView ? 3 : 5)" Column="1">
+            <label for="type_radio">Document Type:</label>
+        </GridLayoutItem>
+        <GridLayoutItem Row="@(!AppState.MobileView ? 3 : 5)" Column="2">
+            <ItemRadioGroup Id="type_radio"
+                            Data="@paymentDocumentTypeList"
+                            Item="@selectedPaymentDocumentType"
+                            ItemChanged="@PaymentTypeChanged"
+                            UniqueField="PaymentDocumentTypeId"
+                            TextField="PaymentDocumentTypeName"
+                            TItem="PaymentDocumentType"
+                            TValue="int"
+                            Class="k-pl-1">
+            </ItemRadioGroup>
+        </GridLayoutItem>
+    </GridLayoutItems>
+</TelerikGridLayout>
+
+
+<div class="k-mt-4">
+    <TelerikGridLayout RowSpacing="8px" ColumnSpacing="8px">
+        <GridLayoutItems>
+            <GridLayoutItem Row="1" Column="1">
+                <MudProgressLinear Color="@(vendorBalanceListLoading ? Color.Primary : Color.Transparent)" Indeterminate="true" />
+                <DataGrid Title="Vendor Balance"
+                          @bind-Data="@vendorBalanceList"
+                          @bind-SelectedItems="@selectedVendorBalanceList"
+                          ShowContextMenu="false"
+                          ShowToolbar="false"
+                          Pageable="true"
+                          ShowCheckBoxColumn="false"
+                          OnRowClick="OnVendorBalanceRowClick"
+                          Width="@(AppState.MobileView ? "calc(100vw - 40px)" : AppState.OpenDrawer ? "calc((100vw - 288px) / 2)" : "calc((100vw - 112px) / 2)")"
+                          Height="@(!AppState.MobileView ? "calc((100vh - 310px) / 2)" : "auto")"
+                          SearchFields="@(new List<string> {"VendorCode", "VendorName", "Amount", "CurrencyCode"})">
+                    <GridColumn Field="@(nameof(Model.VendorCode))" Title="Vendor Code" Width="130px" />
+                    <GridColumn Field="@(nameof(Model.VendorName))" Title="Vendor Name" Width="150px" />
+                    <GridColumn Field="@(nameof(Model.Amount))" Title="Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="105px" />
+                    <GridColumn Field="@(nameof(Model.CurrencyCode))" Title="Currency" Width="105px" FilterMenuType="FilterMenuType.CheckBoxList" />
+                </DataGrid>
+            </GridLayoutItem>
+            <GridLayoutItem Row="@(!AppState.MobileView? 1 : 3)" Column="@(!AppState.MobileView? 2 : 1)">
+                <div style="padding-top: 4px"></div>
+                <DataGrid Title="Order Balance"
+                          Data="@orderBalanceList"
+                          ShowContextMenu="false"
+                          ShowToolbar="false"
+                          Pageable="true"
+                          ShowCheckBoxColumn="false"
+                          CheckBoxOnlySelection="true"
+                          Width="@(AppState.MobileView ? "calc(100vw - 40px)" : AppState.OpenDrawer ? "calc((100vw - 288px) / 2)" : "calc((100vw - 112px) / 2)")"
+                          Height="@(!AppState.MobileView ? "calc((100vh - 310px) / 2)" : "auto")"
+                          SearchFields="@(new List<string> {"PONum"})">
+                    <GridColumn Field="@(nameof(Model.PONum))" Title="PO Num" Locked="true" Width="110px" />
+                    <GridColumn Field="@(nameof(Model.POAmount))" Title="PO Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="120px" />
+                    <GridColumn Field="@(nameof(Model.PO_VAT))" Title="PO VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="100px" />
+                    <GridColumn Field="@(nameof(Model.AdvanceAmount))" Title="Advance Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="157px" />
+                    <GridColumn Field="@(nameof(Model.AdvanceVAT))" Title="Advance VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="133px" />
+                    <GridColumn Field="@(nameof(Model.PaidPaymentDocumentAmount))" Title="Paid Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="130px" />
+                    <GridColumn Field="@(nameof(Model.PaidPaymentDocumentVAT))" Title="Paid VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="110px" />
+                    <GridColumn Field="@(nameof(Model.AmountToPay))" Title="Amount To Pay" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="145px" />
+                    <GridColumn Field="@(nameof(Model.VATToPay))" Title="VAT To Pay" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="122px" />
+                    <GridColumn Field="@(nameof(Model.RemainingAmount))" Title="Remaining Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="155px" />
+                    <GridColumn Field="@(nameof(Model.RemainingVAT))" Title="Remaining VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="145px" />
+                </DataGrid>
+            </GridLayoutItem>
+            <GridLayoutItem Row="2" Column="1" ColumnSpan="@(!AppState.MobileView? 2 : 1)">
+                <MudProgressLinear Color="@(vendorDetailsListLoading ? Color.Primary : Color.Transparent)" Indeterminate="true" />
+                <DataGrid Title="Vendor's' Order/Advance"
+                          @bind-Data="@vendorDetailsList"
+                          ShowContextMenu="false"
+                          ShowToolbar="false"
+                          Pageable="true"
+                          SelectedItems="@selectedVendorDetailsList"
+                          SelectedItemsChanged="@((IEnumerable<Model> modelList) => OrderBalanceListChanged(modelList))"
+                          CheckBoxOnlySelection="true"
+                          Width="@(AppState.MobileView ? "calc(100vw - 40px)" : AppState.OpenDrawer ? "calc(100vw - 280px)" : "calc(100vw - 104px)")"
+                          Height="@(!AppState.MobileView ? "calc((100vh - 310px) / 2)" : "auto")"
+                          SearchFields="@(new List<string> { "PONum", "Voucher"})">
+                    <GridColumn Field="@(nameof(Model.VendorCode))" Title="Vendor Code" Width="130px" Visible="false" Editable="false" />
+                    <GridColumn Field="@(nameof(Model.VendorName))" Title="Vendor Name" Width="135px" Visible="false" Editable="false" />
+                    <GridColumn Field="@(nameof(Model.PaymentDocumentTypeName))" Title="Document Type" Width="150px" Visible="false" Editable="false" />
+                    <GridColumn Field="@(nameof(Model.PONum))" Title="PO Num" Width="110px" Locked="true" Editable="false" />
+                    <GridColumn Field="@(nameof(Model.Voucher))" Title="Voucher" Width="100px" Locked="true" Editable="false" />
+                    <GridColumn Field="@(nameof(Model.POAmount))" Title="PO Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="120px" Editable="false" />
+                    <GridColumn Field="@(nameof(Model.PO_VAT))" Title="PO VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="100px" Editable="false" />
+                    <GridColumn Field="@(nameof(Model.VoucherAmount))" Title="Voucher Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="154px" Editable="false" />
+                    <GridColumn Field="@(nameof(Model.VoucherVAT))" Title="Voucher VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="130px" Editable="false" />
+                    <GridColumn Field="@(nameof(Model.AdvanceAmount))" Title="Advance Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="157px" Editable="false" />
+                    <GridColumn Field="@(nameof(Model.AdvanceVAT))" Title="Advance VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="133px" Editable="false" />
+                    <GridColumn Field="@(nameof(Model.PaidAmount))" Title="Paid Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="130px" Editable="false" />
+                    <GridColumn Field="@(nameof(Model.PaidVAT))" Title="Paid VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="110px" Editable="false" />
+                    <GridColumn Field="@(nameof(Model.PaymentDocumentAmount))" Title="Paym. Doc. Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="177px" Editable="false" />
+                    <GridColumn Field="@(nameof(Model.PaymentDocumentVAT))" Title="Paym. Doc. VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="155px" Editable="false" />
+                    <GridColumn Field="@(nameof(Model.AmountToPay))" Title="Amount To Pay" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="145px" Editable="true">
+                        <Template>
+                            @{
+                                selectedVendorDetail = context as Model;
+                                <TelerikNumericTextBox Arrows="false" Format="N3" Class="text-right" Value="@(selectedVendorDetail.AmountToPay)" ValueChanged="@((decimal value) => AmountToPayChanged(value))" />
+                            }
+                        </Template>
+                    </GridColumn>
+                    <GridColumn Field="@(nameof(Model.VATToPay))" Title="VAT To Pay" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="122px" Editable="true">
+                        <Template>
+                            @{
+                                selectedVendorDetail = context as Model;
+                                <TelerikNumericTextBox Arrows="false" Format="N3" Class="text-right" Value="@(selectedVendorDetail.VATToPay)" ValueChanged="@((decimal value) => VATToPayChanged(value))" />
+                            }
+                        </Template>
+                    </GridColumn>
+                    <GridColumn Field="@(nameof(Model.TotalToPay))" Title="Total To Pay" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="130px" Editable="false" />
+                    <GridColumn Field="@(nameof(Model.IsVAT))" Title="VAT" TextAlign="ColumnTextAlign.Right" Width="75px">
+                        <Template>
+                            @{
+                                var vat = (context as Model).IsVAT;
+                                <div>@(vat > 0 ? (vat + "%") : "")</div>
+                            }
+                        </Template>
+                    </GridColumn>
+                </DataGrid>
+            </GridLayoutItem>
+        </GridLayoutItems>
+    </TelerikGridLayout>
+</div>
+
+
+@code {
+
+    [CascadingParameter] AppState AppState { get; set; }
+
+    List<Model> vendorBalanceList = new();
+    IEnumerable<Model> selectedVendorBalanceList = new List<Model>();
+    List<Model> vendorDetailsList = new();
+    IEnumerable<Model> selectedVendorDetailsList = new List<Model>();
+    List<Model> orderBalanceList = new();
+
+    Model selectedVendorBalance = new();
+    Model selectedVendorDetail = new();
+
+    int businessUnitId = 0;
+    IEnumerable<BusinessUnit> businessUnitList = new List<BusinessUnit>();
+    IEnumerable<Vendor> vendorList = new List<Vendor>();
+    BusinessUnit selectedBusinessUnit = new();
+    Vendor selectedVendor = new();
+
+    IEnumerable<PaymentDocumentType> paymentDocumentTypeList = PaymentDocumentType.PaymentDocumentTypeList;
+    PaymentDocumentType selectedPaymentDocumentType = PaymentDocumentType.PaymentDocumentTypeList.FirstOrDefault();
+
+    bool vendorBalanceListLoading = false;
+    bool vendorDetailsListLoading = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        SetQueryVariables();
+        OnAppStateInitialized();
+        await LoadData();
+    }
+
+    void SetQueryVariables()
+    {
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+
+        //var _businessUnitId = 0;
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("bu", out var _bu))
+        {
+            businessUnitId = Convert.ToInt32(_bu);
+        }
+    }
+
+    void OnAppStateInitialized()
+    {
+        AppState.SetDefaults();
+
+        AppState.CustomButton1Visible = true;
+        AppState.CustomButton1Title = "Create Document";
+        AppState.CustomButton1Icon = "file-add";
+        AppState.OnCustomButton1Click += GeneratePaymentDocument;
+
+        AppState.ReloadButtonVisible = true;
+        AppState.OnReloadClick += ReloadClick;
+    }
+
+    void IDisposable.Dispose()
+    {
+        AppState.OnCustomButton1Click -= GeneratePaymentDocument;
+        AppState.OnReloadClick -= ReloadClick;
+    }
+
+    async Task LoadData()
+    {
+        AppState.Loading = true;
+
+        await GetBusinessUnitList();
+        await GetVendorList();
+        await GetVendorBalance();
+
+        AppState.Loading = false;
+    }
+
+    async void ReloadClick()
+    {
+        //await LoadData();
+    }
+
+    async Task GetBusinessUnitList()
+    {
+        businessUnitList = await BusinessUnitService.GetAllAsync();
+        selectedBusinessUnit = businessUnitId > 0 && businessUnitList.Any() ? businessUnitList.FirstOrDefault(e => e.BusinessUnitId == businessUnitId) : new();
+    }
+
+    async Task GetVendorList()
+    {
+        vendorList = await VendorService.GetAllAsync(selectedBusinessUnit.BusinessUnitId);
+        selectedVendor = vendorList.Any() ? vendorList.FirstOrDefault() : new();
+    }
+
+    async Task GetVendorBalance()
+    {
+        vendorBalanceListLoading = true;
+        try
+        {
+            var _vendorBalanceList = await PaymentDocumentService.GetVendorBalance(selectedBusinessUnit.BusinessUnitId, selectedVendor.VendorCode);
+            vendorBalanceList = _vendorBalanceList.ToList();
+        }
+        catch (Exception e)
+        {
+            var message = e.Message;
+        }
+
+        vendorBalanceListLoading = false;
+    }
+
+    async Task GetVendorDetails()
+    {
+        vendorDetailsListLoading = true;
+        var _vendorDetailsList = await PaymentDocumentService.GetVendorDetails(selectedBusinessUnit.BusinessUnitId, selectedVendorBalance.VendorCode, selectedVendorBalance.CurrencyCode, selectedPaymentDocumentType.PaymentDocumentTypeId);
+        vendorDetailsList = _vendorDetailsList.ToList();
+        vendorDetailsListLoading = false;
+    }
+
+    async Task BusinessUnitChanged(BusinessUnit businessUnit)
+    {
+        selectedBusinessUnit = businessUnit;
+        orderBalanceList = new List<Model>();
+        vendorDetailsList = new();
+        selectedVendorBalanceList = new List<Model>();
+        await GetVendorList();
+        await GetVendorBalance();
+    }
+
+    async Task VendorChanged(Vendor vendor)
+    {
+        selectedVendor = vendor;
+        orderBalanceList = new List<Model>();
+        selectedVendorDetailsList = new List<Model>();
+        vendorDetailsList = new();
+        selectedVendorBalanceList = new List<Model>();
+        await GetVendorBalance();
+    }
+
+    void PaymentTypeChanged(PaymentDocumentType paymentDocumentType)
+    {
+        selectedPaymentDocumentType = paymentDocumentType;
+        orderBalanceList = new List<Model>();
+        selectedVendorDetailsList = new List<Model>();
+        vendorDetailsList = new();
+        selectedVendorBalanceList = new List<Model>();
+    }
+
+    async Task OnVendorBalanceRowClick(GridRowClickEventArgs args)
+    {
+        selectedVendorBalance = (Model)args.Item;
+        orderBalanceList = new List<Model>();
+        selectedVendorDetailsList = new List<Model>();
+        await GetVendorDetails();
+    }
+
+    void OrderBalanceListChanged(IEnumerable<Model> modelList)
+    {
+        selectedVendorDetailsList = modelList;
+        orderBalanceList = selectedVendorDetailsList.OrderBy(e => e.PONum).GroupBy(g => g.PONum).Select(s => new Model
+            {
+                PONum = s.Key,
+                POAmount = s.FirstOrDefault().POAmount,
+                PO_VAT = s.FirstOrDefault().PO_VAT,
+                AdvanceAmount = s.FirstOrDefault().AdvanceAmount,
+                AdvanceVAT = s.FirstOrDefault().AdvanceVAT,
+                PaidPaymentDocumentAmount = s.Sum(e => e.PaidAmount + e.PaymentDocumentAmount),
+                PaidPaymentDocumentVAT = s.Sum(e => e.PaidVAT + e.PaymentDocumentVAT),
+                AmountToPay = s.Sum(e => e.AmountToPay),
+                VATToPay = s.Sum(e => e.VATToPay),
+                RemainingAmount = s.Sum(e => e.POAmount - e.AdvanceAmount - e.PaidAmount - e.PaymentDocumentAmount - e.AmountToPay),
+                RemainingVAT = s.Sum(e => e.PO_VAT - e.AdvanceVAT - e.PaidVAT - e.PaymentDocumentVAT - e.VATToPay),
+            }).ToList();
+    }
+
+    void AmountToPayChanged(decimal value)
+    {
+        selectedVendorDetail.AmountToPay = value;
+        selectedVendorDetail.VATToPay = value * (selectedVendorDetail.IsVAT / 100);
+        selectedVendorDetail.RemainingAmount = selectedVendorDetail.POAmount - selectedVendorDetail.AdvanceAmount - selectedVendorDetail.PaidAmount - selectedVendorDetail.PaymentDocumentAmount - selectedVendorDetail.AmountToPay;
+        selectedVendorDetail.RemainingVAT = selectedVendorDetail.PO_VAT - selectedVendorDetail.AdvanceVAT - selectedVendorDetail.PaidVAT - selectedVendorDetail.PaymentDocumentVAT - selectedVendorDetail.VATToPay;
+
+        var poIndex = orderBalanceList.FindIndex(e => e.PONum == selectedVendorDetail.PONum);
+
+        if (poIndex > -1)
+        {
+            orderBalanceList[poIndex].AmountToPay = vendorDetailsList.Where(e => e.PONum == selectedVendorDetail.PONum).Sum(e => e.AmountToPay);
+            orderBalanceList[poIndex].VATToPay = vendorDetailsList.Where(e => e.PONum == selectedVendorDetail.PONum).Sum(e => e.VATToPay);
+            orderBalanceList[poIndex].RemainingAmount = vendorDetailsList.Where(e => e.PONum == selectedVendorDetail.PONum).Sum(e => e.RemainingAmount);
+            orderBalanceList[poIndex].RemainingVAT = vendorDetailsList.Where(e => e.PONum == selectedVendorDetail.PONum).Sum(e => e.RemainingVAT);
+        }
+    }
+
+    void VATToPayChanged(decimal value)
+    {
+        selectedVendorDetail.VATToPay = value;
+        selectedVendorDetail.RemainingVAT = selectedVendorDetail.PO_VAT - selectedVendorDetail.AdvanceVAT - selectedVendorDetail.PaidVAT - selectedVendorDetail.PaymentDocumentVAT - selectedVendorDetail.VATToPay;
+
+        var poIndex = orderBalanceList.FindIndex(e => e.PONum == selectedVendorDetail.PONum);
+
+        if (poIndex > -1)
+        {
+            orderBalanceList[poIndex].VATToPay = vendorDetailsList.Where(e => e.PONum == selectedVendorDetail.PONum).Sum(e => e.VATToPay);
+            orderBalanceList[poIndex].RemainingVAT = vendorDetailsList.Where(e => e.PONum == selectedVendorDetail.PONum).Sum(e => e.RemainingVAT);
+        }
+    }
+
+    void GeneratePaymentDocument()
+    {
+        var validated = Validate();
+        if (validated)
+        {
+            var paymentDocumentMain = new PaymentDocumentMain
+                {
+                    PaymentDocumentMainId = 0,
+                    BusinessUnitId = selectedBusinessUnit.BusinessUnitId,
+                    BusinessUnitCode = selectedBusinessUnit.BusinessUnitCode,
+                    VendorCode = selectedVendorBalance.VendorCode,
+                    VendorName = selectedVendorBalance.VendorName,
+                    CurrencyCode = selectedVendorBalance.CurrencyCode,
+                    PaymentDocumentTypeId = selectedPaymentDocumentType.PaymentDocumentTypeId,
+                    PaymentDocumentTypeName = selectedPaymentDocumentType.PaymentDocumentTypeName,
+                    PaymentDocumentDetailList = new List<Model>(selectedVendorDetailsList),
+                };
+            SessionData.PaymentDocumentMain = paymentDocumentMain.GetInstanceClone(paymentDocumentMain);
+            NavigationManager.NavigateTo("/payments/card?id=0");
+        }
+    }
+
+    bool Validate()
+    {
+        var remainingAmountBalance = orderBalanceList.Sum(e => e.RemainingAmount);
+        var remainingVATBalance = orderBalanceList.Sum(e => e.RemainingVAT);
+
+        if (remainingAmountBalance < 0 || remainingVATBalance < 0)
+        {
+            AppState.ShowAlert("Remaining Amount or VAT can not be a negative number", Severity.Error);
+            return false;
+        }
+        else if (!orderBalanceList.Any())
+        {
+            AppState.ShowAlert("Please select invoice lines", Severity.Error);
+            return false;
+        }
+
+        return true;
+    }
+
+}
+
+
+<style>
+    .paymentcard--top-label {
+        width: 110px;
+    }
+
+</style>

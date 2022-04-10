@@ -1,0 +1,140 @@
+﻿@page "/groups"
+@implements IDisposable
+@inject GroupService GroupService
+@using Model = Group
+
+
+<PageTitle>User Groups</PageTitle>
+
+
+<DataGrid Data="@modelList"
+          CanDelete="true"
+          CanAdd="true"
+          CanExport="true"
+          SearchFields="@(new List<string> { "GroupId", "GroupName", "Description" })"
+          OnDelete="@((IEnumerable<Model> items) => DeleteHandler(items))"
+          @bind-SelectedItems="@selectedItems">
+    <GridColumn Field="@(nameof(Model.GroupId))" Title="Id" Width="70px" Editable="false" TextAlign="ColumnTextAlign.Right" Visible="false" />
+    <GridColumn Field="@(nameof(Model.GroupName))" Title="@(!AppState.MobileView ? "Name" : "Groups")" ShowColumnMenu="@(!AppState.MobileView ? true : false)" Filterable="@(!AppState.MobileView ? true : false)">
+        <Template>
+            @{
+                var rowContext = context as Model;
+            }
+            @if (AppState.MobileView)
+            {
+                <TelerikCard>
+                    <CardHeader>
+                        <CardTitle>
+                            @(rowContext.GroupName)
+                        </CardTitle>
+                        <CardSubTitle>
+                            @(rowContext.Description)
+                        </CardSubTitle>
+                    </CardHeader>
+                    <CardActions>
+                        <TelerikButton OnClick="@(() => GoToDetails(rowContext.GroupId))">Details</TelerikButton>
+                    </CardActions>
+                </TelerikCard>
+            }
+            else
+            {
+                <LinkText OnClick="@(() => GoToDetails(rowContext.GroupId))">
+                    @rowContext.GroupName
+                </LinkText>
+            }
+        </Template>
+    </GridColumn>
+    <GridColumn Field="@(nameof(Model.Description))" Title="Description" Visible="!AppState.MobileView" />
+</DataGrid>
+
+
+@code {
+    // Grid specific variables - start
+    Guid gridKey;
+    TelerikGrid<Model> gridRef;
+    List<Model> modelList = new();
+    IEnumerable<Model> selectedModelList = new List<Model>();
+    List<Model> deletedModelList = new List<Model>();
+    Model selectedModel;
+    bool showRowButtons = false;
+    bool showDecimals = false;
+    bool showGroup = false;
+    bool showCheckBox = false;
+    int gridPageSize = 20;
+    bool gridReadOnly = false;
+    bool editMode = false;
+    // Grid specific variables - end
+
+    // Page specific variables - start
+    // Page specific variables - end
+
+    int activeTabIndex = 0;
+
+    [CascadingParameter] public AppState AppState { get; set; }
+    [CascadingParameter] public DialogFactory Dialogs { get; set; }
+
+    List<Model> deletedItems = new List<Model>();
+    IEnumerable<Model> selectedItems = new List<Model>();
+    void DeleteHandler(IEnumerable<Model> items)
+    {
+        deletedItems = items.ToList();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        OnAppStateInitialized();
+        await LoadData();
+    }
+
+    void OnAppStateInitialized()
+    {
+        AppState.SetDefaults();
+        AppState.OnReloadClick += ReloadClick;
+    }
+
+    void IDisposable.Dispose()
+    {
+        AppState.OnReloadClick -= ReloadClick;
+    }
+
+    async Task LoadData()
+    {
+        AppState.Loading = true;
+        var _modelList = await GroupService.GetAllAsync();
+        modelList = _modelList.ToList();
+        AppState.Loading = false;
+    }
+
+    async void ReloadClick()
+    {
+        await LoadData();
+    }
+
+    void GoToDetails(int id)
+    {
+        NavigationManager.NavigateTo($"/groups/card?{id}");
+    }
+
+    void OnRowClickHandler(GridRowClickEventArgs args)
+    {
+    //
+    }
+
+    void OnRowDoubleClickHandler(GridRowClickEventArgs args)
+    {
+        var argsItem = args.Item as Model;
+        GoToDetails(argsItem.GroupId);
+    }
+
+    void CreateHandler(GridCommandEventArgs args)
+    {
+        GoToDetails(0);
+    }
+
+}
+
+<style>
+    .mud-checkbox .mud-icon-button {
+        padding: 0;
+    }
+</style>

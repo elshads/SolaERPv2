@@ -1,0 +1,76 @@
+﻿@typeparam TItem where TItem : IBaseModel, new()
+
+<MudGrid>
+    <MudItem xs="12" sm="6">
+        <DataGrid @bind-Data="@LeftGridData"
+                  @bind-DestinationGridData="@RightGridData"
+                  Key="@leftGridKey"
+                  @bind-DestinationGridKey="@rightGridKey"
+                  CanMoveRight="true" 
+                  OnMoveRight="@OnMove"
+                  OnMoveAllRight="@((IEnumerable<TItem> items) => OnMoveAll(items))"
+                  SearchFields="@SearchFields" ShowToolbar="false" Title="@LeftGridTitle" RowDraggable="true" Height="@Height" Pageable="false">
+            @ChildContent
+        </DataGrid>
+    </MudItem>
+    <MudItem xs="12" sm="6">
+        <DataGrid @bind-Data="@RightGridData"
+                  @bind-DestinationGridData="@LeftGridData"
+                  Key="@rightGridKey"
+                  @bind-DestinationGridKey="@leftGridKey"
+                  CanMoveLeft="true"
+                  OnMoveLeft="@OnMove"
+                  OnMoveAllLeft="@((IEnumerable<TItem> items) => OnMoveAll(items))"
+                  SearchFields="@SearchFields" ShowToolbar="false" Title="@RightGridTitle" RowDraggable="true" Height="@Height" Pageable="false">
+            @ChildContent
+        </DataGrid>
+    </MudItem>
+</MudGrid>
+
+@code {
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    [Parameter] public string Height { get; set; } = "calc(100vh - 400px)";
+    [Parameter] public IEnumerable<string> SearchFields { get; set; }
+
+    [Parameter] public string LeftGridTitle { get; set; }
+    [Parameter] public string RightGridTitle { get; set; }
+
+
+    [Parameter] public List<TItem> LeftGridData { get; set; } = new List<TItem>();
+    [Parameter] public EventCallback<List<TItem>> LeftGridDataChanged { get; set; }
+    [Parameter] public List<TItem> RightGridData { get; set; } = new List<TItem>();
+    [Parameter] public EventCallback<List<TItem>> RightGridDataChanged { get; set; }
+
+    Guid leftGridKey;
+    Guid rightGridKey;
+
+    async Task OnMove(GridCommandEventArgs args)
+    {
+        await LeftGridDataChanged.InvokeAsync(LeftGridData);
+        await RightGridDataChanged.InvokeAsync(RightGridData);
+    }
+
+    async Task OnMoveAll(IEnumerable<TItem> items)
+    {
+        await LeftGridDataChanged.InvokeAsync(LeftGridData);
+        await RightGridDataChanged.InvokeAsync(RightGridData);
+    }
+}
+
+<style>
+    @@media (min-width: 600px) {
+        .mud-grid-item-sm-6 {
+            flex-grow: 0;
+            max-width: 100%;
+            flex-basis: 100%;
+        }
+    }
+
+    @@media (min-width: 768px) {
+        .mud-grid-item-sm-6 {
+            flex-grow: 0;
+            max-width: 50% !important;
+            flex-basis: 50% !important;
+        }
+    }
+</style>

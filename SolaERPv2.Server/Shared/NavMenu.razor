@@ -1,0 +1,105 @@
+﻿@inject MenuService MenuService
+
+<MudDrawer Class="drawer" Open="@Open" OpenChanged="@OnOpenChangedHandler" ClipMode="DrawerClipMode.Always" Variant="DrawerVariant.Mini" Anchor="Anchor.Start" Breakpoint="Breakpoint.Md" Elevation="2" Width="260px" MiniWidth="64px">
+    <MudNavMenu Bordered="true" Color=Color.Primary Margin="Margin.None">
+        <MudNavLink Class="text-nowrap" Match="NavLinkMatch.All" Icon="@Icons.Filled.Home" Href="/">Home</MudNavLink>
+        @if (MenuList != null && MenuList.Count() > 0)
+        {
+            @foreach (var menu in MenuList)
+            {
+                @if ((menu.ParentId == null || menu.ParentId == 0) && menu.Children.Count() > 0)
+                {
+                    <MudNavGroup Class="text-nowrap" Icon="@menu.Icon" Title="@menu.MenuName">
+                        @foreach (var child in menu.Children)
+                        {
+                            @if (child.Children.Count() > 0)
+                            {
+                                <MudNavGroup Class="text-nowrap" Icon="@child.Icon" Title="@child.MenuName">
+                                    @foreach (var grandchild in child.Children)
+                                    {
+                                        <MudNavLink Class="text-nowrap" Match="NavLinkMatch.Prefix" Icon="@grandchild.Icon" Href="@grandchild.URL">@grandchild.MenuName</MudNavLink>
+                                    }
+                                </MudNavGroup>
+                            }
+                            else if (child.Children == null || child.Children.Count() == 0)
+                            {
+                                <MudNavLink Class="text-nowrap" Match="NavLinkMatch.Prefix" Icon="@child.Icon" Href="@child.URL">@child.MenuName</MudNavLink>
+                            }
+                        }
+                    </MudNavGroup>
+                }
+                else if (menu.ParentId == null || menu.ParentId == 0)
+                {
+                    <MudNavLink Class="text-nowrap" Match="NavLinkMatch.Prefix" Icon="@menu.Icon" Href="@menu.URL">@menu.MenuName</MudNavLink>
+                }
+            }
+        }
+    </MudNavMenu>
+</MudDrawer>
+
+
+
+@code {
+    [Parameter] public bool Open { get; set; } = false;
+    [Parameter] public EventCallback<bool> OpenChanged { get; set; }
+    IEnumerable<Menu> MenuList = new List<Menu>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        MenuList = await MenuService.GetUserItemsAsync();
+    }
+
+    async Task OnOpenChangedHandler(bool open)
+    {
+        Open = open;
+        await OpenChanged.InvokeAsync(Open);
+    }
+
+    IEnumerable<Menu> Children(int parentId)
+    {
+        var children = MenuList.Where(e => e.ParentId == parentId);
+        return children;
+    }
+}
+
+
+<style>
+    .text-nowrap {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .mud-nav-link {
+        color: var(--mud-palette-text-primary);
+        line-height: 1.75;
+        padding: 10px 16px 10px 16px;
+        min-height: 46px;
+        align-items: center;
+    }
+
+        .mud-nav-link .mud-icon-root.mud-svg-icon {
+            fill: var(--mud-palette-text-primary);
+        }
+
+    .mud-nav-link.active:not(.mud-nav-link-disabled) {
+        color: var(--mud-palette-primary);
+    }
+
+    .mud-nav-link.active:not(.mud-nav-link-disabled) .mud-icon-root.mud-svg-icon {
+        fill: var(--mud-palette-primary);
+    }
+
+    /*.mud-nav-link:hover:not(.mud-nav-link-disabled) {
+                    color: ActiveFontColor;
+                    background-color: ActiveBackground;
+                }
+
+            .mud-nav-link .mud-nav-link-expand-icon {
+                color: FontColor;
+            }
+
+                .mud-nav-link .mud-nav-link-expand-icon.mud-transform {
+                    fill: ActiveFontColor;
+                }*/
+</style>
