@@ -4,18 +4,38 @@
 
 <PageTitle>Index</PageTitle>
 
-<h3>Max file size (1 - 1024 MB)</h3>
+<h3>Attachment max file size (1 - 1024 MB)</h3>
+<div class="k-mb-8" style="width: 240px">
+    <TelerikNumericTextBox Value="@maxFileSize" ValueChanged="MaxFileSizeChanged" Min="1" Max="1024" T="int" Decimals="0"/>
+</div>
 
-<TelerikNumericTextBox Value="@maxFileSize" ValueChanged="MaxFileSizeChanged" Min="1" Max="1024" T="int" Decimals="0"></TelerikNumericTextBox>
+<h3 class="k-mb-2">Test email</h3>
+<div class="k-mb-2">
+    <span>Email address</span>
+    <TelerikTextBox @bind-Value="@emailAddress"/>
+</div>
 
-@code{
+<div class="k-mb-2">
+    <span>Subject</span>
+    <TelerikTextBox @bind-Value="@emailSubject"/>
+</div>
+
+<div class="k-mb-2">
+    <span>HTML Message</span>
+    <TelerikTextArea @bind-Value="@emailBody" AutoSize="true"/>
+</div>
+
+<TelerikButton OnClick="@SendEmail">Send email</TelerikButton>
+
+
+@code {
     [CascadingParameter] public AppState AppState { get; set; }
 
     int maxFileSize => SettingService.Setting.MaxFileSize / 1024 / 1024;
-    void MaxFileSizeChanged(int value)
-    {
-        SettingService.Setting.MaxFileSize = value * 1024 * 1024;
-    }
+
+    string? emailAddress = "";
+    string? emailSubject = "";
+    string? emailBody = "";
 
     protected override void OnInitialized()
     {
@@ -31,7 +51,34 @@
 
     void IDisposable.Dispose()
     {
-        
+
     }
 
+    void MaxFileSizeChanged(int value)
+    {
+        SettingService.Setting.MaxFileSize = value * 1024 * 1024;
+    }
+
+    async Task SendEmail(MouseEventArgs args)
+    {
+        if (emailAddress?.Length > 0 && emailSubject?.Length > 0 && emailBody?.Length > 0)
+        {
+            AppState.Loading = true;
+            var addresses = emailAddress.Replace(";", ",").Split(",");
+            var mailSent = await MailService.SendMail(addresses, emailSubject, emailBody);
+            AppState.Loading = false;
+            if (mailSent)
+            {
+                AppState.ShowAlert($"Email successfully sent to {emailAddress}", Severity.Success);
+            }
+            else
+            {
+                AppState.ShowAlert("Could not send an email", Severity.Error);
+            }
+        }
+        else
+        {
+            AppState.ShowAlert("Validation error", Severity.Error);
+        }
+    }
 }

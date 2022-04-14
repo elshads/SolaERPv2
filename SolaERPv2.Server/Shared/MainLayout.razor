@@ -20,8 +20,9 @@
 
 
 <CascadingValue Value="appState">
-        <AuthorizeView>
-            <Authorized>
+    <AuthorizeView>
+        <Authorized>
+            <div>
                 <AppBar @bind-Open="@appState.OpenDrawer" />
                 <NavMenu @bind-Open="@appState.OpenDrawer" />
                 <ReadAccess>
@@ -30,14 +31,15 @@
                         @Body
                     </div>
                 </ReadAccess>
-            </Authorized>
-            <NotAuthorized>
-                <div>Loading...</div>
-            </NotAuthorized>
-        </AuthorizeView>
-        <TelerikLoaderContainer Visible="@(appState.Loading)" LoaderType="LoaderType.InfiniteSpinner" />
-        <TelerikMediaQuery Media="(max-width: 768px)" OnChange="@( (bool mobileView) => OnMobileViewChanged(mobileView) )"/>
-    </CascadingValue>
+            </div>
+        </Authorized>
+        <NotAuthorized>
+            <div>Loading...</div>
+        </NotAuthorized>
+    </AuthorizeView>
+    <TelerikLoaderContainer Visible="@(appState.Loading)" LoaderType="LoaderType.InfiniteSpinner" />
+    <TelerikMediaQuery Media="(max-width: 768px)" OnChange="@( (bool mobileView) => OnMobileViewChanged(mobileView) )" />
+</CascadingValue>
 
 
 
@@ -95,7 +97,7 @@
         min-height: 30px;
     }
 
-    .k-loader-container{
+    .k-loader-container {
         z-index: 10009;
     }
 </style>
