@@ -12,4 +12,5 @@ public class Attachment : BaseModel
     public string? SourceTypeName { get; set; }
     public string? Reference { get; set; }
     public string? ExtensionType { get; set; }
+    public long Size { get; set; }
 }
