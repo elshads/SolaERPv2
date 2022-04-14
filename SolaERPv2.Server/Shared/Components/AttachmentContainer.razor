@@ -1,0 +1,176 @@
+﻿<TelerikDialog Visible="@Visible"
+               @ref="dialogRef"
+               VisibleChanged="@VisibleChangedHandler"
+               Title="@($"Attachments {Title}")"
+               CloseOnOverlayClick="false"
+               ShowCloseButton="true">
+    <DialogContent>
+        <MudProgressLinear Color="@(fileSelectLoading ? Color.Primary : Color.Transparent)" Indeterminate="true" />
+        <TelerikFileSelect AllowedExtensions="@(SettingService.Setting.AllowedFileExtensions)"
+                           MaxFileSize="@(SettingService.Setting.MaxFileSize)"
+                           Enabled="@(!fileSelectLoading)"
+                           Multiple="true"
+                           OnSelect="@OnAttachmentSelect">
+        </TelerikFileSelect>
+        <div class="k-form-hint pb-1">
+            @if (fileSelectLoading)
+            {
+                <div class="k-text-error">File: @(currentFile.Name) Size: @(currentFile.Size > 1048575 ? $"{Math.Round((currentFile.Size / 1024 / 1024), 2)}MB " : currentFile.Size > 1023 ? $"{Math.Round((currentFile.Size / 1024), 2)}KB " : $"{currentFile.Size}BYTES ")</div>
+                <div class="k-text-error">&nbsp Do not close this window while uploading file(s)</div>
+            }
+            else
+            {
+                <div>Allowed files: @(SettingService.Setting.AllowedFileExtensions != null ? String.Join(", ", SettingService.Setting.AllowedFileExtensions) : "") up to @(maxFileSizeMb)MB</div>
+            }
+        </div>
+        <TelerikGrid Data="@AttachmentList"
+                     @ref="gridRef"
+                     Height="265px"
+                     Sortable="false"
+                     Groupable="false"
+                     Resizable="false"
+                     Reorderable="false"
+                     SelectionMode="GridSelectionMode.Multiple"
+                     OnDelete="@DeleteAttachment">
+            <GridColumns>
+                <GridColumn Field="@(nameof(Attachment.FileName))" Title="Files" Width="@(AppState.MobileView ? "360px" : "auto")" />
+                <GridCommandColumn ShowColumnMenu="false" Reorderable="false" Visible="true" Width="90px">
+                    <GridCommandButton Icon="download" ShowInEdit="false" Enabled="@(!fileSelectLoading)" Title="Download" OnClick="@(() => DownloadAttachment(context as Attachment))" />
+                    <GridCommandButton Command="Delete" Icon="delete" ShowInEdit="false" Enabled="@(!fileSelectLoading)" Title="Delete" />
+                </GridCommandColumn>
+            </GridColumns>
+        </TelerikGrid>
+    </DialogContent>
+    <DialogButtons>
+        <TelerikButton OnClick="@(() => DialogClosed())">Close</TelerikButton>
+    </DialogButtons>
+</TelerikDialog>
+
+
+
+@code {
+    [CascadingParameter] public AppState? AppState { get; set; }
+
+    [Parameter] public bool Visible { get; set; } = false;
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback<IEnumerable<Attachment>> OnDelete { get; set; }
+    [Parameter] public EventCallback<Attachment> OnDownloadClick { get; set; }
+    [Parameter] public int AttachmentTypeId { get; set; } = new();
+    [Parameter] public int AttachmentSubTypeId { get; set; } = new();
+    [Parameter] public string? DocumentReference { get; set; }
+    [Parameter] public string? Title { get; set; } = "";
+    [Parameter] public int SourceId { get; set; }
+    [Parameter] public string? SourceTypeName { get; set; }
+    [Parameter] public List<Attachment>? AttachmentList { get; set; } = new();
+    [Parameter] public EventCallback<List<Attachment>> AttachmentListChanged { get; set; }
+
+    List<Attachment>? deletedAttachmentList = new();
+    TelerikDialog? dialogRef;
+    TelerikGrid<Attachment>? gridRef;
+    bool fileSelectLoading = false;
+    (double Size, string Name) currentFile = new();
+
+    int maxFileSizeMb => SettingService.Setting.MaxFileSize * 1024 * 1024;
+
+    async Task VisibleChangedHandler(bool visible)
+    {
+        Visible = visible;
+        if (!visible)
+        {
+            await DialogClosed();
+        }
+    }
+
+    async Task OnAttachmentSelect(FileSelectEventArgs args)
+    {
+        fileSelectLoading = true;
+        dialogRef?.Refresh();
+
+        foreach (var file in args.Files)
+        {
+            if (!file.InvalidExtension && !file.InvalidMaxFileSize)
+            {
+                currentFile = new();
+                currentFile.Size = file.Size;
+                currentFile.Name = file.Name;
+                dialogRef?.Refresh();
+                await using MemoryStream ms = new();
+                await file.Stream.CopyToAsync(ms);
+                var fileData = ms.ToArray();
+                var attachment = new Attachment
+                    {
+                        AttachmentId = 0,
+                        SourceId = this.SourceId,
+                        SourceTypeName = this.SourceTypeName,
+                        AttachmentTypeId = this.AttachmentTypeId,
+                        AttachmentSubTypeId = this.AttachmentSubTypeId,
+                        Reference = DocumentReference,
+                        ExtensionType = file.Extension,
+                        FileName = file.Name,
+                        FileData = fileData
+                    };
+                AttachmentList?.Add(attachment);
+            }
+            else if (file.InvalidExtension && file.InvalidMaxFileSize)
+            {
+                AppState?.ShowAlert($"File '{file.Name}' exceeds allowed size & Selected file type not allowed", Severity.Error);
+            }
+            else if (file.InvalidExtension)
+            {
+                AppState?.ShowAlert($"Selected file type not allowed for '{file.Name}'", Severity.Error);
+            }
+            else if (file.InvalidMaxFileSize)
+            {
+                AppState?.ShowAlert($"File '{file.Name}' exceeds allowed size", Severity.Error);
+            }
+        }
+        await AttachmentListChanged.InvokeAsync(AttachmentList);
+
+        fileSelectLoading = false;
+        gridRef?.Rebind();
+        dialogRef?.Refresh();
+    }
+
+    public async Task UploadStream(IAsyncEnumerable<string> stream)
+    {
+        await foreach (var item in stream)
+        {
+            Console.WriteLine(item);
+        }
+    }
+
+    async Task DialogClosed()
+    {
+        fileSelectLoading = false;
+        Visible = false;
+        await OnClose.InvokeAsync();
+    }
+
+    async Task DownloadAttachment(Attachment attachment)
+    {
+        var file = attachment.AttachmentId > 0 ? await AttachmentService.GetByIdAsync(attachment.AttachmentId) : attachment;
+        await JSRuntime.InvokeVoidAsync("downloadFile", file?.FileName, Convert.ToBase64String(file?.FileData));
+
+        AppState.ShowAlert($"{file.FileName} downloaded", Severity.Normal);
+        await OnDownloadClick.InvokeAsync(attachment);
+    }
+
+    async Task DeleteAttachment(GridCommandEventArgs args)
+    {
+        var argsItem = args.Item as Attachment;
+        var index = AttachmentList.IndexOf(argsItem);
+        AttachmentList.RemoveAt(index);
+        deletedAttachmentList?.Add(argsItem);
+        await AttachmentListChanged.InvokeAsync(AttachmentList);
+        await OnDelete.InvokeAsync(deletedAttachmentList);
+        dialogRef?.Refresh();
+    }
+}
+
+
+<style>
+    .k-upload .k-upload-files {
+        display: none;
+    }
+</style>

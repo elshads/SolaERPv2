@@ -36,7 +36,7 @@
             </NotAuthorized>
         </AuthorizeView>
         <TelerikLoaderContainer Visible="@(appState.Loading)" LoaderType="LoaderType.InfiniteSpinner" />
-        <TelerikMediaQuery Media="(max-width: 768px)" OnChange="@( (bool mobileView) => OnMobileViewChanged(mobileView) )"></TelerikMediaQuery>
+        <TelerikMediaQuery Media="(max-width: 768px)" OnChange="@( (bool mobileView) => OnMobileViewChanged(mobileView) )"/>
     </CascadingValue>
 
 
@@ -93,5 +93,9 @@
 
     .k-toolbar .k-button {
         min-height: 30px;
+    }
+
+    .k-loader-container{
+        z-index: 10009;
     }
 </style>

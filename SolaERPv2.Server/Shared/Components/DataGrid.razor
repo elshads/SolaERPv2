@@ -99,6 +99,12 @@
             </span>
         }
     </GridToolBar>
+    <GridAggregates>
+        @foreach(var item in AggregateFields )
+        {
+            <GridAggregate Field="@item" Aggregate="@GridAggregateType.Sum" />
+        }
+    </GridAggregates>
     <GridColumns>
         <GridCommandColumn Width="@(Convert.ToInt32(CanEdit) + Convert.ToInt32(CanDelete) + Convert.ToInt32(CanMoveLeft) + Convert.ToInt32(CanMoveRight) + Convert.ToInt32(CanMoveUp)  + Convert.ToInt32(CanMoveDown) > 1 ? "90px" : "55px")"
                            ShowColumnMenu="false" Reorderable="false"
@@ -171,6 +177,7 @@
     [Parameter] public string Width { get; set; }
     [Parameter] public string Media { get; set; } = "(max-width: 768px)";
     [Parameter] public IEnumerable<string> SearchFields { get; set; } = new List<string> { "RowIndex" };
+    [Parameter] public IEnumerable<string> AggregateFields { get; set; } = new List<string>();
 
     [Parameter] public EventCallback<GridRowClickEventArgs> OnRowClick { get; set; }
     [Parameter] public EventCallback<GridRowClickEventArgs> OnRowDoubleClick { get; set; }

@@ -1,6 +1,5 @@
-﻿function downloadFile(fileName, fileData) {
-    const blob = new Blob(fileData);
-    const url = URL.createObjectURL(blob);
+﻿function downloadFile(fileName, base64String) {
+    const url = "data:application/octet-stream;base64," + base64String;
     const anchorElement = document.createElement('a');
     anchorElement.href = url;
     anchorElement.download = fileName ?? '';

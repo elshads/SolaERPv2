@@ -4,10 +4,18 @@
 
 <PageTitle>Index</PageTitle>
 
-<h3>Dashboard!</h3>
+<h3>Max file size (1 - 1024 MB)</h3>
+
+<TelerikNumericTextBox Value="@maxFileSize" ValueChanged="MaxFileSizeChanged" Min="1" Max="1024" T="int" Decimals="0"></TelerikNumericTextBox>
 
 @code{
     [CascadingParameter] public AppState AppState { get; set; }
+
+    int maxFileSize => SettingService.Setting.MaxFileSize / 1024 / 1024;
+    void MaxFileSizeChanged(int value)
+    {
+        SettingService.Setting.MaxFileSize = value * 1024 * 1024;
+    }
 
     protected override void OnInitialized()
     {

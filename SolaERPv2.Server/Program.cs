@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
-using SolaERPv2.Server.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,6 +48,7 @@ builder.Services.AddServerSideBlazor().AddCircuitOptions(options => { options.De
 builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<AppUser>>();
 
 builder.Services.AddScoped<AppUserService>();
+builder.Services.AddSingleton<SettingService>();
 builder.Services.AddScoped<SessionData>();
 builder.Services.AddTransient<PageData>();
 
@@ -60,12 +60,14 @@ builder.Services.AddScoped<BusinessUnitService>();
 builder.Services.AddScoped<GroupService>();
 builder.Services.AddScoped<MenuService>();
 builder.Services.AddScoped<PaymentDocumentService>();
-builder.Services.AddScoped<SettingService>();
 builder.Services.AddScoped<ThemeService>();
 builder.Services.AddScoped<UserMenuAccessService>();
 builder.Services.AddScoped<VendorService>();
 
-
+builder.Services.Configure<HubOptions>(options =>
+{
+    options.MaximumReceiveMessageSize = 1024 * 1024 * 1; // 1MB
+});
 builder.WebHost.UseKestrel();
 var app = builder.Build();
 

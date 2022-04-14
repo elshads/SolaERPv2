@@ -53,12 +53,12 @@ html, body {
     text-align: right;
 }
 
-.input-padding{
-    padding: 4px 8px !important;
+.text-blue {
+    color: #0f62fe;
 }
 
-.k-upload .k-upload-files {
-    display: none;
+.input-padding{
+    padding: 4px 8px !important;
 }
 
 .invalid-form {
