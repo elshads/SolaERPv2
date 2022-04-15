@@ -7,11 +7,13 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 var mailSettings = builder.Configuration.GetSection("MailSettings").Get<MailSettings>();
+var appSettings = builder.Configuration.GetSection("AppSettings").Get<AppSettings>();
 
 builder.Services.AddSingleton<SqlDataAccess>(_ => new SqlDataAccess(connectionString));
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(connectionString));
 builder.Services.AddSingleton<MailSettings>(_ => new MailSettings(mailSettings));
+builder.Services.AddSingleton<AppSettings>(_ => new AppSettings(appSettings));
 
 builder.Services.AddIdentity<AppUser, AppRole>(options =>
 {
@@ -48,7 +50,6 @@ builder.Services.AddServerSideBlazor().AddCircuitOptions(options => { options.De
 builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<AppUser>>();
 
 builder.Services.AddScoped<AppUserService>();
-builder.Services.AddSingleton<SettingService>();
 builder.Services.AddScoped<SessionData>();
 builder.Services.AddTransient<PageData>();
 

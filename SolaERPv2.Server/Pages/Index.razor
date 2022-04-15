@@ -21,9 +21,19 @@
 </div>
 
 <div class="k-mb-2">
+    <span>Destination</span>
+    <TelerikTextBox @bind-Value="@destination"/>
+</div>
+
+<div class="k-mb-2">
+    <span>DocumentNumber</span>
+    <TelerikTextBox @bind-Value="@documentNumber"/>
+</div>
+
+@*<div class="k-mb-2">
     <span>HTML Message</span>
     <TelerikTextArea @bind-Value="@emailBody" AutoSize="true"/>
-</div>
+</div>*@
 
 <TelerikButton OnClick="@SendEmail">Send email</TelerikButton>
 
@@ -31,11 +41,13 @@
 @code {
     [CascadingParameter] public AppState AppState { get; set; }
 
-    int maxFileSize => SettingService.Setting.MaxFileSize / 1024 / 1024;
+    int maxFileSize => AppSettings.MaxFileSize / 1024 / 1024;
 
     string? emailAddress = "";
     string? emailSubject = "";
     string? emailBody = "";
+    string? destination = "";
+    string? documentNumber = "";
 
     protected override void OnInitialized()
     {
@@ -56,16 +68,16 @@
 
     void MaxFileSizeChanged(int value)
     {
-        SettingService.Setting.MaxFileSize = value * 1024 * 1024;
+        AppSettings.MaxFileSize = value * 1024 * 1024;
     }
 
     async Task SendEmail(MouseEventArgs args)
     {
-        if (emailAddress?.Length > 0 && emailSubject?.Length > 0 && emailBody?.Length > 0)
+        if (emailAddress?.Length > 0)
         {
             AppState.Loading = true;
             var addresses = emailAddress.Replace(";", ",").Split(",");
-            var mailSent = await MailService.SendMail(addresses, emailSubject, emailBody);
+            var mailSent = await MailService.SendApprovalMail(addresses, emailSubject, SessionData.CurrentUser.FullName, SessionData.CurrentUser.UserName, destination, documentNumber);
             AppState.Loading = false;
             if (mailSent)
             {
@@ -78,7 +90,7 @@
         }
         else
         {
-            AppState.ShowAlert("Validation error", Severity.Error);
+            AppState.ShowAlert("email is mandatory", Severity.Error);
         }
     }
 }

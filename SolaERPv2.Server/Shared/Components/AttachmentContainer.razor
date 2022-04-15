@@ -6,8 +6,8 @@
                ShowCloseButton="true">
     <DialogContent>
         <MudProgressLinear Color="@(fileLoading ? Color.Primary : Color.Transparent)" Indeterminate="true" />
-        <TelerikFileSelect AllowedExtensions="@(SettingService.Setting.AllowedFileExtensions)"
-                           MaxFileSize="@(SettingService.Setting.MaxFileSize)"
+        <TelerikFileSelect AllowedExtensions="@(AppSettings.AllowedFileExtensions)"
+                           MaxFileSize="@(AppSettings.MaxFileSize)"
                            Enabled="@(!fileLoading)"
                            Multiple="true"
                            OnSelect="@OnAttachmentSelect">
@@ -23,7 +23,7 @@
             }
             else
             {
-                <div>Allowed files: @(SettingService.Setting.AllowedFileExtensions != null ? String.Join(", ", SettingService.Setting.AllowedFileExtensions) : "") up to @(SettingService.Setting.MaxFileSize / 1024 / 1024)MB</div>
+                <div>Allowed files: @(AppSettings.AllowedFileExtensions != null ? String.Join(", ", AppSettings.AllowedFileExtensions) : "") up to @(AppSettings.MaxFileSize / 1024 / 1024)MB</div>
             }
         </div>
         <TelerikGrid Data="@AttachmentList"
