@@ -34,11 +34,14 @@
     void OnAppStateInitialized()
     {
         AppState.SetDefaults();
+        AppState.BackButtonVisible = true;
+        AppState.OnBackClick += BackClick;
         AppState.OnReloadClick += ReloadClick;
     }
 
     void IDisposable.Dispose()
     {
+        AppState.OnBackClick -= BackClick;
         AppState.OnReloadClick -= ReloadClick;
     }
 
@@ -64,6 +67,11 @@
         AppState.Loading = true;
         // do something
         AppState.Loading = false;
+    }
+
+    void BackClick()
+    {
+        NavigationManager.NavigateTo("/");
     }
 
     async void ReloadClick()

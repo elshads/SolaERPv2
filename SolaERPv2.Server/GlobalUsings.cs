@@ -1,5 +1,6 @@
 ﻿global using SolaERPv2.Server.AppData;
 global using SolaERPv2.Server.Areas.Identity;
+global using SolaERPv2.Server.Configurations;
 global using SolaERPv2.Server.DbAccess;
 global using SolaERPv2.Server.Identity;
 global using SolaERPv2.Server.Models;

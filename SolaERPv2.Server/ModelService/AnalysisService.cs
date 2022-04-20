@@ -10,10 +10,39 @@ public class AnalysisService
         _sqlDataAccess = sqlDataAccess;
     }
 
-    public async Task<IEnumerable<Analysis>?> GetAll(int analysisTypeId)
+    public async Task<IEnumerable<Analysis>?> GetAll(string sqlViewOrTable)
     {
-        var view = (analysisTypeId == 1 ? "ExpenseTypesList" : analysisTypeId == 2 ? "GroupProjectsList" : analysisTypeId == 3 ? "ProjectCodesList" : "AnalysisServiceError");
-        var sql = $"SELECT * FROM dbo.{view}";
+        var sql = $"SELECT * FROM {sqlViewOrTable}";
+        return await _sqlDataAccess.QueryAll<Analysis>(sql, null, CommandType.Text);
+    }
+
+    public async Task<IEnumerable<Analysis>?> GetExpenseTypes()
+    {
+        var sql = $"SELECT * FROM dbo.ExpenseTypesList";
+        return await _sqlDataAccess.QueryAll<Analysis>(sql, null, CommandType.Text);
+    }
+
+    public async Task<IEnumerable<Analysis>?> GetGroupProjects()
+    {
+        var sql = $"SELECT * FROM dbo.GroupProjectsList";
+        return await _sqlDataAccess.QueryAll<Analysis>(sql, null, CommandType.Text);
+    }
+
+    public async Task<IEnumerable<Analysis>?> GetProjectCodes()
+    {
+        var sql = $"SELECT * FROM dbo.ProjectCodesList";
+        return await _sqlDataAccess.QueryAll<Analysis>(sql, null, CommandType.Text);
+    }
+
+    public async Task<IEnumerable<Analysis>?> GetOrNumbers()
+    {
+        var sql = $"SELECT * FROM dbo.OrNumberList";
+        return await _sqlDataAccess.QueryAll<Analysis>(sql, null, CommandType.Text);
+    }
+
+    public async Task<IEnumerable<Analysis>?> GetJobNumbers()
+    {
+        var sql = $"SELECT * FROM dbo.JobNumberList";
         return await _sqlDataAccess.QueryAll<Analysis>(sql, null, CommandType.Text);
     }
 }

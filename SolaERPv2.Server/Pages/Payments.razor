@@ -269,6 +269,7 @@
     void OnAppStateInitialized()
     {
         AppState.SetDefaults();
+        AppState.BackButtonVisible = true;
         AppState.AddButtonVisible = true;
         SetMenuButtonsVisibility();
         AppState.CustomButton4Title = "Send to Approval";
@@ -276,6 +277,8 @@
         AppState.CustomButton6Title = "Send to Bank";
         AppState.CustomButton7Title = "Pay";
         AppState.CustomButton8Title = "Return to Approved";
+
+        AppState.OnBackClick += BackClick;
         AppState.OnAddClick += AddClick;
         AppState.OnReloadClick += ReloadClick;
 
@@ -290,6 +293,7 @@
 
     void IDisposable.Dispose()
     {
+        AppState.OnBackClick -= BackClick;
         AppState.OnAddClick -= AddClick;
         AppState.OnReloadClick -= ReloadClick;
 
@@ -405,6 +409,11 @@
     {
         var argsItem = args.Item as Model;
         GoToDetails(argsItem.PaymentDocumentMainId);
+    }
+
+    void BackClick()
+    {
+        NavigationManager.NavigateTo("/");
     }
 
     void AddClick()

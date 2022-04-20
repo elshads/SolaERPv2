@@ -4,6 +4,7 @@
 
 <PageTitle>Index</PageTitle>
 
+
 <h3>Attachment max file size (1 - 1024 MB)</h3>
 <div class="k-mb-8" style="width: 240px">
     <TelerikNumericTextBox Value="@maxFileSize" ValueChanged="MaxFileSizeChanged" Min="1" Max="1024" T="int" Decimals="0"/>
@@ -11,7 +12,7 @@
 
 <h3 class="k-mb-2">Test email</h3>
 <div class="k-mb-2">
-    <span>Email address</span>
+    <span>Email address(es - comma separated)</span>
     <TelerikTextBox @bind-Value="@emailAddress"/>
 </div>
 
@@ -29,11 +30,6 @@
     <span>DocumentNumber</span>
     <TelerikTextBox @bind-Value="@documentNumber"/>
 </div>
-
-@*<div class="k-mb-2">
-    <span>HTML Message</span>
-    <TelerikTextArea @bind-Value="@emailBody" AutoSize="true"/>
-</div>*@
 
 <TelerikButton OnClick="@SendEmail">Send email</TelerikButton>
 
@@ -57,8 +53,6 @@
     void OnAppStateInitialized()
     {
         AppState.SetDefaults();
-        AppState.ApproveButtonVisible = true;
-        AppState.RejectButtonVisible = true;
     }
 
     void IDisposable.Dispose()

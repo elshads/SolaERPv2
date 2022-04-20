@@ -1,13 +1,12 @@
 ﻿@page "/groups/card"
 
+@implements IDisposable
 @using Model = Group
 
 
 <TelerikForm EditContext="@editContext"
-             OnValidSubmit="@OnValidSubmit"
-             OnInvalidSubmit="@OnInvalidSubmit"
              ValidationMessageType="FormValidationMessageType.Inline"
-             Columns="@(MobileView ? 1 : 2)"
+             Columns="@(AppState.MobileView ? 1 : 2)"
              ColumnSpacing="1rem">
     <FormValidation>
         <DataAnnotationsValidator></DataAnnotationsValidator>
@@ -24,7 +23,7 @@
         <HeaderTemplate>
             <MudIcon Icon="@Icons.Filled.AccountCircle" />
             <span class="k-pl-2">
-                @if (MobileView)
+                @if (AppState.MobileView)
                 {
                     <MudIcon Icon="@Icons.Filled.Circle" Style="font-size: 0.5rem;" Color="@(activeTabIndex == 0 ? Color.Success : Color.Transparent)" />
                 }
@@ -46,7 +45,7 @@
         <HeaderTemplate>
             <MudIcon Icon="@Icons.Filled.Business" />
             <span class="k-pl-2">
-                @if (MobileView)
+                @if (AppState.MobileView)
                 {
                     <MudIcon Icon="@Icons.Filled.Circle" Style="font-size: 0.5rem;" Color="@(activeTabIndex == 1 ? Color.Success : Color.Transparent)" />
                 }
@@ -68,7 +67,7 @@
         <HeaderTemplate>
             <MudIcon Icon="@Icons.Filled.Category" />
             <span class="k-pl-2">
-                @if (MobileView)
+                @if (AppState.MobileView)
                 {
                     <MudIcon Icon="@Icons.Filled.Circle" Style="font-size: 0.5rem;" Color="@(activeTabIndex == 2 ? Color.Success : Color.Transparent)" />
                 }
@@ -90,7 +89,7 @@
         <HeaderTemplate>
             <MudIcon Icon="@Icons.Filled.Groups" />
             <span class="k-pl-2">
-                @if (MobileView)
+                @if (AppState.MobileView)
                 {
                     <MudIcon Icon="@Icons.Filled.Circle" Style="font-size: 0.5rem;" Color="@(activeTabIndex == 3 ? Color.Success : Color.Transparent)" />
                 }
@@ -109,7 +108,7 @@
         <HeaderTemplate>
             <MudIcon Icon="@Icons.Filled.Menu" />
             <span class="k-pl-2">
-                @if (MobileView)
+                @if (AppState.MobileView)
                 {
                     <MudIcon Icon="@Icons.Filled.Circle" Style="font-size: 0.5rem;" Color="@(activeTabIndex == 4 ? Color.Success : Color.Transparent)" />
                 }
@@ -125,13 +124,10 @@
     </TabStripTab>
 </TelerikTabStrip>
 
-<TelerikMediaQuery Media="(max-width: 768px)" OnChange="@( (bool mobileView) => OnMobileViewChanged(mobileView) )"></TelerikMediaQuery>
 
 @code {
     [CascadingParameter] public AppState AppState { get; set; }
     [CascadingParameter] public DialogFactory Dialogs { get; set; }
-
-    bool MobileView = false;
 
     Model currentModel = new();
     EditContext editContext;
@@ -143,22 +139,37 @@
 
     protected override async Task OnInitializedAsync()
     {
+        SetQueryVariables();
+        OnAppStateInitialized();
         editContext = new EditContext(currentModel);
     }
 
-    void OnMobileViewChanged(bool mobileView)
+    void OnAppStateInitialized()
     {
-        MobileView = mobileView;
+        AppState.SetDefaults();
+        AppState.BackButtonVisible = true;
+        AppState.OnBackClick += BackClick;
     }
 
-    void OnValidSubmit()
+    void IDisposable.Dispose()
     {
-        //
+        AppState.OnBackClick -= BackClick;
     }
 
-    void OnInvalidSubmit()
+    void SetQueryVariables()
     {
-        //
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+
+        var _modelId = 0;
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("id", out var _id))
+        {
+            _modelId = Convert.ToInt32(_id);
+        }
+    }
+
+    void BackClick()
+    {
+        NavigationManager.NavigateTo("/groups");
     }
 
     

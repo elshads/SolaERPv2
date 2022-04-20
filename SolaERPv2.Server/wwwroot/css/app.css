@@ -49,6 +49,10 @@ html, body {
     font-style: italic;
 }
 
+.font-bold {
+    font-weight: 700;
+}
+
 .text-right, .text-right .k-input-inner {
     text-align: right;
 }
@@ -66,3 +70,7 @@ html, body {
     border-radius: 2px;
 }
 
+.disabled-field{
+    background-color: var(--smoke-color);
+    border-radius: 2px;
+}

@@ -2,8 +2,7 @@
 @implements IDisposable
 @inject PaymentDocumentService PaymentDocumentService
 @inject BankService BankService
-@inject AnalysisService AnalysisService
-@using Model = PaymentDocumentPostMain
+@using Model = PaymentDocumentMain
 
 <PageTitle>Payment Document Post</PageTitle>
 
@@ -177,83 +176,83 @@
 
 
 <div>
-    <DataGrid @bind-Data="@currentModel.PaymentDocumentPostDetailList"
+    <DataGrid @bind-Data="@currentModel.PaymentDocumentDetailList"
               ShowContextMenu="false"
               ShowToolbar="false"
               Pageable="true"
               ShowCheckBoxColumn="false"
-              @bind-SelectedItems="@selectedPaymentDocumentPostDetailList"
+              @bind-SelectedItems="@selectedPaymentDocumentDetailList"
               Height="calc(100vh - 440px)"
               ShowSearchBar="false">
-        <GridColumn Field="@(nameof(PaymentDocumentPostDetail.PaymentDocumentDetailId))" Title="Id" Width="80px" Editable="false" Locked="true" Visible="false" />
-        <GridColumn Field="@(nameof(PaymentDocumentPostDetail.PONum))" Title="PO Num" Width="110px" Editable="false" Locked="true" />
-        <GridColumn Field="@(nameof(PaymentDocumentPostDetail.Voucher))" Title="Voucher" Width="100px" Editable="false" />
-        <GridColumn Field="@(nameof(PaymentDocumentPostDetail.BankAmount))" Title="Bank Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="140px">
+        <GridColumn Field="@(nameof(PaymentDocumentDetail.PaymentDocumentDetailId))" Title="Id" Width="80px" Editable="false" Locked="true" Visible="false" />
+        <GridColumn Field="@(nameof(PaymentDocumentDetail.PONum))" Title="PO Num" Width="110px" Editable="false" Locked="true" />
+        <GridColumn Field="@(nameof(PaymentDocumentDetail.Voucher))" Title="Voucher" Width="100px" Editable="false" />
+        <GridColumn Field="@(nameof(PaymentDocumentDetail.BankAmount))" Title="Bank Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="140px">
             <Template>
                 @{
-                    selectedPaymentDocumentPostDetail = context as PaymentDocumentPostDetail;
-                    <TelerikNumericTextBox Arrows="false" Format="N3" Class="text-right" Value="@(selectedPaymentDocumentPostDetail.BankAmount)" ValueChanged="@((decimal value) => BankAmountChanged(value))" />
+                    selectedPaymentDocumentDetail = context as PaymentDocumentDetail;
+                    <TelerikNumericTextBox Arrows="false" Format="N3" Class="text-right" Value="@(selectedPaymentDocumentDetail.BankAmount)" ValueChanged="@((decimal value) => BankAmountChanged(value))" />
                 }
             </Template>
         </GridColumn>
-        <GridColumn Field="@(nameof(PaymentDocumentPostDetail.VendorAmount))" Title="Vendor Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="140px">
+        <GridColumn Field="@(nameof(PaymentDocumentDetail.VendorAmount))" Title="Vendor Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="140px">
             <Template>
                 @{
-                    selectedPaymentDocumentPostDetail = context as PaymentDocumentPostDetail;
-                    <TelerikNumericTextBox Arrows="false" Format="N3" Class="text-right" Value="@(selectedPaymentDocumentPostDetail.VendorAmount)" ValueChanged="@((decimal value) => VendorAmountChanged(value))" />
+                    selectedPaymentDocumentDetail = context as PaymentDocumentDetail;
+                    <TelerikNumericTextBox Arrows="false" Format="N3" Class="text-right" Value="@(selectedPaymentDocumentDetail.VendorAmount)" ValueChanged="@((decimal value) => VendorAmountChanged(value))" />
                 }
             </Template>
         </GridColumn>
-        <GridColumn Field="@(nameof(PaymentDocumentPostDetail.BankRate))" Title="Bank Rate" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="140px">
+        <GridColumn Field="@(nameof(PaymentDocumentDetail.BankRate))" Title="Bank Rate" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="140px">
             <Template>
                 @{
-                    selectedPaymentDocumentPostDetail = context as PaymentDocumentPostDetail;
-                    <TelerikNumericTextBox Arrows="false" Format="N3" Class="text-right" Value="@(selectedPaymentDocumentPostDetail.BankRate)" ValueChanged="@((decimal value) => BankRateChanged(value))" />
+                    selectedPaymentDocumentDetail = context as PaymentDocumentDetail;
+                    <TelerikNumericTextBox Arrows="false" Format="N3" Class="text-right" Value="@(selectedPaymentDocumentDetail.BankRate)" ValueChanged="@((decimal value) => BankRateChanged(value))" />
                 }
             </Template>
         </GridColumn>
-        <GridColumn Field="@(nameof(PaymentDocumentPostDetail.VendorRate))" Title="Vendor Rate" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="140px">
+        <GridColumn Field="@(nameof(PaymentDocumentDetail.VendorRate))" Title="Vendor Rate" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="140px">
             <Template>
                 @{
-                    selectedPaymentDocumentPostDetail = context as PaymentDocumentPostDetail;
-                    <TelerikNumericTextBox Arrows="false" Format="N3" Class="text-right" Value="@(selectedPaymentDocumentPostDetail.VendorRate)" ValueChanged="@((decimal value) => VendorRateChanged(value))" />
+                    selectedPaymentDocumentDetail = context as PaymentDocumentDetail;
+                    <TelerikNumericTextBox Arrows="false" Format="N3" Class="text-right" Value="@(selectedPaymentDocumentDetail.VendorRate)" ValueChanged="@((decimal value) => VendorRateChanged(value))" />
                 }
             </Template>
         </GridColumn>
-        <GridColumn Field="@(nameof(PaymentDocumentPostDetail.VAT))" Title="VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="100px">
+        <GridColumn Field="@(nameof(PaymentDocumentDetail.VAT))" Title="VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="100px">
             <Template>
                 @{
-                    selectedPaymentDocumentPostDetail = context as PaymentDocumentPostDetail;
-                    <TelerikNumericTextBox Arrows="false" Format="N3" Class="text-right" Value="@(selectedPaymentDocumentPostDetail.VAT)" ValueChanged="@((decimal value) => VATChanged(value))" />
+                    selectedPaymentDocumentDetail = context as PaymentDocumentDetail;
+                    <TelerikNumericTextBox Arrows="false" Format="N3" Class="text-right" Value="@(selectedPaymentDocumentDetail.VAT)" ValueChanged="@((decimal value) => VATChanged(value))" />
                 }
             </Template>
         </GridColumn>
-        <GridColumn Field="@(nameof(PaymentDocumentPostDetail.VATBankAmount))" Title="VAT Bank Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="140px">
+        <GridColumn Field="@(nameof(PaymentDocumentDetail.VATBankAmount))" Title="VAT Bank Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="140px">
             <Template>
                 @{
-                    selectedPaymentDocumentPostDetail = context as PaymentDocumentPostDetail;
-                    <TelerikNumericTextBox Arrows="false" Format="N3" Class="text-right" Value="@(selectedPaymentDocumentPostDetail.VATBankAmount)" ValueChanged="@((decimal value) => VATBankAmountChanged(value))" />
+                    selectedPaymentDocumentDetail = context as PaymentDocumentDetail;
+                    <TelerikNumericTextBox Arrows="false" Format="N3" Class="text-right" Value="@(selectedPaymentDocumentDetail.VATBankAmount)" ValueChanged="@((decimal value) => VATBankAmountChanged(value))" />
                 }
             </Template>
         </GridColumn>
 
-        <GridColumn Field="@(nameof(PaymentDocumentPostDetail.PaidAmount))" Title="Paid Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="130px" Editable="false" />
-        <GridColumn Field="@(nameof(PaymentDocumentPostDetail.PaidVAT))" Title="Paid VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="110px" Editable="false" />
-        <GridColumn Field="@(nameof(PaymentDocumentPostDetail.AmountToPay))" Title="Amount To Pay" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="145px" Editable="false" Visible="false" />
-        <GridColumn Field="@(nameof(PaymentDocumentPostDetail.VATToPay))" Title="VAT To Pay" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="122px" Editable="false" Visible="false" />
-        <GridColumn Field="@(nameof(PaymentDocumentPostDetail.POAmount))" Title="PO Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="120px" Editable="false" Visible="false" />
-        <GridColumn Field="@(nameof(PaymentDocumentPostDetail.PO_VAT))" Title="PO VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="100px" Editable="false" Visible="false" />
-        <GridColumn Field="@(nameof(PaymentDocumentPostDetail.VoucherAmount))" Title="Voucher Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="154px" Editable="false" Visible="false" />
-        <GridColumn Field="@(nameof(PaymentDocumentPostDetail.VoucherVAT))" Title="Voucher VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="130px" Editable="false" Visible="false" />
-        <GridColumn Field="@(nameof(PaymentDocumentPostDetail.AdvanceAmount))" Title="Advance Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="157px" Editable="false" Visible="false" />
-        <GridColumn Field="@(nameof(PaymentDocumentPostDetail.AdvanceVAT))" Title="Advance VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="133px" Editable="false" Visible="false" />
-        <GridColumn Field="@(nameof(PaymentDocumentPostDetail.PaymentDocumentAmount))" Title="Paym. Doc. Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="177px" Editable="false" Visible="false" />
-        <GridColumn Field="@(nameof(PaymentDocumentPostDetail.PaymentDocumentVAT))" Title="Paym. Doc. VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="155px" Editable="false" Visible="false" />
-        <GridColumn Field="@(nameof(PaymentDocumentPostDetail.TotalToPay))" Title="Total To Pay" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="130px" Editable="false" Visible="false" />
-        <GridColumn Field="@(nameof(PaymentDocumentPostDetail.IsVAT))" Title="VAT" TextAlign="ColumnTextAlign.Right" Width="75px" Editable="false" Visible="false">
+        <GridColumn Field="@(nameof(PaymentDocumentDetail.PaidAmount))" Title="Paid Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="130px" Editable="false" />
+        <GridColumn Field="@(nameof(PaymentDocumentDetail.PaidVAT))" Title="Paid VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="110px" Editable="false" />
+        <GridColumn Field="@(nameof(PaymentDocumentDetail.AmountToPay))" Title="Amount To Pay" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="145px" Editable="false" Visible="false" />
+        <GridColumn Field="@(nameof(PaymentDocumentDetail.VATToPay))" Title="VAT To Pay" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="122px" Editable="false" Visible="false" />
+        <GridColumn Field="@(nameof(PaymentDocumentDetail.POAmount))" Title="PO Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="120px" Editable="false" Visible="false" />
+        <GridColumn Field="@(nameof(PaymentDocumentDetail.PO_VAT))" Title="PO VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="100px" Editable="false" Visible="false" />
+        <GridColumn Field="@(nameof(PaymentDocumentDetail.VoucherAmount))" Title="Voucher Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="154px" Editable="false" Visible="false" />
+        <GridColumn Field="@(nameof(PaymentDocumentDetail.VoucherVAT))" Title="Voucher VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="130px" Editable="false" Visible="false" />
+        <GridColumn Field="@(nameof(PaymentDocumentDetail.AdvanceAmount))" Title="Advance Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="157px" Editable="false" Visible="false" />
+        <GridColumn Field="@(nameof(PaymentDocumentDetail.AdvanceVAT))" Title="Advance VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="133px" Editable="false" Visible="false" />
+        <GridColumn Field="@(nameof(PaymentDocumentDetail.PaymentDocumentAmount))" Title="Paym. Doc. Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="177px" Editable="false" Visible="false" />
+        <GridColumn Field="@(nameof(PaymentDocumentDetail.PaymentDocumentVAT))" Title="Paym. Doc. VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="155px" Editable="false" Visible="false" />
+        <GridColumn Field="@(nameof(PaymentDocumentDetail.TotalToPay))" Title="Total To Pay" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="130px" Editable="false" Visible="false" />
+        <GridColumn Field="@(nameof(PaymentDocumentDetail.IsVAT))" Title="VAT" TextAlign="ColumnTextAlign.Right" Width="75px" Editable="false" Visible="false">
             <Template>
                 @{
-                    var vat = (context as PaymentDocumentPostDetail).IsVAT;
+                    var vat = (context as PaymentDocumentDetail).IsVAT;
                     <div>@(vat > 0 ? (vat + "%") : "")</div>
                 }
             </Template>
@@ -270,18 +269,20 @@
     IEnumerable<Analysis> expenseAnalysisList = new List<Analysis>();
     IEnumerable<Analysis> groupProjectAnalysisList = new List<Analysis>();
     IEnumerable<Analysis> projectAnalysisList = new List<Analysis>();
+    IEnumerable<Analysis> orNumberAnalysisList = new List<Analysis>();
+    IEnumerable<Analysis> jobNumberAnalysisList = new List<Analysis>();
 
     Model currentModel = new();
     EditContext modelContext = new(new Model());
 
-    IEnumerable<PaymentDocumentPostDetail> selectedPaymentDocumentPostDetailList = new List<PaymentDocumentPostDetail>();
-    PaymentDocumentPostDetail selectedPaymentDocumentPostDetail = new();
+    IEnumerable<PaymentDocumentDetail> selectedPaymentDocumentDetailList = new List<PaymentDocumentDetail>();
+    PaymentDocumentDetail selectedPaymentDocumentDetail = new();
 
     int modelId = 0;
 
     bool invalidPaymentDate = false;
-    bool invalidBankCode => (currentModel.PaymentDocumentPostDetailList.Sum(e => e.VendorAmount) > 0 || currentModel.PaymentDocumentPostDetailList.Sum(e => e.VAT) > 0) && string.IsNullOrEmpty(currentModel.BankCode);
-    bool invalidVATBankCode => currentModel.PaymentDocumentPostDetailList.Sum(e => e.VATBankAmount) > 0 && string.IsNullOrEmpty(currentModel.VATBankCode);
+    bool invalidBankCode => (currentModel.PaymentDocumentDetailList.Sum(e => e.VendorAmount) > 0 || currentModel.PaymentDocumentDetailList.Sum(e => e.VAT) > 0) && string.IsNullOrEmpty(currentModel.BankCode);
+    bool invalidVATBankCode => currentModel.PaymentDocumentDetailList.Sum(e => e.VATBankAmount) > 0 && string.IsNullOrEmpty(currentModel.VATBankCode);
     bool invalidExpenseCode => string.IsNullOrEmpty(currentModel.ExpenseCode);
     bool invalidGroupProject => string.IsNullOrEmpty(currentModel.GroupProject);
     bool invalidProject => string.IsNullOrEmpty(currentModel.Project);
@@ -298,6 +299,10 @@
     void OnAppStateInitialized()
     {
         AppState.SetDefaults();
+
+        AppState.BackButtonVisible = true;
+        AppState.OnBackClick += BackClick;
+
         AppState.CustomButton1Visible = true;
         AppState.CustomButton1Title = "Post";
         AppState.OnCustomButton1Click += Post;
@@ -305,7 +310,8 @@
 
     void IDisposable.Dispose()
     {
-    //
+        AppState.OnBackClick -= BackClick;
+        AppState.OnCustomButton1Click -= Post;
     }
 
     void SetQueryVariables()
@@ -325,41 +331,46 @@
 
         currentModel = await PaymentDocumentService.GetPost(modelId);
         bankList = await BankService.GetAll();
-        expenseAnalysisList = await AnalysisService.GetAll(1);
-        groupProjectAnalysisList = await AnalysisService.GetAll(2);
-        projectAnalysisList = await AnalysisService.GetAll(3);
+        expenseAnalysisList = await AnalysisService.GetExpenseTypes();
+        groupProjectAnalysisList = await AnalysisService.GetGroupProjects();
+        projectAnalysisList = await AnalysisService.GetProjectCodes();
 
         AppState.Loading = false;
     }
 
+    void BackClick()
+    {
+        NavigationManager.NavigateTo("/payments");
+    }
+
     void BankAmountChanged(decimal value)
     {
-        selectedPaymentDocumentPostDetail.BankAmount = value;
+        selectedPaymentDocumentDetail.BankAmount = value;
     }
 
     void VendorAmountChanged(decimal value)
     {
-        selectedPaymentDocumentPostDetail.VendorAmount = value;
+        selectedPaymentDocumentDetail.VendorAmount = value;
     }
 
     void BankRateChanged(decimal value)
     {
-        selectedPaymentDocumentPostDetail.BankRate = value;
+        selectedPaymentDocumentDetail.BankRate = value;
     }
 
     void VendorRateChanged(decimal value)
     {
-        selectedPaymentDocumentPostDetail.VendorRate = value;
+        selectedPaymentDocumentDetail.VendorRate = value;
     }
 
     void VATChanged(decimal value)
     {
-        selectedPaymentDocumentPostDetail.VAT = value;
+        selectedPaymentDocumentDetail.VAT = value;
     }
 
     void VATBankAmountChanged(decimal value)
     {
-        selectedPaymentDocumentPostDetail.VATBankAmount = value;
+        selectedPaymentDocumentDetail.VATBankAmount = value;
     }
 
     async void Post()

@@ -68,32 +68,32 @@ public class PaymentDocumentService
         return result;
     }
 
-    public async Task<PaymentDocumentPostMain?> GetPost(int id)
+    public async Task<PaymentDocumentMain?> GetPost(int id)
     {
-        PaymentDocumentPostMain? result = new();
+        PaymentDocumentMain? result = new();
 
         var p = new DynamicParameters();
         p.Add("@PaymentDocumentMainId", id, DbType.Int32, ParameterDirection.Input);
-        result = await _sqlDataAccess.QuerySingle<PaymentDocumentPostMain>("dbo.SP_PaymentDocumentMainLoad", p);
+        result = await _sqlDataAccess.QuerySingle<PaymentDocumentMain>("dbo.SP_PaymentDocumentMainLoad", p);
 
         if (result?.PaymentDocumentMainId > 0)
         {
             var pd = new DynamicParameters();
             pd.Add("@PaymentDocumentMainId", id, DbType.Int32, ParameterDirection.Input);
-            var details = await _sqlDataAccess.QueryAll<PaymentDocumentPostDetail>("dbo.SP_PaymentDocumentDetailsLoad", pd);
-            result.PaymentDocumentPostDetailList = details?.ToList();
+            var details = await _sqlDataAccess.QueryAll<PaymentDocumentDetail>("dbo.SP_PaymentDocumentDetailsLoad", pd);
+            result.PaymentDocumentDetailList = details?.ToList();
         }
 
         return result;
     }
 
-    public async Task<SqlResult?> PostDocument(PaymentDocumentPostMain model)
+    public async Task<SqlResult?> PostDocument(PaymentDocumentMain model)
     {
         var user = await _appUserService.GetCurrentUserAsync();
         SqlResult? result = new();
         try
         {
-            foreach (var item in model.PaymentDocumentPostDetailList)
+            foreach (var item in model.PaymentDocumentDetailList)
             {
                 using IDbConnection cn = new SqlConnection(_sqlDataAccess.ConnectionString);
                 var p = new DynamicParameters();

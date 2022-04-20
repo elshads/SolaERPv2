@@ -89,11 +89,14 @@
     void OnAppStateInitialized()
     {
         AppState.SetDefaults();
+        AppState.BackButtonVisible = true;
+        AppState.OnBackClick += BackClick;
         AppState.OnReloadClick += ReloadClick;
     }
 
     void IDisposable.Dispose()
     {
+        AppState.OnBackClick -= BackClick;
         AppState.OnReloadClick -= ReloadClick;
     }
 
@@ -103,6 +106,11 @@
         var _modelList = await GroupService.GetAllAsync();
         modelList = _modelList.ToList();
         AppState.Loading = false;
+    }
+
+    void BackClick()
+    {
+        NavigationManager.NavigateTo("/");
     }
 
     async void ReloadClick()

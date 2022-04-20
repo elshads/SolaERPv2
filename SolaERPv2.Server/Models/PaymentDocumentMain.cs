@@ -22,6 +22,20 @@ public class PaymentDocumentMain : BaseModel
     public string? PaymentStatusName { get; set; }
     public int ApproveStatusId { get; set; }
     public int Sequence { get; set; }
+    public DateTime PaymentDate { get; set; } = DateTime.Now;
+    public string? BankCode { get; set; }
+    public string? VATBankCode { get; set; }
+    public string? ExpenseCode { get; set; }
+    public string? GroupProject { get; set; }
+    public string? Project { get; set; }
+    public string? OrNumber { get; set; }
+    public string? JobNumber { get; set; }
+    public string? FrameContract { get; set; }
+    public string? CreatedUser { get; set; }
+    public DateTime CreatedDate { get; set; }
+    public DateTime SentToApproveDate { get; set; }
+    public decimal VendorBalance { get; set; }
+    public decimal BankCharge { get; set; }
 
     public List<Attachment>? AttachmentList { get; set; } = new();
     public List<PaymentDocumentDetail>? PaymentDocumentDetailList { get; set; } = new();

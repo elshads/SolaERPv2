@@ -32,4 +32,9 @@ public class PaymentDocumentDetail : BaseModel
     public decimal RemainingVAT { get; set; }
     public decimal TotalToPay { get; set; }
     public decimal IsVAT { get; set; }
+    public decimal BankAmount { get; set; }
+    public decimal VendorAmount { get; set; }
+    public decimal BankRate { get; set; }
+    public decimal VendorRate { get; set; }
+    public decimal VATBankAmount { get; set; }
 }

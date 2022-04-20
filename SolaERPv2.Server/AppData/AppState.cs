@@ -15,6 +15,8 @@ public class AppState
 
     public void SetDefaults()
     {
+        BackButtonVisible = false;
+        BackButtonEnabled = true;
         AddButtonVisible = false;
         AddButtonEnabled = true;
         DeleteButtonVisible = false;
@@ -23,13 +25,15 @@ public class AppState
         SaveButtonEnabled = true;
         ReloadButtonVisible = false;
         ReloadButtonEnabled = true;
-        ReportButtonVisible = false;
-        ReportButtonEnabled = true;
         ApproveButtonVisible = false;
         ApproveButtonEnabled = true;
         RejectButtonVisible = false;
         RejectButtonEnabled = true;
 
+        ReportButtonVisible = false;
+        ReportButtonEnabled = true;
+        AttachmentButtonVisible = false;
+        AttachmentButtonEnabled = true;
 
         CustomButton1Visible = false;
         CustomButton1Enabled = true;
@@ -92,6 +96,8 @@ public class AppState
     public bool MobileView { get { return mobileView; } set { mobileView = value; OnMobileViewChanged?.Invoke(mobileView); Refresh(); } }
     public bool OpenDrawer { get { return openDrawer; } set { openDrawer = value; Refresh(); } }
     public bool Loading { get { return loading; } set { loading = value; Refresh(); } }
+    public bool BackButtonVisible { get; set; }
+    public bool BackButtonEnabled { get; set; }
     public bool AddButtonVisible { get; set; }
     public bool AddButtonEnabled { get; set; }
     public bool DeleteButtonVisible { get; set; }
@@ -100,13 +106,15 @@ public class AppState
     public bool SaveButtonEnabled { get; set; }
     public bool ReloadButtonVisible { get; set; }
     public bool ReloadButtonEnabled { get; set; }
-    public bool ReportButtonVisible { get; set; }
-    public bool ReportButtonEnabled { get; set; }
     public bool ApproveButtonVisible { get; set; }
     public bool ApproveButtonEnabled { get; set; }
     public bool RejectButtonVisible { get; set; }
     public bool RejectButtonEnabled { get; set; }
 
+    public bool ReportButtonVisible { get; set; }
+    public bool ReportButtonEnabled { get; set; }
+    public bool AttachmentButtonVisible { get; set; }
+    public bool AttachmentButtonEnabled { get; set; }
 
     public bool CustomButton1Visible { get; set; }
     public bool CustomButton1Enabled { get; set; }
@@ -151,13 +159,16 @@ public class AppState
     public event Action<bool>? OnMobileViewChanged;
 
     public event Action? OnRefreshClick;
+    public event Action? OnBackClick;
     public event Action? OnAddClick;
     public event Action? OnDeleteClick;
     public event Action? OnSaveClick;
     public event Action? OnReloadClick;
-    public event Action? OnReportClick;
     public event Action? OnApproveClick;
     public event Action? OnRejectClick;
+
+    public event Action? OnReportClick;
+    public event Action? OnAttachmentClick;
 
     public event Action? OnCustomButton1Click;
     public event Action? OnCustomButton2Click;
@@ -172,6 +183,11 @@ public class AppState
     public void Refresh()
     {
         OnRefreshClick?.Invoke();
+    }
+
+    public void BackClick()
+    {
+        OnBackClick?.Invoke();
     }
 
     public void AddClick()
@@ -194,11 +210,6 @@ public class AppState
         OnReloadClick?.Invoke();
     }
 
-    public void ReportClick()
-    {
-        OnReportClick?.Invoke();
-    }
-
     public void ApproveClick()
     {
         OnApproveClick?.Invoke();
@@ -207,6 +218,16 @@ public class AppState
     public void RejectClick()
     {
         OnRejectClick?.Invoke();
+    }
+
+    public void ReportClick()
+    {
+        OnReportClick?.Invoke();
+    }
+
+    public void AttachmentClick()
+    {
+        OnAttachmentClick?.Invoke();
     }
 
 
@@ -254,4 +275,5 @@ public class AppState
     {
         OnCustomButton9Click?.Invoke();
     }
+
 }

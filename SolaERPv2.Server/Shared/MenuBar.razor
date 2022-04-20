@@ -1,35 +1,47 @@
 ﻿
 <TelerikToolBar>
-    <ToolBarSeparator/>
+    <ToolBarSeparator />
+    <ToolBarButton Icon="arrow-left" Enabled="@AppState.BackButtonEnabled" Visible="@AppState.BackButtonVisible" OnClick="@BackClick">Back</ToolBarButton>
+    <ToolBarSeparator Visible="@AppState.BackButtonVisible" />
     <ToolBarButton Icon="@AppState.CustomButton1Icon" Enabled="@AppState.CustomButton1Enabled" Visible="@AppState.CustomButton1Visible" OnClick="@CustomButton1Click">@(AppState.CustomButton1Title)</ToolBarButton>
     <ToolBarButton Icon="@AppState.CustomButton2Icon" Enabled="@AppState.CustomButton2Enabled" Visible="@AppState.CustomButton2Visible" OnClick="@CustomButton2Click">@(AppState.CustomButton2Title)</ToolBarButton>
     <ToolBarButton Icon="@AppState.CustomButton3Icon" Enabled="@AppState.CustomButton3Enabled" Visible="@AppState.CustomButton3Visible" OnClick="@CustomButton3Click">@(AppState.CustomButton3Title)</ToolBarButton>
-    <ToolBarSeparator Visible="@(AppState.CustomButton1Visible || AppState.CustomButton2Visible || AppState.CustomButton3Visible)"/>
+    <ToolBarSeparator Visible="@(AppState.CustomButton1Visible || AppState.CustomButton2Visible || AppState.CustomButton3Visible)" />
     <ToolBarButton Icon="add" Enabled="@AppState.AddButtonEnabled" Visible="@AppState.AddButtonVisible" OnClick="@AddClick">Add</ToolBarButton>
     <ToolBarButton Icon="delete" Enabled="@AppState.DeleteButtonEnabled" Visible="@AppState.DeleteButtonVisible" OnClick="@DeleteClick">Delete</ToolBarButton>
     <ToolBarButton Icon="save" Enabled="@AppState.SaveButtonEnabled" Visible="@AppState.SaveButtonVisible" OnClick="@SaveClick">Save</ToolBarButton>
-    <ToolBarSeparator Visible="@(AppState.AddButtonVisible || AppState.DeleteButtonVisible || AppState.SaveButtonVisible)"/>
+    <ToolBarSeparator Visible="@(AppState.AddButtonVisible || AppState.DeleteButtonVisible || AppState.SaveButtonVisible)" />
     <ToolBarButton Icon="@AppState.CustomButton4Icon" Enabled="@AppState.CustomButton4Enabled" Visible="@AppState.CustomButton4Visible" OnClick="@CustomButton4Click">@(AppState.CustomButton4Title)</ToolBarButton>
     <ToolBarButton Icon="@AppState.CustomButton5Icon" Enabled="@AppState.CustomButton5Enabled" Visible="@AppState.CustomButton5Visible" OnClick="@CustomButton5Click">@(AppState.CustomButton5Title)</ToolBarButton>
     <ToolBarButton Icon="@AppState.CustomButton6Icon" Enabled="@AppState.CustomButton6Enabled" Visible="@AppState.CustomButton6Visible" OnClick="@CustomButton6Click">@(AppState.CustomButton6Title)</ToolBarButton>
     <ToolBarButton Icon="@AppState.CustomButton7Icon" Enabled="@AppState.CustomButton7Enabled" Visible="@AppState.CustomButton7Visible" OnClick="@CustomButton7Click">@(AppState.CustomButton7Title)</ToolBarButton>
     <ToolBarButton Icon="@AppState.CustomButton8Icon" Enabled="@AppState.CustomButton8Enabled" Visible="@AppState.CustomButton8Visible" OnClick="@CustomButton8Click">@(AppState.CustomButton8Title)</ToolBarButton>
     <ToolBarButton Icon="@AppState.CustomButton9Icon" Enabled="@AppState.CustomButton9Enabled" Visible="@AppState.CustomButton9Visible" OnClick="@CustomButton9Click">@(AppState.CustomButton9Title)</ToolBarButton>
-    <ToolBarSeparator Visible="@(AppState.CustomButton4Visible || AppState.CustomButton5Visible || AppState.CustomButton6Visible || AppState.CustomButton7Visible || AppState.CustomButton8Visible || AppState.CustomButton9Visible)"/>
+    <ToolBarSeparator Visible="@(AppState.CustomButton4Visible || AppState.CustomButton5Visible || AppState.CustomButton6Visible || AppState.CustomButton7Visible || AppState.CustomButton8Visible || AppState.CustomButton9Visible)" />
     <ToolBarButton Icon="track-changes-accept" ThemeColor="@(ThemeConstants.Button.ThemeColor.Primary)" Enabled="@AppState.ApproveButtonEnabled" Visible="@AppState.ApproveButtonVisible" OnClick="@ApproveClick">Approve</ToolBarButton>
     <ToolBarButton Icon="track-changes-reject" ThemeColor="@(ThemeConstants.Button.ThemeColor.Error)" Enabled="@AppState.RejectButtonEnabled" Visible="@AppState.RejectButtonVisible" OnClick="@RejectClick">Reject</ToolBarButton>
-    <ToolBarSeparator Visible="@(AppState.ApproveButtonVisible || AppState.RejectButtonVisible)"/>
+    <ToolBarSeparator Visible="@(AppState.ApproveButtonVisible || AppState.RejectButtonVisible)" />
     <ToolBarButton Icon="reload" Enabled="@AppState.ReloadButtonEnabled" Visible="@AppState.ReloadButtonVisible" OnClick="@ReloadClick">Reload</ToolBarButton>
-    <ToolBarSeparator Visible="@(AppState.ReloadButtonVisible)"/>
+    <ToolBarSeparator Visible="@(AppState.ReloadButtonVisible)" />
+    <ToolBarSpacer />
     <ToolBarButton Icon="printer" Enabled="@AppState.ReportButtonEnabled" Visible="@AppState.ReportButtonVisible" OnClick="@ReportClick">Report</ToolBarButton>
-    <ToolBarSeparator Visible="@(AppState.ReportButtonVisible)"/>
-    <ToolBarSpacer/>
+    <ToolBarSeparator Visible="@(AppState.ReportButtonVisible)" />
+    <ToolBarButton Icon="attachment" Enabled="@AppState.AttachmentButtonEnabled" Visible="@AppState.AttachmentButtonVisible" OnClick="@AttachmentClick">Attachments</ToolBarButton>
+    <ToolBarSeparator />
 </TelerikToolBar>
+
+<AttachmentContainer @bind-Visible="@attachmentDialogVisible" SourceListVisible="true" ReadOnly="true"></AttachmentContainer>
 
 
 @code {
     [CascadingParameter] public AppState AppState { get; set; }
 
+    bool attachmentDialogVisible = false;
+
+    void BackClick(MouseEventArgs args)
+    {
+        AppState.BackClick();
+    }
 
     void AddClick(MouseEventArgs args)
     {
@@ -109,5 +121,11 @@
     void CustomButton9Click(MouseEventArgs args)
     {
         AppState.CustomButton9Click();
+    }
+
+    void AttachmentClick(MouseEventArgs args)
+    {
+        attachmentDialogVisible = true;
+        AppState.AttachmentClick();
     }
 }

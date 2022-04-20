@@ -1,0 +1,16 @@
+﻿<div class="@(!VerticalLabel ? "flex-center-y flex-nowrap" : "") @Class">
+    @if (Label != null)
+    {
+        <label style="white-space: nowrap;" class="@(!VerticalLabel ? "k-mr-2" : "k-mb-1") @LabelClass">@Label</label>
+    }
+    <input type="text" class="input-height item-width k-input k-input-md k-rounded-md input-padding @InputClass" value="@Value" readonly />
+</div>
+
+@code {
+    [Parameter] public string? Class { get; set; } = "";
+    [Parameter] public string? LabelClass { get; set; } = "";
+    [Parameter] public string? InputClass { get; set; } = "";
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public string? Value { get; set; } = "";
+    [Parameter] public bool VerticalLabel { get; set; } = false;
+}
