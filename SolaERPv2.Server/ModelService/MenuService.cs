@@ -10,24 +10,28 @@ public class MenuService
         _sqlDataAccess = sqlDataAccess;
     }
 
-    public async Task<IEnumerable<Menu>?> GetAllAsync()
+    public async Task<IEnumerable<Menu>?> GetAllAsync(bool hierarchyData)
     {
         var sql = "SELECT * FROM dbo.VW_Menus_List";
-        return await _sqlDataAccess.QueryAll<Menu>(sql, null, CommandType.Text);
-    }
-
-    public async Task<Menu?> GetByIdAsync(int id)
-    {
-        var sql = $"SELECT * FROM dbo.VW_Menus_List WHERE MenuId = {id}";
-        return await _sqlDataAccess.QuerySingle<Menu>(sql, null, CommandType.Text);
+        var result = await _sqlDataAccess.QueryAll<Menu>(sql, null, CommandType.Text);
+        if (hierarchyData) { return GetHierarchy(result); }
+        return result;
     }
 
     public async Task<IEnumerable<Menu>?> GetUserItemsAsync()
     {
-        var user = await _appUserService.GetCurrentUserAsync();
-        // select according userId - not implemented yet
-        var sql = "SELECT * FROM dbo.VW_Menus_List";
-        var result = await _sqlDataAccess.QueryAll<Menu>(sql, null, CommandType.Text);
+        //var user = await _appUserService.GetCurrentUserAsync();
+        //var p = new DynamicParameters();
+        //p.Add("@UserId", user.Id, DbType.Int32, ParameterDirection.Input);
+        var result = await _sqlDataAccess.QueryAll<Menu>("SELECT * FROM dbo.VW_Menus_List", null, CommandType.Text);
+        return GetHierarchy(result);
+    }
+
+    public async Task<IEnumerable<Menu>?> GetGroupItemsAsync(int groupId)
+    {
+        var p = new DynamicParameters();
+        p.Add("@GroupId", groupId, DbType.Int32, ParameterDirection.Input);
+        var result = await _sqlDataAccess.QueryAll<Menu>("dbo.SP_GroupMenus_Load", p);
         return GetHierarchy(result);
     }
 
@@ -39,6 +43,12 @@ public class MenuService
             MenuCode = e.MenuCode,
             MenuName = e.MenuName,
             URL = e.URL,
+            CreateAccess = e.CreateAccess,
+            EditAccess = e.EditAccess,
+            DeleteAccess = e.DeleteAccess,
+            ExportAccess = e.ExportAccess,
+            UserId = e.UserId,
+            HasChildren = e.HasChildren,
             Icon = (e.Icon != null ? Icons.Filled.GetType().GetProperty(e.Icon)?.GetValue(Icons.Filled, null)?.ToString() : ""),
             Children = GetCildren(flatList, e.MenuId)
         });
@@ -53,6 +63,12 @@ public class MenuService
             MenuCode = e.MenuCode,
             MenuName = e.MenuName,
             URL = e.URL,
+            CreateAccess = e.CreateAccess,
+            EditAccess = e.EditAccess,
+            DeleteAccess = e.DeleteAccess,
+            ExportAccess = e.ExportAccess,
+            UserId = e.UserId,
+            HasChildren = e.HasChildren,
             Icon = (e.Icon != null ? Icons.Filled.GetType().GetProperty(e.Icon)?.GetValue(Icons.Filled, null)?.ToString() : ""),
             Children = GetCildren(flatList, e.MenuId)
         });

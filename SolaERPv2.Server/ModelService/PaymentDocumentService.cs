@@ -243,4 +243,18 @@ public class PaymentDocumentService
         }
         return result;
     }
+
+    public async Task<IEnumerable<Attachment>?> GetLinkedAttachments(int paymentDocumentMainId, int attachmentTypeId)
+    {
+        // attachmentTypeId
+        // 0 = Request
+        // 1 = Bid
+        // 2 = Order
+        // 3 = GRN
+        // 4 = Invoice
+        var p = new DynamicParameters();
+        p.Add("@PaymentDocumentMainId", paymentDocumentMainId, DbType.Int32, ParameterDirection.Input);
+        p.Add("@AttachmentType", attachmentTypeId, DbType.Int32, ParameterDirection.Input);
+        return await _sqlDataAccess.QueryAll<Attachment>("dbo.SP_PaymentDocumentsOtherAttachments", p);
+    }
 }

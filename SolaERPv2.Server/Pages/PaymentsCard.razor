@@ -23,7 +23,7 @@
                     <ReadOnlyField Value="@($"{paymentDocumentMain.VendorBalance.ToString("N3")} {paymentDocumentMain?.CurrencyCode}")" Label="Vendor's Balance: " />
                 </GridLayoutItem>
                 <GridLayoutItem Row="@(!AppState.MobileView ? 1 : 4)" Column="@(!AppState.MobileView ? 4 : 1)">
-                    <ReadOnlyField Value="@($"{paymentDocumentMain.CreatedDate.ToString("yyyy-MM-dd")} {paymentDocumentMain.CreatedUser}")" Label="Created On/By: " />
+                    <ReadOnlyField Value="@($"{paymentDocumentMain.CreatedDate.ToString("yyyy-MM-dd")} / {paymentDocumentMain.CreatedUser}")" Label="Created On/By: " />
                 </GridLayoutItem>
                 <GridLayoutItem Row="@(!AppState.MobileView ? 1 : 5)" Column="@(!AppState.MobileView ? 5 : 1)">
                     <ReadOnlyField Value="@("--potype")" Label="PO Type: " />
@@ -296,6 +296,12 @@
                      OnDelete="@DeleteAttachmentHandler" />
 
 
+<AttachmentContainer @bind-Visible="@showLinkedAttachments"
+                     AttachmentList="@linkedAttachmentList?.ToList()"
+                     ReadOnly="true"
+                     Title="@("- " + linkedAttachmentTitle)" />
+
+
 @code {
 
     [CascadingParameter] AppState AppState { get; set; }
@@ -324,19 +330,9 @@
     IEnumerable<Analysis> groupProjectAnalysisList = new List<Analysis>();
     IEnumerable<Analysis> projectAnalysisList = new List<Analysis>();
 
-    List<MenuItem> menuData = new()
-        {
-            new MenuItem
-            {
-                Id = 1,
-                Text = "Attachments",
-                Items = new List<MenuItem> {
-                new MenuItem { Id = 11, Text = "Attachment 1" },
-                new MenuItem { Id = 12, Text = "Attachment 2" },
-                new MenuItem { Id = 13, Text = "Attachment 3" }
-            }
-            }
-        };
+    IEnumerable<Attachment>? linkedAttachmentList = new List<Attachment>();
+    bool showLinkedAttachments = false;
+    string? linkedAttachmentTitle = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -359,20 +355,56 @@
     {
         AppState.SetDefaults();
 
-        AppState.AttachmentButtonVisible = true;
+        AppState.CustomButton10Visible = true;
+        AppState.CustomButton11Visible = true;
+        AppState.CustomButton12Visible = true;
+        AppState.CustomButton13Visible = true;
+        AppState.CustomButton14Visible = true;
+
+        AppState.CustomButton10Title = "Request Link";
+        AppState.CustomButton11Title = "Bid Link";
+        AppState.CustomButton12Title = "Order Link";
+        AppState.CustomButton13Title = "GRN Link";
+        AppState.CustomButton14Title = "Invoice Link";
+
+        AppState.CustomButton10Icon = "attachment";
+        AppState.CustomButton11Icon = "attachment";
+        AppState.CustomButton12Icon = "attachment";
+        AppState.CustomButton13Icon = "attachment";
+        AppState.CustomButton14Icon = "attachment";
+
         AppState.ReportButtonVisible = true;
         AppState.BackButtonVisible = true;
         AppState.SaveButtonVisible = true;
 
-        AppState.OnAttachmentClick += MenuAttachmentClick;
+        AppState.OnCustomButton10Click += OnRequestLinkClick;
+        AppState.OnCustomButton11Click += OnBidLinkClick;
+        AppState.OnCustomButton12Click += OnOrderLinkClick;
+        AppState.OnCustomButton13Click += OnGrnLinkClick;
+        AppState.OnCustomButton14Click += OnInvoiceLinkClick;
+
         AppState.OnBackClick += BackClick;
         AppState.OnSaveClick += Save;
         AppState.OnReloadClick += ReloadClick;
     }
 
+    void SetLinkedAttachmentsAbility()
+    {
+        AppState.CustomButton10Enabled = paymentDocumentMain.HasRequestAttach;
+        AppState.CustomButton11Enabled = paymentDocumentMain.HasBidAttach;
+        AppState.CustomButton12Enabled = paymentDocumentMain.HasOrderAttach;
+        AppState.CustomButton13Enabled = paymentDocumentMain.HasGRNAttach;
+        AppState.CustomButton14Enabled = paymentDocumentMain.HasInvoieAttach;
+    }
+
     void IDisposable.Dispose()
     {
-        AppState.OnAttachmentClick += MenuAttachmentClick;
+        AppState.OnCustomButton10Click -= OnRequestLinkClick;
+        AppState.OnCustomButton11Click -= OnBidLinkClick;
+        AppState.OnCustomButton12Click -= OnOrderLinkClick;
+        AppState.OnCustomButton13Click -= OnGrnLinkClick;
+        AppState.OnCustomButton14Click -= OnInvoiceLinkClick;
+
         AppState.OnBackClick -= BackClick;
         AppState.OnSaveClick -= Save;
         AppState.OnReloadClick -= ReloadClick;
@@ -434,6 +466,7 @@
                     RemainingVAT = s.Sum(e => e.PO_VAT - e.AdvanceVAT - e.PaidVAT - e.PaymentDocumentVAT - e.VATToPay),
                 }).ToList();
         }
+        SetLinkedAttachmentsAbility();
     }
 
     async Task GetAnalysisList()
@@ -528,10 +561,44 @@
         return true;
     }
 
-    void MenuAttachmentClick()
+    async void OnRequestLinkClick()
     {
-        
+        await GetLinkedAttachments(0, "Request");
+        showLinkedAttachments = true;
     }
+
+    async void OnBidLinkClick()
+    {
+        await GetLinkedAttachments(1, "Bid");
+        showLinkedAttachments = true;
+    }
+
+    async void OnOrderLinkClick()
+    {
+        await GetLinkedAttachments(2, "Order");
+        showLinkedAttachments = true;
+    }
+
+    async void OnGrnLinkClick()
+    {
+        await GetLinkedAttachments(3, "GRN");
+        showLinkedAttachments = true;
+    }
+
+    async void OnInvoiceLinkClick()
+    {
+        await GetLinkedAttachments(4, "Invoice");
+        showLinkedAttachments = true;
+    }
+
+    async Task GetLinkedAttachments(int attachmentTypeId, string title)
+    {
+        AppState.Loading = true;
+        linkedAttachmentTitle = title;
+        linkedAttachmentList = await PaymentDocumentService.GetLinkedAttachments(paymentDocumentMain.PaymentDocumentMainId, attachmentTypeId);
+        AppState.Loading = false;
+    }
+
 }
 
 <style>

@@ -67,9 +67,6 @@
                     <span class="k-mr-2 label-width">Payment Date:</span>
                     <div class="item-width @(invalidPaymentDate ? "invalid-form" : "")">
                         <TelerikDatePicker Id="paymentdate" Format="yyyy-MM-dd" @bind-Value="@currentModel.PaymentDate" Enabled="true" />
-                        <MudPopover Class="k-mx-1" OverflowBehavior="OverflowBehavior.FlipNever" Open="@invalidPaymentDate" AnchorOrigin="@(!AppState.MobileView ? Origin.CenterRight : Origin.BottomLeft)" TransformOrigin="@(!AppState.MobileView ? Origin.CenterLeft : Origin.TopLeft)">
-                            <span class="k-form-error k-invalid-msg k-px-2 k-m-0">This field is mandatory</span>
-                        </MudPopover>
                     </div>
                 </div>
 
@@ -86,9 +83,6 @@
                                       ColumnNames="@(new List<string> {"BankCode", "BankName", "CurrencyCode", "Account"})"
                                       PopupWidth="100%"
                                       PopupMaxWidth="600px" />
-                        <MudPopover Class="k-mx-1" OverflowBehavior="OverflowBehavior.FlipNever" Open="@invalidBankCode" AnchorOrigin="@(!AppState.MobileView ? Origin.CenterRight : Origin.BottomLeft)" TransformOrigin="@(!AppState.MobileView ? Origin.CenterLeft : Origin.TopLeft)">
-                            <span class="k-form-error k-invalid-msg k-px-2 k-m-0">This field is mandatory</span>
-                        </MudPopover>
                     </div>
                 </div>
 
@@ -105,9 +99,6 @@
                                       ColumnNames="@(new List<string> {"BankCode", "BankName", "CurrencyCode", "Account"})"
                                       PopupWidth="100%"
                                       PopupMaxWidth="600px" />
-                        <MudPopover Class="k-mx-1" OverflowBehavior="OverflowBehavior.FlipNever" Open="@invalidVATBankCode" AnchorOrigin="@(!AppState.MobileView ? Origin.CenterRight : Origin.BottomLeft)" TransformOrigin="@(!AppState.MobileView ? Origin.CenterLeft : Origin.TopLeft)">
-                            <span class="k-form-error k-invalid-msg k-px-2 k-m-0">This field is mandatory</span>
-                        </MudPopover>
                     </div>
                 </div>
 
@@ -121,9 +112,6 @@
                                       ValueField="AnalysisCode"
                                       SearchFields="@(new List<string> {"AnalysisCode"})"
                                       ShowHeader="false" />
-                        <MudPopover Class="k-mx-1" OverflowBehavior="OverflowBehavior.FlipNever" Open="@invalidExpenseCode" AnchorOrigin="@(!AppState.MobileView ? Origin.CenterRight : Origin.BottomLeft)" TransformOrigin="@(!AppState.MobileView ? Origin.CenterLeft : Origin.TopLeft)">
-                            <span class="k-form-error k-invalid-msg k-px-2 k-m-0">This field is mandatory</span>
-                        </MudPopover>
                     </div>
                 </div>
 
@@ -137,9 +125,6 @@
                                       ValueField="AnalysisCode"
                                       SearchFields="@(new List<string> {"AnalysisCode"})"
                                       ShowHeader="false" />
-                        <MudPopover Class="k-mx-1" OverflowBehavior="OverflowBehavior.FlipNever" Open="@invalidGroupProject" AnchorOrigin="@(!AppState.MobileView ? Origin.CenterRight : Origin.BottomLeft)" TransformOrigin="@(!AppState.MobileView ? Origin.CenterLeft : Origin.TopLeft)">
-                            <span class="k-form-error k-invalid-msg k-px-2 k-m-0">This field is mandatory</span>
-                        </MudPopover>
                     </div>
                 </div>
 
@@ -153,9 +138,6 @@
                                       ValueField="AnalysisCode"
                                       SearchFields="@(new List<string> {"AnalysisCode"})"
                                       ShowHeader="false" />
-                        <MudPopover Class="k-mx-1" OverflowBehavior="OverflowBehavior.FlipNever" Open="@invalidProject" AnchorOrigin="@(!AppState.MobileView ? Origin.CenterRight : Origin.BottomLeft)" TransformOrigin="@(!AppState.MobileView ? Origin.CenterLeft : Origin.TopLeft)">
-                            <span class="k-form-error k-invalid-msg k-px-2 k-m-0">This field is mandatory</span>
-                        </MudPopover>
                     </div>
                 </div>
 
@@ -163,9 +145,6 @@
                     <span class="k-mr-2 label-width">Bank Charge:</span>
                     <div class="item-width @(invalidBankCharge ? "invalid-form" : "")">
                         <TelerikNumericTextBox Id="bankcharge" Min="0" @bind-Value="@currentModel.BankCharge" Arrows="false" Format="N3" Enabled="true" />
-                        <MudPopover Class="k-mx-1" OverflowBehavior="OverflowBehavior.FlipNever" Open="@invalidBankCharge" AnchorOrigin="@(!AppState.MobileView ? Origin.CenterRight : Origin.BottomLeft)" TransformOrigin="@(!AppState.MobileView ? Origin.CenterLeft : Origin.TopLeft)">
-                            <span class="k-form-error k-invalid-msg k-px-2 k-m-0">This field is mandatory</span>
-                        </MudPopover>
                     </div>
                 </div>
 
@@ -303,15 +282,15 @@
         AppState.BackButtonVisible = true;
         AppState.OnBackClick += BackClick;
 
-        AppState.CustomButton1Visible = true;
-        AppState.CustomButton1Title = "Post";
-        AppState.OnCustomButton1Click += Post;
+        AppState.CustomButton01Visible = true;
+        AppState.CustomButton01Title = "Post";
+        AppState.OnCustomButton01Click += Post;
     }
 
     void IDisposable.Dispose()
     {
         AppState.OnBackClick -= BackClick;
-        AppState.OnCustomButton1Click -= Post;
+        AppState.OnCustomButton01Click -= Post;
     }
 
     void SetQueryVariables()

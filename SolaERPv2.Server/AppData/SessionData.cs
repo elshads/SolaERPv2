@@ -7,6 +7,5 @@ public class SessionData
         CurrentUser = appUserService.GetCurrentUser();
     }
     public AppUser? CurrentUser { get; set; } = new();
-    public List<UserMenuAccess>? CurrentUserMenuAccessList { get; set; }
     public PaymentDocumentMain? PaymentDocumentMain { get; set; }
 }

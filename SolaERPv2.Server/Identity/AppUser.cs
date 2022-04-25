@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SolaERPv2.Server.Identity;
 
@@ -32,4 +33,6 @@ public class AppUser : IdentityUser<int>, IBaseModel
     public int CreatedBy { get; set; }
     public DateTime UpdatedOn { get; set; }
     public int UpdatedBy { get; set; }
+    [NotMapped]
+    public IEnumerable<Menu>? UserMenuList { get; set; } = new List<Menu>();
 }

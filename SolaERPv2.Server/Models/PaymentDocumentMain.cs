@@ -36,6 +36,11 @@ public class PaymentDocumentMain : BaseModel
     public DateTime SentToApproveDate { get; set; }
     public decimal VendorBalance { get; set; }
     public decimal BankCharge { get; set; }
+    public bool HasRequestAttach { get; set; }
+    public bool HasBidAttach { get; set; }
+    public bool HasOrderAttach { get; set; }
+    public bool HasGRNAttach { get; set; }
+    public bool HasInvoieAttach { get; set; }
 
     public List<Attachment>? AttachmentList { get; set; } = new();
     public List<PaymentDocumentDetail>? PaymentDocumentDetailList { get; set; } = new();

@@ -348,10 +348,10 @@
     {
         AppState.SetDefaults();
 
-        AppState.CustomButton1Visible = true;
-        AppState.CustomButton1Title = "Create Document";
-        AppState.CustomButton1Icon = "file-add";
-        AppState.OnCustomButton1Click += GeneratePaymentDocument;
+        AppState.CustomButton01Visible = true;
+        AppState.CustomButton01Title = "Create Document";
+        AppState.CustomButton01Icon = "file-add";
+        AppState.OnCustomButton01Click += GeneratePaymentDocument;
 
         AppState.BackButtonVisible = true;
         AppState.ReloadButtonVisible = true;
@@ -362,7 +362,7 @@
     void IDisposable.Dispose()
     {
         AppState.OnBackClick -= BackClick;
-        AppState.OnCustomButton1Click -= GeneratePaymentDocument;
+        AppState.OnCustomButton01Click -= GeneratePaymentDocument;
         AppState.OnReloadClick -= ReloadClick;
     }
 

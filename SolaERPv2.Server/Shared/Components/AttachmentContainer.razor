@@ -1,75 +1,74 @@
-﻿<div style="min-width: 440px">
-    <TelerikDialog Visible="@Visible"
-                   @ref="dialogRef"
-                   VisibleChanged="@VisibleChangedHandler"
-                   Title="@($"Attachments {Title}")"
-                   CloseOnOverlayClick="false"
-                   ShowCloseButton="true">
-        <DialogContent>
-            @if (!ReadOnly)
-            {
-                <MudProgressLinear Color="@(fileLoading ? Color.Primary : Color.Transparent)" Indeterminate="true" />
-                <TelerikFileSelect AllowedExtensions="@(AppSettings.AllowedFileExtensions)"
-                               MaxFileSize="@(AppSettings.MaxFileSize)"
-                               Enabled="@(!fileLoading)"
-                               Multiple="true"
-                               OnSelect="@OnAttachmentSelect">
-                </TelerikFileSelect>
-                <div class="k-form-hint pb-1">
-                    @if (fileLoading)
-                    {
-                        <div class="k-text-error">
-                            Loading file: @(currentAttachment.FileName)
-                            @(currentAttachment.Size >= 1048576 ? $"Size: {(currentAttachment.Size / 1024 / 1024).ToString("N2")}MB " : currentAttachment.Size >= 1024 ? $"Size: {(currentAttachment.Size / 1024).ToString("N2")}KB " : currentAttachment.Size > 0 ? $"Size: {(currentAttachment.Size).ToString("N2")}BYTES " : "")
-                            . &nbsp Do not close this window while loading
-                        </div>
-                    }
-                    else
-                    {
-                        <div>Allowed files: @(AppSettings.AllowedFileExtensions != null ? String.Join(", ", AppSettings.AllowedFileExtensions) : "") up to @(AppSettings.MaxFileSize / 1024 / 1024)MB</div>
-                    }
-                </div>
-            }
-            <TelerikGridLayout RowSpacing="8px" ColumnSpacing="8px" VerticalAlign="GridLayoutVerticalAlign.Top">
-                <GridLayoutItems>
-                    @if (SourceListVisible)
-                    {
-                        <GridLayoutItem Row="1" Column="1">
-                            <TelerikRadioGroup Data="@sourceTypeList"
-                                           @bind-Value="@selectedSourceType"
-                                           OnChange="@((e) => OnAttachmentSourceTypeChangeHandler(e.ToString()))"
-                                           Layout="RadioGroupLayout.Vertical"
-                                           LabelPosition="RadioGroupLabelPosition.Before">
-                            </TelerikRadioGroup>
-                        </GridLayoutItem>
-                    }
-                    <GridLayoutItem Row="1" Column="@(SourceListVisible ? 2 : 1)">
-                        <TelerikGrid Data="@AttachmentList"
-                                     @ref="gridRef"
-                                     Height="265px"
-                                     Sortable="false"
-                                     Groupable="false"
-                                     Resizable="false"
-                                     Reorderable="false"
-                                     SelectionMode="GridSelectionMode.Multiple"
-                                     OnDelete="@DeleteAttachment">
-                            <GridColumns>
-                                <GridColumn Field="@(nameof(Attachment.FileName))" Title="Files" Width="@(AppState.MobileView ? "360px" : "auto")" />
-                                <GridCommandColumn ShowColumnMenu="false" Reorderable="false" Visible="true" Width="90px">
-                                    <GridCommandButton Icon="download" ShowInEdit="false" Enabled="@(!fileLoading)" Title="Download" OnClick="@(() => DownloadAttachment(context as Attachment))" />
-                                    <GridCommandButton Command="Delete" Icon="delete" ShowInEdit="false" Enabled="@(!fileLoading && !ReadOnly)" Title="Delete" />
-                                </GridCommandColumn>
-                            </GridColumns>
-                        </TelerikGrid>
+﻿
+<TelerikDialog @ref="dialogRef"
+               Visible="@Visible"
+               VisibleChanged="@VisibleChangedHandler"
+               Title="@($"Attachments {Title}")"
+               CloseOnOverlayClick="false"
+               ShowCloseButton="true">
+    <DialogContent>
+        @if (!ReadOnly)
+        {
+            <MudProgressLinear Color="@(fileLoading ? Color.Primary : Color.Transparent)" Indeterminate="true" />
+            <TelerikFileSelect AllowedExtensions="@(AppSettings.AllowedFileExtensions)"
+                           MaxFileSize="@(AppSettings.MaxFileSize)"
+                           Enabled="@(!fileLoading)"
+                           Multiple="true"
+                           OnSelect="@OnAttachmentSelect">
+            </TelerikFileSelect>
+            <div class="k-form-hint pb-1">
+                @if (fileLoading)
+                {
+                    <div class="k-text-error">
+                        Loading file: @(currentAttachment.FileName)
+                        @(currentAttachment.Size >= 1048576 ? $"Size: {(currentAttachment.Size / 1024 / 1024).ToString("N2")}MB " : currentAttachment.Size >= 1024 ? $"Size: {(currentAttachment.Size / 1024).ToString("N2")}KB " : currentAttachment.Size > 0 ? $"Size: {(currentAttachment.Size).ToString("N2")}BYTES " : "")
+                        . &nbsp Do not close this window while loading
+                    </div>
+                }
+                else
+                {
+                    <div>Allowed files: @(AppSettings.AllowedFileExtensions != null ? String.Join(", ", AppSettings.AllowedFileExtensions) : "") up to @(AppSettings.MaxFileSize / 1024 / 1024)MB</div>
+                }
+            </div>
+        }
+        <TelerikGridLayout RowSpacing="8px" ColumnSpacing="8px" VerticalAlign="GridLayoutVerticalAlign.Top">
+            <GridLayoutItems>
+                @if (SourceListVisible)
+                {
+                    <GridLayoutItem Row="1" Column="1">
+                        <TelerikRadioGroup Data="@sourceTypeList"
+                                       @bind-Value="@selectedSourceType"
+                                       OnChange="@((e) => OnAttachmentSourceTypeChangeHandler(e.ToString()))"
+                                       Layout="RadioGroupLayout.Vertical"
+                                       LabelPosition="RadioGroupLabelPosition.Before">
+                        </TelerikRadioGroup>
                     </GridLayoutItem>
-                </GridLayoutItems>
-            </TelerikGridLayout>
-        </DialogContent>
-        <DialogButtons>
-            <TelerikButton OnClick="@(() => DialogClosed())">Close</TelerikButton>
-        </DialogButtons>
-    </TelerikDialog>
-</div>
+                }
+                <GridLayoutItem Row="1" Column="@(SourceListVisible ? 2 : 1)">
+                    <TelerikGrid Data="@AttachmentList"
+                                 @ref="gridRef"
+                                 Height="265px"
+                                 Sortable="false"
+                                 Groupable="false"
+                                 Resizable="false"
+                                 Reorderable="false"
+                                 SelectionMode="GridSelectionMode.Multiple"
+                                 OnDelete="@DeleteAttachment">
+                        <GridColumns>
+                            <GridColumn Field="@(nameof(Attachment.FileName))" Title="Files" Width="@(AppState.MobileView ? "360px" : "auto")" />
+                            <GridCommandColumn ShowColumnMenu="false" Reorderable="false" Visible="true" Width="90px">
+                                <GridCommandButton Icon="download" ShowInEdit="false" Enabled="@(!fileLoading)" Title="Download" OnClick="@(() => DownloadAttachment(context as Attachment))" />
+                                <GridCommandButton Command="Delete" Icon="delete" ShowInEdit="false" Enabled="@(!fileLoading && !ReadOnly)" Title="Delete" />
+                            </GridCommandColumn>
+                        </GridColumns>
+                    </TelerikGrid>
+                </GridLayoutItem>
+            </GridLayoutItems>
+        </TelerikGridLayout>
+    </DialogContent>
+    <DialogButtons>
+        <TelerikButton OnClick="@(() => DialogClosed())">Close</TelerikButton>
+    </DialogButtons>
+</TelerikDialog>
 
 
 
@@ -78,7 +77,6 @@
 
     [Parameter] public bool Visible { get; set; } = false;
     [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
-    [Parameter] public EventCallback OnClose { get; set; }
     [Parameter] public EventCallback<IEnumerable<Attachment>> OnDelete { get; set; }
     [Parameter] public EventCallback<Attachment> OnDownloadClick { get; set; }
     [Parameter] public int AttachmentTypeId { get; set; } = new();
@@ -112,8 +110,9 @@
         Visible = visible;
         if (!visible)
         {
-            await DialogClosed();
+            fileLoading = false;
         }
+        await VisibleChanged.InvokeAsync(Visible);
     }
 
     async Task OnAttachmentSelect(FileSelectEventArgs args)
@@ -173,11 +172,10 @@
         }
     }
 
-    async Task DialogClosed()
+    void DialogClosed()
     {
         fileLoading = false;
         Visible = false;
-        await OnClose.InvokeAsync();
     }
 
     async Task DownloadAttachment(Attachment attachment)

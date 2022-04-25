@@ -3,29 +3,34 @@
     <ToolBarSeparator />
     <ToolBarButton Icon="arrow-left" Enabled="@AppState.BackButtonEnabled" Visible="@AppState.BackButtonVisible" OnClick="@BackClick">Back</ToolBarButton>
     <ToolBarSeparator Visible="@AppState.BackButtonVisible" />
-    <ToolBarButton Icon="@AppState.CustomButton1Icon" Enabled="@AppState.CustomButton1Enabled" Visible="@AppState.CustomButton1Visible" OnClick="@CustomButton1Click">@(AppState.CustomButton1Title)</ToolBarButton>
-    <ToolBarButton Icon="@AppState.CustomButton2Icon" Enabled="@AppState.CustomButton2Enabled" Visible="@AppState.CustomButton2Visible" OnClick="@CustomButton2Click">@(AppState.CustomButton2Title)</ToolBarButton>
-    <ToolBarButton Icon="@AppState.CustomButton3Icon" Enabled="@AppState.CustomButton3Enabled" Visible="@AppState.CustomButton3Visible" OnClick="@CustomButton3Click">@(AppState.CustomButton3Title)</ToolBarButton>
-    <ToolBarSeparator Visible="@(AppState.CustomButton1Visible || AppState.CustomButton2Visible || AppState.CustomButton3Visible)" />
+    <ToolBarButton Icon="@AppState.CustomButton01Icon" Enabled="@AppState.CustomButton01Enabled" Visible="@AppState.CustomButton01Visible" OnClick="@CustomButton01Click">@(AppState.CustomButton01Title)</ToolBarButton>
+    <ToolBarButton Icon="@AppState.CustomButton02Icon" Enabled="@AppState.CustomButton02Enabled" Visible="@AppState.CustomButton02Visible" OnClick="@CustomButton02Click">@(AppState.CustomButton02Title)</ToolBarButton>
+    <ToolBarButton Icon="@AppState.CustomButton03Icon" Enabled="@AppState.CustomButton03Enabled" Visible="@AppState.CustomButton03Visible" OnClick="@CustomButton03Click">@(AppState.CustomButton03Title)</ToolBarButton>
+    <ToolBarSeparator Visible="@(AppState.CustomButton01Visible || AppState.CustomButton02Visible || AppState.CustomButton03Visible)" />
     <ToolBarButton Icon="add" Enabled="@AppState.AddButtonEnabled" Visible="@AppState.AddButtonVisible" OnClick="@AddClick">Add</ToolBarButton>
     <ToolBarButton Icon="delete" Enabled="@AppState.DeleteButtonEnabled" Visible="@AppState.DeleteButtonVisible" OnClick="@DeleteClick">Delete</ToolBarButton>
     <ToolBarButton Icon="save" Enabled="@AppState.SaveButtonEnabled" Visible="@AppState.SaveButtonVisible" OnClick="@SaveClick">Save</ToolBarButton>
     <ToolBarSeparator Visible="@(AppState.AddButtonVisible || AppState.DeleteButtonVisible || AppState.SaveButtonVisible)" />
-    <ToolBarButton Icon="@AppState.CustomButton4Icon" Enabled="@AppState.CustomButton4Enabled" Visible="@AppState.CustomButton4Visible" OnClick="@CustomButton4Click">@(AppState.CustomButton4Title)</ToolBarButton>
-    <ToolBarButton Icon="@AppState.CustomButton5Icon" Enabled="@AppState.CustomButton5Enabled" Visible="@AppState.CustomButton5Visible" OnClick="@CustomButton5Click">@(AppState.CustomButton5Title)</ToolBarButton>
-    <ToolBarButton Icon="@AppState.CustomButton6Icon" Enabled="@AppState.CustomButton6Enabled" Visible="@AppState.CustomButton6Visible" OnClick="@CustomButton6Click">@(AppState.CustomButton6Title)</ToolBarButton>
-    <ToolBarButton Icon="@AppState.CustomButton7Icon" Enabled="@AppState.CustomButton7Enabled" Visible="@AppState.CustomButton7Visible" OnClick="@CustomButton7Click">@(AppState.CustomButton7Title)</ToolBarButton>
-    <ToolBarButton Icon="@AppState.CustomButton8Icon" Enabled="@AppState.CustomButton8Enabled" Visible="@AppState.CustomButton8Visible" OnClick="@CustomButton8Click">@(AppState.CustomButton8Title)</ToolBarButton>
-    <ToolBarButton Icon="@AppState.CustomButton9Icon" Enabled="@AppState.CustomButton9Enabled" Visible="@AppState.CustomButton9Visible" OnClick="@CustomButton9Click">@(AppState.CustomButton9Title)</ToolBarButton>
-    <ToolBarSeparator Visible="@(AppState.CustomButton4Visible || AppState.CustomButton5Visible || AppState.CustomButton6Visible || AppState.CustomButton7Visible || AppState.CustomButton8Visible || AppState.CustomButton9Visible)" />
+    <ToolBarButton Icon="@AppState.CustomButton04Icon" Enabled="@AppState.CustomButton04Enabled" Visible="@AppState.CustomButton04Visible" OnClick="@CustomButton04Click">@(AppState.CustomButton04Title)</ToolBarButton>
+    <ToolBarButton Icon="@AppState.CustomButton05Icon" Enabled="@AppState.CustomButton05Enabled" Visible="@AppState.CustomButton05Visible" OnClick="@CustomButton05Click">@(AppState.CustomButton05Title)</ToolBarButton>
+    <ToolBarButton Icon="@AppState.CustomButton06Icon" Enabled="@AppState.CustomButton06Enabled" Visible="@AppState.CustomButton06Visible" OnClick="@CustomButton06Click">@(AppState.CustomButton06Title)</ToolBarButton>
+    <ToolBarButton Icon="@AppState.CustomButton07Icon" Enabled="@AppState.CustomButton07Enabled" Visible="@AppState.CustomButton07Visible" OnClick="@CustomButton07Click">@(AppState.CustomButton07Title)</ToolBarButton>
+    <ToolBarButton Icon="@AppState.CustomButton08Icon" Enabled="@AppState.CustomButton08Enabled" Visible="@AppState.CustomButton08Visible" OnClick="@CustomButton08Click">@(AppState.CustomButton08Title)</ToolBarButton>
+    <ToolBarButton Icon="@AppState.CustomButton09Icon" Enabled="@AppState.CustomButton09Enabled" Visible="@AppState.CustomButton09Visible" OnClick="@CustomButton09Click">@(AppState.CustomButton09Title)</ToolBarButton>
+    <ToolBarSeparator Visible="@(AppState.CustomButton04Visible || AppState.CustomButton05Visible || AppState.CustomButton06Visible || AppState.CustomButton07Visible || AppState.CustomButton08Visible || AppState.CustomButton09Visible)" />
     <ToolBarButton Icon="track-changes-accept" ThemeColor="@(ThemeConstants.Button.ThemeColor.Primary)" Enabled="@AppState.ApproveButtonEnabled" Visible="@AppState.ApproveButtonVisible" OnClick="@ApproveClick">Approve</ToolBarButton>
     <ToolBarButton Icon="track-changes-reject" ThemeColor="@(ThemeConstants.Button.ThemeColor.Error)" Enabled="@AppState.RejectButtonEnabled" Visible="@AppState.RejectButtonVisible" OnClick="@RejectClick">Reject</ToolBarButton>
     <ToolBarSeparator Visible="@(AppState.ApproveButtonVisible || AppState.RejectButtonVisible)" />
     <ToolBarButton Icon="reload" Enabled="@AppState.ReloadButtonEnabled" Visible="@AppState.ReloadButtonVisible" OnClick="@ReloadClick">Reload</ToolBarButton>
     <ToolBarSeparator Visible="@(AppState.ReloadButtonVisible)" />
-    <ToolBarSpacer />
     <ToolBarButton Icon="printer" Enabled="@AppState.ReportButtonEnabled" Visible="@AppState.ReportButtonVisible" OnClick="@ReportClick">Report</ToolBarButton>
     <ToolBarSeparator Visible="@(AppState.ReportButtonVisible)" />
+    <ToolBarSpacer />
+    <ToolBarButton Icon="@AppState.CustomButton10Icon" Enabled="@AppState.CustomButton10Enabled" Visible="@AppState.CustomButton10Visible" OnClick="@CustomButton10Click">@(AppState.CustomButton10Title)</ToolBarButton>
+    <ToolBarButton Icon="@AppState.CustomButton11Icon" Enabled="@AppState.CustomButton11Enabled" Visible="@AppState.CustomButton11Visible" OnClick="@CustomButton11Click">@(AppState.CustomButton11Title)</ToolBarButton>
+    <ToolBarButton Icon="@AppState.CustomButton12Icon" Enabled="@AppState.CustomButton12Enabled" Visible="@AppState.CustomButton12Visible" OnClick="@CustomButton12Click">@(AppState.CustomButton12Title)</ToolBarButton>
+    <ToolBarButton Icon="@AppState.CustomButton13Icon" Enabled="@AppState.CustomButton13Enabled" Visible="@AppState.CustomButton13Visible" OnClick="@CustomButton13Click">@(AppState.CustomButton13Title)</ToolBarButton>
+    <ToolBarButton Icon="@AppState.CustomButton14Icon" Enabled="@AppState.CustomButton14Enabled" Visible="@AppState.CustomButton14Visible" OnClick="@CustomButton14Click">@(AppState.CustomButton14Title)</ToolBarButton>
     <ToolBarButton Icon="attachment" Enabled="@AppState.AttachmentButtonEnabled" Visible="@AppState.AttachmentButtonVisible" OnClick="@AttachmentClick">Attachments</ToolBarButton>
     <ToolBarSeparator />
 </TelerikToolBar>
@@ -78,49 +83,74 @@
         AppState.RejectClick();
     }
 
-    void CustomButton1Click(MouseEventArgs args)
+    void CustomButton01Click(MouseEventArgs args)
     {
-        AppState.CustomButton1Click();
+        AppState.CustomButton01Click();
     }
 
-    void CustomButton2Click(MouseEventArgs args)
+    void CustomButton02Click(MouseEventArgs args)
     {
-        AppState.CustomButton2Click();
+        AppState.CustomButton02Click();
     }
 
-    void CustomButton3Click(MouseEventArgs args)
+    void CustomButton03Click(MouseEventArgs args)
     {
-        AppState.CustomButton3Click();
+        AppState.CustomButton03Click();
     }
 
-    void CustomButton4Click(MouseEventArgs args)
+    void CustomButton04Click(MouseEventArgs args)
     {
-        AppState.CustomButton4Click();
+        AppState.CustomButton04Click();
     }
 
-    void CustomButton5Click(MouseEventArgs args)
+    void CustomButton05Click(MouseEventArgs args)
     {
-        AppState.CustomButton5Click();
+        AppState.CustomButton05Click();
     }
 
-    void CustomButton6Click(MouseEventArgs args)
+    void CustomButton06Click(MouseEventArgs args)
     {
-        AppState.CustomButton6Click();
+        AppState.CustomButton06Click();
     }
 
-    void CustomButton7Click(MouseEventArgs args)
+    void CustomButton07Click(MouseEventArgs args)
     {
-        AppState.CustomButton7Click();
+        AppState.CustomButton07Click();
     }
 
-    void CustomButton8Click(MouseEventArgs args)
+    void CustomButton08Click(MouseEventArgs args)
     {
-        AppState.CustomButton8Click();
+        AppState.CustomButton08Click();
     }
 
-    void CustomButton9Click(MouseEventArgs args)
+    void CustomButton09Click(MouseEventArgs args)
     {
-        AppState.CustomButton9Click();
+        AppState.CustomButton09Click();
+    }
+
+    void CustomButton10Click(MouseEventArgs args)
+    {
+        AppState.CustomButton10Click();
+    }
+
+    void CustomButton11Click(MouseEventArgs args)
+    {
+        AppState.CustomButton11Click();
+    }
+
+    void CustomButton12Click(MouseEventArgs args)
+    {
+        AppState.CustomButton12Click();
+    }
+
+    void CustomButton13Click(MouseEventArgs args)
+    {
+        AppState.CustomButton13Click();
+    }
+
+    void CustomButton14Click(MouseEventArgs args)
+    {
+        AppState.CustomButton14Click();
     }
 
     void AttachmentClick(MouseEventArgs args)

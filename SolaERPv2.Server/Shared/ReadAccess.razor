@@ -1,5 +1,4 @@
-﻿
-@if (readAccess)
+﻿@if (readAccess)
 {
     <div>
         @ChildContent
@@ -8,7 +7,10 @@
 else
 {
     <div>
-        NoAccess
+        <div class="center-content">
+            <div class="text-center text-error k-px-2">No Access</div>
+            <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@(() => NavigationManager.NavigateTo("/"))">Go to Homepage</TelerikButton>
+        </div>
     </div>
 }
 
@@ -17,20 +19,20 @@ else
     [Parameter] public RenderFragment ChildContent { get; set; }
 
     bool readAccess = true;
+    string? pageCode = "";
 
-    protected override async Task OnParametersSetAsync()
+    protected override void OnParametersSet()
     {
-        await SetReadAccess();
+        SetReadAccess();
     }
 
-    async Task SetReadAccess()
+    void SetReadAccess()
     {
-        var pageCode = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
-        if (SessionData.CurrentUserMenuAccessList != null)
+        pageCode = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        if (SessionData?.CurrentUser?.UserMenuList != null)
         {
-            var _readAccess = SessionData.CurrentUserMenuAccessList.First(e => e.MenuCode == pageCode);
-            if (_readAccess != null) { readAccess = _readAccess.ReadAccess; } else { readAccess = true; }
+            var _readAccess = SessionData?.CurrentUser?.UserMenuList.FirstOrDefault(e => pageCode.Contains(e.MenuCode));
+            readAccess = pageCode == "" ? true : _readAccess != null ? (_readAccess.ExportAccess || _readAccess.CreateAccess || _readAccess.EditAccess || _readAccess.DeleteAccess) : false;
         }
-        await InvokeAsync(StateHasChanged);
     }
 }

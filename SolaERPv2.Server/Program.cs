@@ -63,7 +63,6 @@ builder.Services.AddScoped<GroupService>();
 builder.Services.AddScoped<MenuService>();
 builder.Services.AddScoped<PaymentDocumentService>();
 builder.Services.AddScoped<ThemeService>();
-builder.Services.AddScoped<UserMenuAccessService>();
 builder.Services.AddScoped<VendorService>();
 
 builder.Services.Configure<HubOptions>(options =>

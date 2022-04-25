@@ -35,44 +35,64 @@ public class AppState
         AttachmentButtonVisible = false;
         AttachmentButtonEnabled = true;
 
-        CustomButton1Visible = false;
-        CustomButton1Enabled = true;
-        CustomButton2Visible = false;
-        CustomButton2Enabled = true;
-        CustomButton3Visible = false;
-        CustomButton3Enabled = true;
-        CustomButton4Visible = false;
-        CustomButton4Enabled = true;
-        CustomButton5Visible = false;
-        CustomButton5Enabled = true;
-        CustomButton6Visible = false;
-        CustomButton6Enabled = true;
-        CustomButton7Visible = false;
-        CustomButton7Enabled = true;
-        CustomButton8Visible = false;
-        CustomButton8Enabled = true;
-        CustomButton9Visible = false;
-        CustomButton9Enabled = true;
+        CustomButton01Visible = false;
+        CustomButton01Enabled = true;
+        CustomButton02Visible = false;
+        CustomButton02Enabled = true;
+        CustomButton03Visible = false;
+        CustomButton03Enabled = true;
+        CustomButton04Visible = false;
+        CustomButton04Enabled = true;
+        CustomButton05Visible = false;
+        CustomButton05Enabled = true;
+        CustomButton06Visible = false;
+        CustomButton06Enabled = true;
+        CustomButton07Visible = false;
+        CustomButton07Enabled = true;
+        CustomButton08Visible = false;
+        CustomButton08Enabled = true;
+        CustomButton09Visible = false;
+        CustomButton09Enabled = true;
+        CustomButton10Visible = false;
+        CustomButton10Enabled = true;
+        CustomButton11Visible = false;
+        CustomButton11Enabled = true;
+        CustomButton12Visible = false;
+        CustomButton12Enabled = true;
+        CustomButton13Visible = false;
+        CustomButton13Enabled = true;
+        CustomButton14Visible = false;
+        CustomButton14Enabled = true;
 
-        CustomButton1Title = "CustomButton1";
-        CustomButton2Title = "CustomButton2";
-        CustomButton3Title = "CustomButton3";
-        CustomButton4Title = "CustomButton4";
-        CustomButton5Title = "CustomButton5";
-        CustomButton6Title = "CustomButton6";
-        CustomButton7Title = "CustomButton7";
-        CustomButton8Title = "CustomButton8";
-        CustomButton9Title = "CustomButton9";
+        CustomButton01Title = "CustomButton01";
+        CustomButton02Title = "CustomButton02";
+        CustomButton03Title = "CustomButton03";
+        CustomButton04Title = "CustomButton04";
+        CustomButton05Title = "CustomButton05";
+        CustomButton06Title = "CustomButton06";
+        CustomButton07Title = "CustomButton07";
+        CustomButton08Title = "CustomButton08";
+        CustomButton09Title = "CustomButton09";
+        CustomButton10Title = "CustomButton10";
+        CustomButton11Title = "CustomButton11";
+        CustomButton12Title = "CustomButton12";
+        CustomButton13Title = "CustomButton13";
+        CustomButton14Title = "CustomButton14";
 
-        CustomButton1Icon = "";
-        CustomButton2Icon = "";
-        CustomButton3Icon = "";
-        CustomButton4Icon = "";
-        CustomButton5Icon = "";
-        CustomButton6Icon = "";
-        CustomButton7Icon = "";
-        CustomButton8Icon = "";
-        CustomButton9Icon = "";
+        CustomButton01Icon = "";
+        CustomButton02Icon = "";
+        CustomButton03Icon = "";
+        CustomButton04Icon = "";
+        CustomButton05Icon = "";
+        CustomButton06Icon = "";
+        CustomButton07Icon = "";
+        CustomButton08Icon = "";
+        CustomButton09Icon = "";
+        CustomButton10Icon = "";
+        CustomButton11Icon = "";
+        CustomButton12Icon = "";
+        CustomButton13Icon = "";
+        CustomButton14Icon = "";
     }
 
     public void ShowAlert(string message, Severity severity, Action? onClick = null)
@@ -116,44 +136,64 @@ public class AppState
     public bool AttachmentButtonVisible { get; set; }
     public bool AttachmentButtonEnabled { get; set; }
 
-    public bool CustomButton1Visible { get; set; }
-    public bool CustomButton1Enabled { get; set; }
-    public bool CustomButton2Visible { get; set; }
-    public bool CustomButton2Enabled { get; set; }
-    public bool CustomButton3Visible { get; set; }
-    public bool CustomButton3Enabled { get; set; }
-    public bool CustomButton4Visible { get; set; }
-    public bool CustomButton4Enabled { get; set; }
-    public bool CustomButton5Visible { get; set; }
-    public bool CustomButton5Enabled { get; set; }
-    public bool CustomButton6Visible { get; set; }
-    public bool CustomButton6Enabled { get; set; }
-    public bool CustomButton7Visible { get; set; }
-    public bool CustomButton7Enabled { get; set; }
-    public bool CustomButton8Visible { get; set; }
-    public bool CustomButton8Enabled { get; set; }
-    public bool CustomButton9Visible { get; set; }
-    public bool CustomButton9Enabled { get; set; }
+    public bool CustomButton01Visible { get; set; }
+    public bool CustomButton01Enabled { get; set; }
+    public bool CustomButton02Visible { get; set; }
+    public bool CustomButton02Enabled { get; set; }
+    public bool CustomButton03Visible { get; set; }
+    public bool CustomButton03Enabled { get; set; }
+    public bool CustomButton04Visible { get; set; }
+    public bool CustomButton04Enabled { get; set; }
+    public bool CustomButton05Visible { get; set; }
+    public bool CustomButton05Enabled { get; set; }
+    public bool CustomButton06Visible { get; set; }
+    public bool CustomButton06Enabled { get; set; }
+    public bool CustomButton07Visible { get; set; }
+    public bool CustomButton07Enabled { get; set; }
+    public bool CustomButton08Visible { get; set; }
+    public bool CustomButton08Enabled { get; set; }
+    public bool CustomButton09Visible { get; set; }
+    public bool CustomButton09Enabled { get; set; }
+    public bool CustomButton10Visible { get; set; }
+    public bool CustomButton10Enabled { get; set; }
+    public bool CustomButton11Visible { get; set; }
+    public bool CustomButton11Enabled { get; set; }
+    public bool CustomButton12Visible { get; set; }
+    public bool CustomButton12Enabled { get; set; }
+    public bool CustomButton13Visible { get; set; }
+    public bool CustomButton13Enabled { get; set; }
+    public bool CustomButton14Visible { get; set; }
+    public bool CustomButton14Enabled { get; set; }
 
-    public string? CustomButton1Title { get; set; }
-    public string? CustomButton2Title { get; set; }
-    public string? CustomButton3Title { get; set; }
-    public string? CustomButton4Title { get; set; }
-    public string? CustomButton5Title { get; set; }
-    public string? CustomButton6Title { get; set; }
-    public string? CustomButton7Title { get; set; }
-    public string? CustomButton8Title { get; set; }
-    public string? CustomButton9Title { get; set; }
+    public string? CustomButton01Title { get; set; }
+    public string? CustomButton02Title { get; set; }
+    public string? CustomButton03Title { get; set; }
+    public string? CustomButton04Title { get; set; }
+    public string? CustomButton05Title { get; set; }
+    public string? CustomButton06Title { get; set; }
+    public string? CustomButton07Title { get; set; }
+    public string? CustomButton08Title { get; set; }
+    public string? CustomButton09Title { get; set; }
+    public string? CustomButton10Title { get; set; }
+    public string? CustomButton11Title { get; set; }
+    public string? CustomButton12Title { get; set; }
+    public string? CustomButton13Title { get; set; }
+    public string? CustomButton14Title { get; set; }
 
-    public string? CustomButton1Icon { get; set; }
-    public string? CustomButton2Icon { get; set; }
-    public string? CustomButton3Icon { get; set; }
-    public string? CustomButton4Icon { get; set; }
-    public string? CustomButton5Icon { get; set; }
-    public string? CustomButton6Icon { get; set; }
-    public string? CustomButton7Icon { get; set; }
-    public string? CustomButton8Icon { get; set; }
-    public string? CustomButton9Icon { get; set; }
+    public string? CustomButton01Icon { get; set; }
+    public string? CustomButton02Icon { get; set; }
+    public string? CustomButton03Icon { get; set; }
+    public string? CustomButton04Icon { get; set; }
+    public string? CustomButton05Icon { get; set; }
+    public string? CustomButton06Icon { get; set; }
+    public string? CustomButton07Icon { get; set; }
+    public string? CustomButton08Icon { get; set; }
+    public string? CustomButton09Icon { get; set; }
+    public string? CustomButton10Icon { get; set; }
+    public string? CustomButton11Icon { get; set; }
+    public string? CustomButton12Icon { get; set; }
+    public string? CustomButton13Icon { get; set; }
+    public string? CustomButton14Icon { get; set; }
 
 
     public event Action<bool>? OnMobileViewChanged;
@@ -170,15 +210,20 @@ public class AppState
     public event Action? OnReportClick;
     public event Action? OnAttachmentClick;
 
-    public event Action? OnCustomButton1Click;
-    public event Action? OnCustomButton2Click;
-    public event Action? OnCustomButton3Click;
-    public event Action? OnCustomButton4Click;
-    public event Action? OnCustomButton5Click;
-    public event Action? OnCustomButton6Click;
-    public event Action? OnCustomButton7Click;
-    public event Action? OnCustomButton8Click;
-    public event Action? OnCustomButton9Click;
+    public event Action? OnCustomButton01Click;
+    public event Action? OnCustomButton02Click;
+    public event Action? OnCustomButton03Click;
+    public event Action? OnCustomButton04Click;
+    public event Action? OnCustomButton05Click;
+    public event Action? OnCustomButton06Click;
+    public event Action? OnCustomButton07Click;
+    public event Action? OnCustomButton08Click;
+    public event Action? OnCustomButton09Click;
+    public event Action? OnCustomButton10Click;
+    public event Action? OnCustomButton11Click;
+    public event Action? OnCustomButton12Click;
+    public event Action? OnCustomButton13Click;
+    public event Action? OnCustomButton14Click;
 
     public void Refresh()
     {
@@ -231,49 +276,73 @@ public class AppState
     }
 
 
-    public void CustomButton1Click()
+    public void CustomButton01Click()
     {
-        OnCustomButton1Click?.Invoke();
+        OnCustomButton01Click?.Invoke();
     }
 
-    public void CustomButton2Click()
+    public void CustomButton02Click()
     {
-        OnCustomButton2Click?.Invoke();
+        OnCustomButton02Click?.Invoke();
     }
 
-    public void CustomButton3Click()
+    public void CustomButton03Click()
     {
-        OnCustomButton3Click?.Invoke();
+        OnCustomButton03Click?.Invoke();
     }
 
-    public void CustomButton4Click()
+    public void CustomButton04Click()
     {
-        OnCustomButton4Click?.Invoke();
+        OnCustomButton04Click?.Invoke();
     }
 
-    public void CustomButton5Click()
+    public void CustomButton05Click()
     {
-        OnCustomButton5Click?.Invoke();
+        OnCustomButton05Click?.Invoke();
     }
 
-    public void CustomButton6Click()
+    public void CustomButton06Click()
     {
-        OnCustomButton6Click?.Invoke();
+        OnCustomButton06Click?.Invoke();
     }
 
-    public void CustomButton7Click()
+    public void CustomButton07Click()
     {
-        OnCustomButton7Click?.Invoke();
+        OnCustomButton07Click?.Invoke();
     }
 
-    public void CustomButton8Click()
+    public void CustomButton08Click()
     {
-        OnCustomButton8Click?.Invoke();
+        OnCustomButton08Click?.Invoke();
     }
 
-    public void CustomButton9Click()
+    public void CustomButton09Click()
     {
-        OnCustomButton9Click?.Invoke();
+        OnCustomButton09Click?.Invoke();
     }
 
+    public void CustomButton10Click()
+    {
+        OnCustomButton10Click?.Invoke();
+    }
+
+    public void CustomButton11Click()
+    {
+        OnCustomButton11Click?.Invoke();
+    }
+
+    public void CustomButton12Click()
+    {
+        OnCustomButton12Click?.Invoke();
+    }
+
+    public void CustomButton13Click()
+    {
+        OnCustomButton13Click?.Invoke();
+    }
+
+    public void CustomButton14Click()
+    {
+        OnCustomButton14Click?.Invoke();
+    }
 }

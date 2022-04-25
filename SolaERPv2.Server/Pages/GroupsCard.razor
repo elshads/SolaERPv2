@@ -1,6 +1,8 @@
 ﻿@page "/groups/card"
 
 @implements IDisposable
+@inject GroupService GroupService
+@inject MenuService MenuService
 @using Model = Group
 
 
@@ -15,8 +17,9 @@
         <FormItem Field="@nameof(Model.GroupName)" LabelText="Name"></FormItem>
         <FormItem Field="@nameof(Model.Description)" LabelText="Description"></FormItem>
     </FormItems>
-    <FormButtons/>
+    <FormButtons />
 </TelerikForm>
+
 
 <TelerikTabStrip @bind-ActiveTabIndex="@activeTabIndex">
     <TabStripTab Title="Users">
@@ -34,9 +37,9 @@
             </span>
         </HeaderTemplate>
         <Content>
-            <DoubleGrid @bind-LeftGridData="groupUsers" @bind-RightGridData="allUsers" LeftGridTitle="Group Users" RightGridTitle="All Users" SearchFields="@(new List<string> {"FullName", "UserName"})">
-                <GridColumn Field="@(nameof(AppUser.FullName))" Title="Name"/>
-                <GridColumn Field="@(nameof(AppUser.UserName))" Title="UserName"/>
+            <DoubleGrid Height="calc(100vh - 340px)" @bind-LeftGridData="currentModel.Users" @bind-RightGridData="allUsers" LeftGridTitle="Group Users" RightGridTitle="All Users" SearchFields="@(new List<string> {"FullName", "UserName"})">
+                <GridColumn Field="@(nameof(AppUser.FullName))" Title="Name" />
+                <GridColumn Field="@(nameof(AppUser.UserName))" Title="UserName" />
             </DoubleGrid>
         </Content>
     </TabStripTab>
@@ -56,10 +59,10 @@
             </span>
         </HeaderTemplate>
         <Content>
-            @*<DoubleGrid @bind-LeftGridData="groupBusinessUnits" @bind-RightGridData="allBusinessUnits" LeftGridTitle="Group Business Units" RightGridTitle="All Business Units" SearchFields="@(new List<string> {"BusinessUnitCode", "BusinessUnitName"})">
-                <GridColumn Field="@(nameof(BusinessUnit.BusinessUnitCode))" Title="Code"/>
-                <GridColumn Field="@(nameof(BusinessUnit.BusinessUnitName))" Title="Name"/>
-            </DoubleGrid>*@
+            <DoubleGrid Height="calc(100vh - 340px)" @bind-LeftGridData="currentModel.BusinessUnits" @bind-RightGridData="allBusinessUnits" LeftGridTitle="Group Business Units" RightGridTitle="All Business Units" SearchFields="@(new List<string> {"BusinessUnitCode", "BusinessUnitName"})">
+                <GridColumn Field="@(nameof(BusinessUnit.BusinessUnitCode))" Title="Code" />
+                <GridColumn Field="@(nameof(BusinessUnit.BusinessUnitName))" Title="Name" />
+            </DoubleGrid>
         </Content>
     </TabStripTab>
 
@@ -81,7 +84,7 @@
             @*<DoubleGrid @bind-LeftGridData="groupUnits" @bind-RightGridData="allUnits" LeftGridTitle="Group Units" RightGridTitle="All Units" SearchFields="@(new List<string> {"UnitCode", "UnitName"})">
                 <GridColumn Field="@(nameof(Unit.UnitCode))" Title="Code"/>
                 <GridColumn Field="@(nameof(Unit.UnitName))" Title="Name"/>
-            </DoubleGrid>*@
+                </DoubleGrid>*@
         </Content>
     </TabStripTab>
 
@@ -119,21 +122,65 @@
             </span>
         </HeaderTemplate>
         <Content>
-            content goes here
+            <TelerikTreeList Data="@allMenuItems"
+                             IdField="@(nameof(Menu.MenuId))"
+                             ParentIdField="@(nameof(Menu.ParentId))"
+                             Height="calc(100vh - 340px)">
+                <TreeListColumns>
+                    <TreeListColumn Field="@(nameof(Menu.MenuName))" Title="Menu" Expandable="true"></TreeListColumn>
+                    <TreeListColumn Field="@(nameof(Menu.CreateAccess))" Title="Create" Width="70px" TextAlign="ColumnTextAlign.Center">
+                        <Template>
+                            @{
+                                selectedMenu = (context as Menu);
+                                <div class="@(selectedMenu.ParentId == null ? "bg-warning" : "")"><TelerikCheckBox @bind-Value="@selectedMenu.CreateAccess" Enabled="true" OnChange="@(() => CreateAccessChanged(selectedMenu))" /></div>
+                            }
+                        </Template>
+                    </TreeListColumn>
+                    <TreeListColumn Field="@(nameof(Menu.EditAccess))" Title="Edit" Width="70px" TextAlign="ColumnTextAlign.Center">
+                        <Template>
+                            @{
+                                selectedMenu = (context as Menu);
+                                <div class="@(selectedMenu.ParentId == null ? "bg-warning" : "")"><TelerikCheckBox @bind-Value="@selectedMenu.EditAccess" Enabled="true" OnChange="@(() => EditAccessChanged(selectedMenu))" /></div>
+                            }
+                        </Template>
+                    </TreeListColumn>
+                    <TreeListColumn Field="@(nameof(Menu.DeleteAccess))" Title="Delete" Width="70px" TextAlign="ColumnTextAlign.Center">
+                        <Template>
+                            @{
+                                selectedMenu = (context as Menu);
+                                <div class="@(selectedMenu.ParentId == null ? "bg-warning" : "")"><TelerikCheckBox @bind-Value="@selectedMenu.DeleteAccess" Enabled="true" OnChange="@(() => DeleteAccessChanged(selectedMenu))" /></div>
+                            }
+                        </Template>
+                    </TreeListColumn>
+                    <TreeListColumn Field="@(nameof(Menu.ExportAccess))" Title="Export" Width="70px" TextAlign="ColumnTextAlign.Center">
+                        <Template>
+                            @{
+                                selectedMenu = (context as Menu);
+                                <div class="@(selectedMenu.ParentId == null ? "bg-warning" : "")"><TelerikCheckBox @bind-Value="@selectedMenu.ExportAccess" Enabled="true" OnChange="@(() => ExportAccessChanged(selectedMenu))" /></div>
+                            }
+                        </Template>
+                    </TreeListColumn>
+                </TreeListColumns>
+            </TelerikTreeList>
         </Content>
     </TabStripTab>
 </TelerikTabStrip>
 
 
+
 @code {
-    [CascadingParameter] public AppState AppState { get; set; }
-    [CascadingParameter] public DialogFactory Dialogs { get; set; }
+    [CascadingParameter] public AppState? AppState { get; set; }
+    [CascadingParameter] public DialogFactory? Dialogs { get; set; }
 
-    Model currentModel = new();
-    EditContext editContext;
+    int modelId = 0;
+    Model? currentModel = new();
+    EditContext? editContext = new(new Model());
 
-    List<AppUser> groupUsers = new() { new AppUser { FullName="Samir", UserName="samir@domain.com" }, new AppUser { FullName="Tural", UserName="tural@example.com" }, new AppUser { FullName="Elshad", UserName="elshad@somemail.com" } };
-    List<AppUser> allUsers = new() { new AppUser { FullName="Arif", UserName="arif@somemail.com" }, new AppUser { FullName="Pasha", UserName="pasha@domain.com" } };
+    List<AppUser>? allUsers = new();
+    List<BusinessUnit>? allBusinessUnits = new();
+    List<Menu>? allMenuItems = new();
+
+    Menu? selectedMenu = new();
 
     int activeTabIndex = 0;
 
@@ -141,12 +188,12 @@
     {
         SetQueryVariables();
         OnAppStateInitialized();
-        editContext = new EditContext(currentModel);
+        await LoadData();
     }
 
     void OnAppStateInitialized()
     {
-        AppState.SetDefaults();
+        AppState?.SetDefaults();
         AppState.BackButtonVisible = true;
         AppState.OnBackClick += BackClick;
     }
@@ -160,11 +207,21 @@
     {
         var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
 
-        var _modelId = 0;
         if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("id", out var _id))
         {
-            _modelId = Convert.ToInt32(_id);
+            modelId = Convert.ToInt32(_id);
         }
+    }
+
+    async Task LoadData()
+    {
+        currentModel = modelId > 0 ? await GroupService.GetByIdAsync(modelId) : new();
+        var _allUsers = await AppUserService.GetAllAsync();
+        allUsers = _allUsers.ToList();
+        var _allBusinessUnits = await BusinessUnitService.GetAllAsync();
+        allBusinessUnits = _allBusinessUnits.ToList();
+        await GetMenuItems();
+        editContext = new EditContext(currentModel);
     }
 
     void BackClick()
@@ -172,5 +229,135 @@
         NavigationManager.NavigateTo("/groups");
     }
 
-    
+    async Task GetMenuItems()
+    {
+        var _allMenuItems = await MenuService.GetAllAsync(false);
+        allMenuItems = _allMenuItems?.ToList();
+        if (currentModel?.Menus != null && currentModel.Menus.Any() && allMenuItems.Any())
+        {
+            foreach (var item in currentModel.Menus)
+            {
+                var index = allMenuItems.FindIndex(e => e.MenuId == item.MenuId);
+                if (index > -1)
+                {
+                    allMenuItems[index].CreateAccess = item.CreateAccess;
+                    allMenuItems[index].EditAccess = item.EditAccess;
+                    allMenuItems[index].DeleteAccess = item.DeleteAccess;
+                    allMenuItems[index].ExportAccess = item.ExportAccess;
+                }
+            }
+        }
+    }
+
+    void CreateAccessChanged(Menu menu)
+    {
+        if (menu.ParentId == null)
+        {
+            var children = allMenuItems.Where(e => e.ParentId == menu.MenuId);
+            if (children.Any())
+            {
+                foreach (var item in children)
+                {
+                    var childIndex = allMenuItems.FindIndex(e => e.MenuId == item.MenuId);
+                    if (childIndex > -1)
+                    {
+                        allMenuItems[childIndex].CreateAccess = menu.CreateAccess;
+                    }
+                }
+            }
+        }
+        else
+        {
+            var hasAccess = allMenuItems.Where(e => e.ParentId == menu.ParentId).Any(e => e.CreateAccess);
+            var parentIndex = allMenuItems.FindIndex(e => e.MenuId == menu.ParentId);
+            if (parentIndex > -1)
+            {
+                allMenuItems[parentIndex].CreateAccess = hasAccess;
+            }
+        }
+    }
+
+    void EditAccessChanged(Menu menu)
+    {
+        if (menu.ParentId == null)
+        {
+            var children = allMenuItems.Where(e => e.ParentId == menu.MenuId);
+            if (children.Any())
+            {
+                foreach (var item in children)
+                {
+                    var childIndex = allMenuItems.FindIndex(e => e.MenuId == item.MenuId);
+                    if (childIndex > -1)
+                    {
+                        allMenuItems[childIndex].EditAccess = menu.EditAccess;
+                    }
+                }
+            }
+        }
+        else
+        {
+            var hasAccess = allMenuItems.Where(e => e.ParentId == menu.ParentId).Any(e => e.EditAccess);
+            var parentIndex = allMenuItems.FindIndex(e => e.MenuId == menu.ParentId);
+            if (parentIndex > -1)
+            {
+                allMenuItems[parentIndex].EditAccess = hasAccess;
+            }
+        }
+    }
+
+    void DeleteAccessChanged(Menu menu)
+    {
+        if (menu.ParentId == null)
+        {
+            var children = allMenuItems.Where(e => e.ParentId == menu.MenuId);
+            if (children.Any())
+            {
+                foreach (var item in children)
+                {
+                    var childIndex = allMenuItems.FindIndex(e => e.MenuId == item.MenuId);
+                    if (childIndex > -1)
+                    {
+                        allMenuItems[childIndex].DeleteAccess = menu.DeleteAccess;
+                    }
+                }
+            }
+        }
+        else
+        {
+            var hasAccess = allMenuItems.Where(e => e.ParentId == menu.ParentId).Any(e => e.DeleteAccess);
+            var parentIndex = allMenuItems.FindIndex(e => e.MenuId == menu.ParentId);
+            if (parentIndex > -1)
+            {
+                allMenuItems[parentIndex].DeleteAccess = hasAccess;
+            }
+        }
+    }
+
+    void ExportAccessChanged(Menu menu)
+    {
+        if (menu.ParentId == null)
+        {
+            var children = allMenuItems.Where(e => e.ParentId == menu.MenuId);
+            if (children.Any())
+            {
+                foreach (var item in children)
+                {
+                    var childIndex = allMenuItems.FindIndex(e => e.MenuId == item.MenuId);
+                    if (childIndex > -1)
+                    {
+                        allMenuItems[childIndex].ExportAccess = menu.ExportAccess;
+                    }
+                }
+            }
+        }
+        else
+        {
+            var hasAccess = allMenuItems.Where(e => e.ParentId == menu.ParentId).Any(e => e.ExportAccess);
+            var parentIndex = allMenuItems.FindIndex(e => e.MenuId == menu.ParentId);
+            if (parentIndex > -1)
+            {
+                allMenuItems[parentIndex].ExportAccess = hasAccess;
+            }
+        }
+    }
 }

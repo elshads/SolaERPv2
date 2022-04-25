@@ -14,6 +14,10 @@ html, body {
     font-family: 'DINPro', sans-serif;
 }
 
+.mud-navmenu.mud-navmenu-primary .mud-nav-link.active:not(.mud-nav-link-disabled) {
+    color: var(--link-text) !important;
+}
+
 .mud-drawer:not(.mud-drawer-fixed) {
     position: fixed;
 }
@@ -36,9 +40,21 @@ html, body {
     }
 }
 
+.center-content {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+}
+
 .flex-center-y {
     display: flex;
     align-items: center;
+}
+
+.text-center{
+    text-align: center;
 }
 
 .flex-nowrap{
@@ -61,7 +77,23 @@ html, body {
     color: #0f62fe;
 }
 
-.input-padding{
+.text-error {
+    color: #d51923;
+}
+
+.bg-primary {
+    background-color: var(--mud-palette-primary);
+}
+
+.bg-primary-light {
+    background-color: var(--primary-light);
+}
+
+.bg-warning {
+    background-color: #ff9800;
+}
+
+.input-padding {
     padding: 4px 8px !important;
 }
 

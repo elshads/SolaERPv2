@@ -42,7 +42,12 @@ public class AppUserService
     {
         var authenticationState = await _authenticationStateProvider.GetAuthenticationStateAsync();
         var user = authenticationState.User;
-        return await _userManager.GetUserAsync(user);
+        var appUser = await _userManager.GetUserAsync(user);
+
+        var p = new DynamicParameters();
+        p.Add("@UserId", appUser.Id, DbType.Int32, ParameterDirection.Input);
+        appUser.UserMenuList = await _sqlDataAccess.QueryAll<Menu>("dbo.SP_UserMenuAccess", p);
+        return appUser;
     }
 
     public async Task<IEnumerable<AppUser>?> GetAllAsync()

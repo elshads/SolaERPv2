@@ -19,6 +19,7 @@
                    Position="DialogPosition.Center" />
 
 
+
 <CascadingValue Value="appState">
     <AuthorizeView>
         <Authorized>
@@ -42,7 +43,6 @@
 </CascadingValue>
 
 
-
 @code {
     AppState? appState = new();
 
@@ -50,9 +50,8 @@
     {
         appState = new AppState(Snackbar);
         appState.OnRefreshClick += Refresh;
-        //appState.Loading = true;
-        //SessionData.CurrentUserMenuAccessList = await Http.GetFromJsonAsync<List<UserMenuAccess>>("UserMenuAccess");
-        //appState.Loading = false;
+        appState.Loading = true;
+        appState.Loading = false;
     }
 
     void IDisposable.Dispose()

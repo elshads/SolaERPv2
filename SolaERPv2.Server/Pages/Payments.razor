@@ -272,11 +272,11 @@
         AppState.BackButtonVisible = true;
         AppState.AddButtonVisible = true;
         SetMenuButtonsVisibility();
-        AppState.CustomButton4Title = "Send to Approval";
-        AppState.CustomButton5Title = "Retrieve";
-        AppState.CustomButton6Title = "Send to Bank";
-        AppState.CustomButton7Title = "Pay";
-        AppState.CustomButton8Title = "Return to Approved";
+        AppState.CustomButton04Title = "Send to Approval";
+        AppState.CustomButton05Title = "Retrieve";
+        AppState.CustomButton06Title = "Send to Bank";
+        AppState.CustomButton07Title = "Pay";
+        AppState.CustomButton08Title = "Return to Approved";
 
         AppState.OnBackClick += BackClick;
         AppState.OnAddClick += AddClick;
@@ -284,11 +284,11 @@
 
         AppState.OnApproveClick += ApproveClick;
         AppState.OnRejectClick += RejectClick;
-        AppState.OnCustomButton4Click += ChangeApproveStatus;
-        AppState.OnCustomButton5Click += ChangeApproveStatus;
-        AppState.OnCustomButton6Click += ChangeApproveStatus;
-        AppState.OnCustomButton7Click += PayClick;
-        AppState.OnCustomButton8Click += ChangeApproveStatus;
+        AppState.OnCustomButton04Click += ChangeApproveStatus;
+        AppState.OnCustomButton05Click += ChangeApproveStatus;
+        AppState.OnCustomButton06Click += ChangeApproveStatus;
+        AppState.OnCustomButton07Click += PayClick;
+        AppState.OnCustomButton08Click += ChangeApproveStatus;
     }
 
     void IDisposable.Dispose()
@@ -299,11 +299,11 @@
 
         AppState.OnApproveClick -= ApproveClick;
         AppState.OnRejectClick -= RejectClick;
-        AppState.OnCustomButton4Click -= ChangeApproveStatus;
-        AppState.OnCustomButton5Click -= ChangeApproveStatus;
-        AppState.OnCustomButton6Click -= ChangeApproveStatus;
-        AppState.OnCustomButton7Click -= PayClick;
-        AppState.OnCustomButton8Click -= ChangeApproveStatus;
+        AppState.OnCustomButton04Click -= ChangeApproveStatus;
+        AppState.OnCustomButton05Click -= ChangeApproveStatus;
+        AppState.OnCustomButton06Click -= ChangeApproveStatus;
+        AppState.OnCustomButton07Click -= PayClick;
+        AppState.OnCustomButton08Click -= ChangeApproveStatus;
     }
 
     void SetMenuButtonsVisibility()
@@ -312,61 +312,61 @@
         {
             AppState.ApproveButtonVisible = true;
             AppState.RejectButtonVisible = true;
-            AppState.CustomButton4Visible = false;
-            AppState.CustomButton5Visible = false;
-            AppState.CustomButton6Visible = false;
-            AppState.CustomButton7Visible = false;
-            AppState.CustomButton8Visible = false;
+            AppState.CustomButton04Visible = false;
+            AppState.CustomButton05Visible = false;
+            AppState.CustomButton06Visible = false;
+            AppState.CustomButton07Visible = false;
+            AppState.CustomButton08Visible = false;
         }
         else if (activeTabIndex == 1)
         {
             AppState.ApproveButtonVisible = false;
             AppState.RejectButtonVisible = false;
-            AppState.CustomButton4Visible = true;
-            AppState.CustomButton5Visible = false;
-            AppState.CustomButton6Visible = false;
-            AppState.CustomButton7Visible = false;
-            AppState.CustomButton8Visible = false;
+            AppState.CustomButton04Visible = true;
+            AppState.CustomButton05Visible = false;
+            AppState.CustomButton06Visible = false;
+            AppState.CustomButton07Visible = false;
+            AppState.CustomButton08Visible = false;
         }
         else if (activeTabIndex == 2)
         {
             AppState.ApproveButtonVisible = false;
             AppState.RejectButtonVisible = false;
-            AppState.CustomButton4Visible = false;
-            AppState.CustomButton5Visible = true;
-            AppState.CustomButton6Visible = false;
-            AppState.CustomButton7Visible = false;
-            AppState.CustomButton8Visible = false;
+            AppState.CustomButton04Visible = false;
+            AppState.CustomButton05Visible = true;
+            AppState.CustomButton06Visible = false;
+            AppState.CustomButton07Visible = false;
+            AppState.CustomButton08Visible = false;
         }
         else if (activeTabIndex == 3)
         {
             AppState.ApproveButtonVisible = false;
             AppState.RejectButtonVisible = false;
-            AppState.CustomButton4Visible = false;
-            AppState.CustomButton5Visible = false;
-            AppState.CustomButton6Visible = true;
-            AppState.CustomButton7Visible = false;
-            AppState.CustomButton8Visible = false;
+            AppState.CustomButton04Visible = false;
+            AppState.CustomButton05Visible = false;
+            AppState.CustomButton06Visible = true;
+            AppState.CustomButton07Visible = false;
+            AppState.CustomButton08Visible = false;
         }
         else if (activeTabIndex == 4)
         {
             AppState.ApproveButtonVisible = false;
             AppState.RejectButtonVisible = false;
-            AppState.CustomButton4Visible = false;
-            AppState.CustomButton5Visible = false;
-            AppState.CustomButton6Visible = false;
-            AppState.CustomButton7Visible = true;
-            AppState.CustomButton8Visible = true;
+            AppState.CustomButton04Visible = false;
+            AppState.CustomButton05Visible = false;
+            AppState.CustomButton06Visible = false;
+            AppState.CustomButton07Visible = true;
+            AppState.CustomButton08Visible = true;
         }
         else
         {
             AppState.ApproveButtonVisible = false;
             AppState.RejectButtonVisible = false;
-            AppState.CustomButton4Visible = false;
-            AppState.CustomButton5Visible = false;
-            AppState.CustomButton6Visible = false;
-            AppState.CustomButton7Visible = false;
-            AppState.CustomButton8Visible = false;
+            AppState.CustomButton04Visible = false;
+            AppState.CustomButton05Visible = false;
+            AppState.CustomButton06Visible = false;
+            AppState.CustomButton07Visible = false;
+            AppState.CustomButton08Visible = false;
         }
     }
 
