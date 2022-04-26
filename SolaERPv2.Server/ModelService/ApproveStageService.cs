@@ -17,4 +17,9 @@ public class ApproveStageService
         p.Add("@PaymentDocumentMainId", paymentDocumentMainId, DbType.Int32, ParameterDirection.Input);
         return await _sqlDataAccess.QueryAll<ApproveStage>(sql, p);
     }
+
+    public async Task<IEnumerable<ApproveRole>?> GetAllRolesAsync()
+    {
+        return await _sqlDataAccess.QueryAll<ApproveRole>("SELECT * FROM dbo.VW_ApproveRoles_List", null, CommandType.Text);
+    }
 }

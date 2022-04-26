@@ -3,6 +3,7 @@
 @implements IDisposable
 @inject GroupService GroupService
 @inject MenuService MenuService
+@inject ApproveStageService ApproveStageService
 @using Model = Group
 
 
@@ -103,7 +104,9 @@
             </span>
         </HeaderTemplate>
         <Content>
-            content goes here
+            <DoubleGrid Height="calc(100vh - 340px)" @bind-LeftGridData="currentModel.ApproveRoles" @bind-RightGridData="allApproveRoles" LeftGridTitle="Group Approve Roles" RightGridTitle="All Approve Roles" SearchFields="@(new List<string> {"ApproveRoleName"})">
+                <GridColumn Field="@(nameof(ApproveRole.ApproveRoleName))" Title="Name" />
+            </DoubleGrid>
         </Content>
     </TabStripTab>
 
@@ -132,7 +135,7 @@
                         <Template>
                             @{
                                 selectedMenu = (context as Menu);
-                                <div class="@(selectedMenu.ParentId == null ? "bg-warning" : "")"><TelerikCheckBox @bind-Value="@selectedMenu.CreateAccess" Enabled="true" OnChange="@(() => CreateAccessChanged(selectedMenu))" /></div>
+                                <div class="@(selectedMenu.ParentId == null ? "bg-gray" : "")"><TelerikCheckBox @bind-Value="@selectedMenu.CreateAccess" Enabled="true" OnChange="@(() => CreateAccessChanged(selectedMenu))" /></div>
                             }
                         </Template>
                     </TreeListColumn>
@@ -140,7 +143,7 @@
                         <Template>
                             @{
                                 selectedMenu = (context as Menu);
-                                <div class="@(selectedMenu.ParentId == null ? "bg-warning" : "")"><TelerikCheckBox @bind-Value="@selectedMenu.EditAccess" Enabled="true" OnChange="@(() => EditAccessChanged(selectedMenu))" /></div>
+                                <div class="@(selectedMenu.ParentId == null ? "bg-gray" : "")"><TelerikCheckBox @bind-Value="@selectedMenu.EditAccess" Enabled="true" OnChange="@(() => EditAccessChanged(selectedMenu))" /></div>
                             }
                         </Template>
                     </TreeListColumn>
@@ -148,7 +151,7 @@
                         <Template>
                             @{
                                 selectedMenu = (context as Menu);
-                                <div class="@(selectedMenu.ParentId == null ? "bg-warning" : "")"><TelerikCheckBox @bind-Value="@selectedMenu.DeleteAccess" Enabled="true" OnChange="@(() => DeleteAccessChanged(selectedMenu))" /></div>
+                                <div class="@(selectedMenu.ParentId == null ? "bg-gray" : "")"><TelerikCheckBox @bind-Value="@selectedMenu.DeleteAccess" Enabled="true" OnChange="@(() => DeleteAccessChanged(selectedMenu))" /></div>
                             }
                         </Template>
                     </TreeListColumn>
@@ -156,7 +159,7 @@
                         <Template>
                             @{
                                 selectedMenu = (context as Menu);
-                                <div class="@(selectedMenu.ParentId == null ? "bg-warning" : "")"><TelerikCheckBox @bind-Value="@selectedMenu.ExportAccess" Enabled="true" OnChange="@(() => ExportAccessChanged(selectedMenu))" /></div>
+                                <div class="@(selectedMenu.ParentId == null ? "bg-gray" : "")"><TelerikCheckBox @bind-Value="@selectedMenu.ExportAccess" Enabled="true" OnChange="@(() => ExportAccessChanged(selectedMenu))" /></div>
                             }
                         </Template>
                     </TreeListColumn>
@@ -178,6 +181,7 @@
 
     List<AppUser>? allUsers = new();
     List<BusinessUnit>? allBusinessUnits = new();
+    List<ApproveRole>? allApproveRoles = new();
     List<Menu>? allMenuItems = new();
 
     Menu? selectedMenu = new();
@@ -195,12 +199,16 @@
     {
         AppState?.SetDefaults();
         AppState.BackButtonVisible = true;
+        AppState.SaveButtonVisible = true;
+
         AppState.OnBackClick += BackClick;
+        AppState.OnSaveClick += SaveClick;
     }
 
     void IDisposable.Dispose()
     {
         AppState.OnBackClick -= BackClick;
+        AppState.OnSaveClick -= SaveClick;
     }
 
     void SetQueryVariables()
@@ -217,9 +225,11 @@
     {
         currentModel = modelId > 0 ? await GroupService.GetByIdAsync(modelId) : new();
         var _allUsers = await AppUserService.GetAllAsync();
-        allUsers = _allUsers.ToList();
+        allUsers = _allUsers.Where(e => !currentModel.Users.Any(p => p.Id == e.Id)).ToList(); // Exclude items in one list from another list
         var _allBusinessUnits = await BusinessUnitService.GetAllAsync();
-        allBusinessUnits = _allBusinessUnits.ToList();
+        allBusinessUnits = _allBusinessUnits.Where(e => !currentModel.BusinessUnits.Any(p => p.BusinessUnitId == e.BusinessUnitId)).ToList();
+        var _allApproveRoles = await ApproveStageService.GetAllRolesAsync();
+        allApproveRoles = _allApproveRoles.Where(e => !currentModel.ApproveRoles.Any(p => p.ApproveRoleId == e.ApproveRoleId)).ToList();
         await GetMenuItems();
         editContext = new EditContext(currentModel);
     }
@@ -275,6 +285,7 @@
                 allMenuItems[parentIndex].CreateAccess = hasAccess;
             }
         }
+        currentModel.Menus = allMenuItems.Where(e => e.CreateAccess || e.EditAccess || e.DeleteAccess || e.ExportAccess).ToList();
     }
 
     void EditAccessChanged(Menu menu)
@@ -303,6 +314,7 @@
                 allMenuItems[parentIndex].EditAccess = hasAccess;
             }
         }
+        currentModel.Menus = allMenuItems.Where(e => e.CreateAccess || e.EditAccess || e.DeleteAccess || e.ExportAccess).ToList();
     }
 
     void DeleteAccessChanged(Menu menu)
@@ -331,6 +343,7 @@
                 allMenuItems[parentIndex].DeleteAccess = hasAccess;
             }
         }
+        currentModel.Menus = allMenuItems.Where(e => e.CreateAccess || e.EditAccess || e.DeleteAccess || e.ExportAccess).ToList();
     }
 
     void ExportAccessChanged(Menu menu)
@@ -359,5 +372,28 @@
                 allMenuItems[parentIndex].ExportAccess = hasAccess;
             }
         }
+        currentModel.Menus = allMenuItems.Where(e => e.CreateAccess || e.EditAccess || e.DeleteAccess || e.ExportAccess).ToList();
+    }
+
+    async void SaveClick()
+    {
+        var validated = Validate();
+        if (validated) 
+        {
+            var sqlResult = await GroupService.Save(currentModel);
+            if (sqlResult.QueryResultMessage == null)
+            {
+                AppState.ShowAlert("Group successfully saved", Severity.Success);
+            }
+            else
+            {
+                AppState.ShowAlert(sqlResult.QueryResultMessage, Severity.Error);
+            }
+        }
+    }
+
+    bool Validate()
+    {
+        return true;
     }
 }

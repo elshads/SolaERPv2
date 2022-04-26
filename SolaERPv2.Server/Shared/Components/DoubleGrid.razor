@@ -9,7 +9,7 @@
                      OnRowDrop="@((GridRowDropEventArgs<TItem> args) => OnLeftGridRowDropHandler(args))"
                      OnRowClick="@OnLeftGridRowClickHandler"
                      OnRowDoubleClick="@OnLeftGridRowDoubleClickHandler"
-                     Height="@(MobileView ? "auto" : Height)"
+                     Height="@(AppState.MobileView ? "auto" : Height)"
                      Pageable="false"
                      Sortable="true"
                      Navigable="true"
@@ -19,7 +19,7 @@
                      ShowColumnMenu="true"
                      FilterMode="@GridFilterMode.FilterMenu"
                      SelectionMode="@GridSelectionMode.Multiple"
-                     RowDraggable="@(RowDraggable && !MobileView)">
+                     RowDraggable="@(RowDraggable && !AppState.MobileView)">
             <GridToolBar>
                 @if (LeftGridTitle != null)
                 {
@@ -44,7 +44,7 @@
             <GridColumns>
                 <GridCommandColumn Width="55px"
                                    ShowColumnMenu="false" Reorderable="false"
-                                   Visible="@(RowDraggable && !MobileView)">
+                                   Visible="@(RowDraggable && !AppState.MobileView)">
 
                     @if (RowDraggable)
                     {
@@ -64,7 +64,7 @@
                      OnRowDrop="@((GridRowDropEventArgs<TItem> args) => OnRightGridRowDropHandler(args))"
                      OnRowClick="@OnRightGridRowClickHandler"
                      OnRowDoubleClick="@OnRightGridRowDoubleClickHandler"
-                     Height="@(MobileView ? "auto" : Height)"
+                     Height="@(AppState.MobileView ? "auto" : Height)"
                      Pageable="false"
                      Sortable="true"
                      Navigable="true"
@@ -74,7 +74,7 @@
                      ShowColumnMenu="true"
                      FilterMode="@GridFilterMode.FilterMenu"
                      SelectionMode="@GridSelectionMode.Multiple"
-                     RowDraggable="@(RowDraggable && !MobileView)">
+                     RowDraggable="@(RowDraggable && !AppState.MobileView)">
 
             <GridToolBar>
                 @if (RightGridTitle != null)
@@ -100,7 +100,7 @@
             <GridColumns>
                 <GridCommandColumn Width="55px"
                                    ShowColumnMenu="false" Reorderable="false"
-                                   Visible="@(RowDraggable && !MobileView)">
+                                   Visible="@(RowDraggable && !AppState.MobileView)">
 
                     @if (RowDraggable)
                     {
@@ -114,15 +114,13 @@
     </MudItem>
 </MudGrid>
 
-<TelerikMediaQuery Media="(max-width: 768px)" OnChange="@( (bool mobileView) => OnMobileViewChanged(mobileView) )"></TelerikMediaQuery>
-
 
 @code {
+    [CascadingParameter] public AppState? AppState { get; set; }
+
     [Parameter] public RenderFragment ChildContent { get; set; }
     [Parameter] public string Height { get; set; } = "calc(100vh - 320px)";
     [Parameter] public IEnumerable<string> SearchFields { get; set; } = new List<string> { "RowIndex" };
-    [Parameter] public bool MobileView { get; set; } = false;
-    [Parameter] public EventCallback<bool> MobileViewChanged { get; set; }
 
     [Parameter] public bool RowDraggable { get; set; } = true;
 
@@ -223,12 +221,6 @@
     void OnRightGridRowDoubleClickHandler(GridRowClickEventArgs args)
     {
         //
-    }
-
-    async Task OnMobileViewChanged(bool mobileView)
-    {
-        MobileView = mobileView;
-        await MobileViewChanged.InvokeAsync(MobileView);
     }
 
     void OnLeftGridSearchInput(ChangeEventArgs args)

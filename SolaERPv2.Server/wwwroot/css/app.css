@@ -89,6 +89,10 @@ html, body {
     background-color: var(--primary-light);
 }
 
+.bg-gray {
+    background-color: var(--gray-color);
+}
+
 .bg-warning {
     background-color: #ff9800;
 }

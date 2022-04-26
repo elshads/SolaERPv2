@@ -43,10 +43,12 @@ public class AppUserService
         var authenticationState = await _authenticationStateProvider.GetAuthenticationStateAsync();
         var user = authenticationState.User;
         var appUser = await _userManager.GetUserAsync(user);
-
-        var p = new DynamicParameters();
-        p.Add("@UserId", appUser.Id, DbType.Int32, ParameterDirection.Input);
-        appUser.UserMenuList = await _sqlDataAccess.QueryAll<Menu>("dbo.SP_UserMenuAccess", p);
+        if (appUser != null)
+        {
+            var p = new DynamicParameters();
+            p.Add("@UserId", appUser.Id, DbType.Int32, ParameterDirection.Input);
+            appUser.UserMenuList = await _sqlDataAccess.QueryAll<Menu>("dbo.SP_UserMenuAccess", p);
+        }
         return appUser;
     }
 
