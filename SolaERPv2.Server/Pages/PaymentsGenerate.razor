@@ -7,141 +7,124 @@
 
 <PageTitle>Generate Payment Document</PageTitle>
 
-<div style="display: flex;">
-    <TelerikGridLayout RowSpacing="8px" ColumnSpacing="8px" VerticalAlign="GridLayoutVerticalAlign.Center">
-        <GridLayoutColumns>
-            <GridLayoutColumn Width="115px" />
-            <GridLayoutColumn Width="325px" />
-            <GridLayoutColumn />
-        </GridLayoutColumns>
-        <GridLayoutItems>
-            <GridLayoutItem Row="1" Column="1">
 
-                <label for="bu_list">Business Unit:</label>
-            </GridLayoutItem>
-            <GridLayoutItem Row="1" Column="2">
-                <ItemDropDownList Id="bu_list"
-                                  Data="@businessUnitList"
-                                  Item="@selectedBusinessUnit"
-                                  ItemChanged="@BusinessUnitChanged"
-                                  UniqueField="BusinessUnitId"
-                                  TextField="BusinessUnitCode"
-                                  TValue="int"
-                                  TItem="BusinessUnit"
-                                  SearchFields="@(new List<string> { "BusinessUnitCode", "BusinessUnitName"})"
-                                  Width="100%"
-                                  PopupWidth="100%"
-                                  PopupMaxWidth="500px" />
-            </GridLayoutItem>
-            <GridLayoutItem Row="@(!AppState.MobileView ? 1 : 2)" Column="@(!AppState.MobileView ? 3 : 2)">
-                <div class="font-italic">@(selectedBusinessUnit != null && selectedBusinessUnit.BusinessUnitName != null ? selectedBusinessUnit.BusinessUnitName : "")</div>
-            </GridLayoutItem>
-            <GridLayoutItem Row="@(!AppState.MobileView ? 2 : 3)" Column="1">
-                <label for="vendor_list">Vendor:</label>
-            </GridLayoutItem>
-            <GridLayoutItem Row="@(!AppState.MobileView ? 2 : 3)" Column="2">
-                <ItemComboBox Id="vendor_list"
-                              Data="@vendorList"
-                              Item="@selectedVendor"
-                              ItemChanged="@VendorChanged"
-                              UniqueField="VendorCode"
-                              TextField="VendorCode"
-                              TValue="string"
-                              TItem="Vendor"
-                              SearchFields="@(new List<string> { "VendorCode", "VendorName" })"
+<TelerikGridLayout RowSpacing="16px" ColumnSpacing="16px" VerticalAlign="GridLayoutVerticalAlign.Center">
+    <GridLayoutColumns>
+        <GridLayoutColumn/>
+        <GridLayoutColumn/>
+        <GridLayoutColumn/>
+    </GridLayoutColumns>
+    <GridLayoutItems>
+        <GridLayoutItem Row="1" Column="1">
+            <label for="bu_list">Business Unit:</label>
+            <ItemDropDownList Id="bu_list"
+                              Data="@businessUnitList"
+                              Item="@selectedBusinessUnit"
+                              ItemChanged="@BusinessUnitChanged"
+                              UniqueField="BusinessUnitId"
+                              TextField="BusinessUnitCode"
+                              TValue="int"
+                              TItem="BusinessUnit"
+                              SearchFields="@(new List<string> { "BusinessUnitCode", "BusinessUnitName"})"
                               Width="100%"
                               PopupWidth="100%"
                               PopupMaxWidth="500px" />
-            </GridLayoutItem>
-            <GridLayoutItem Row="@(!AppState.MobileView ? 2 : 4)" Column="@(!AppState.MobileView ? 3 : 2)">
-                <div class="font-italic">@(selectedVendor != null && selectedVendor.VendorName != null ? selectedVendor.VendorName : "")</div>
-            </GridLayoutItem>
-            <GridLayoutItem Row="@(!AppState.MobileView ? 3 : 5)" Column="1">
-                <label for="type_radio">Document Type:</label>
-            </GridLayoutItem>
-            <GridLayoutItem Row="@(!AppState.MobileView ? 3 : 5)" Column="2">
-                <ItemRadioGroup Id="type_radio"
-                                Data="@paymentDocumentTypeList"
-                                Item="@selectedPaymentDocumentType"
-                                ItemChanged="@PaymentTypeChanged"
-                                UniqueField="PaymentDocumentTypeId"
-                                TextField="PaymentDocumentTypeName"
-                                TItem="PaymentDocumentType"
+            <div class="font-italic">@(selectedBusinessUnit != null && selectedBusinessUnit.BusinessUnitName != null ? selectedBusinessUnit.BusinessUnitName : "")</div>
+
+            <label for="vendor_list">Vendor:</label>
+            <ItemComboBox Id="vendor_list"
+                          Data="@vendorList"
+                          Item="@selectedVendor"
+                          ItemChanged="@VendorChanged"
+                          UniqueField="VendorCode"
+                          TextField="VendorCode"
+                          TValue="string"
+                          TItem="Vendor"
+                          SearchFields="@(new List<string> { "VendorCode", "VendorName" })"
+                          Width="100%"
+                          PopupWidth="100%"
+                          PopupMaxWidth="500px" />
+            <div class="font-italic">@(selectedVendor != null && selectedVendor.VendorName != null ? selectedVendor.VendorName : "")</div>
+
+            <label for="type_radio">Document Type:</label>
+            <ItemRadioGroup Id="type_radio"
+                            Data="@paymentDocumentTypeList"
+                            Item="@selectedPaymentDocumentType"
+                            ItemChanged="@PaymentTypeChanged"
+                            UniqueField="PaymentDocumentTypeId"
+                            TextField="PaymentDocumentTypeName"
+                            TItem="PaymentDocumentType"
+                            TValue="int"
+                            Class="k-pl-1">
+            </ItemRadioGroup>
+        </GridLayoutItem>
+
+        <GridLayoutItem Row="1" Column="2">
+            <label class="k-input-label k-pb-1" for="expensecode">Expense Code:</label>
+            <TelerikComboBox @bind-Value="@paymentDocumentMain.ExpenseCode"
+                             Id="expensecode"
+                             Data="@expenseAnalysisList"
+                             TextField="AnalysisCode"
+                             ValueField="AnalysisCode"
+                             Placeholder="Select..."
+                             Filterable="true"
+                             FilterOperator="StringFilterOperator.Contains" />
+
+            <label class="k-input-label k-pb-1" for="groupproject">Group Project:</label>
+            <TelerikComboBox @bind-Value="@paymentDocumentMain.GroupProject"
+                             Id="groupproject"
+                             Data="@groupProjectAnalysisList"
+                             TextField="AnalysisCode"
+                             ValueField="AnalysisCode"
+                             Placeholder="Select..."
+                             Filterable="true"
+                             FilterOperator="StringFilterOperator.Contains" />
+
+            <label class="k-input-label k-pb-1" for="project">Project:</label>
+            <TelerikComboBox @bind-Value="@paymentDocumentMain.Project"
+                             Id="project"
+                             Data="@projectAnalysisList"
+                             TextField="AnalysisCode"
+                             ValueField="AnalysisCode"
+                             Placeholder="Select..."
+                             Filterable="true"
+                             FilterOperator="StringFilterOperator.Contains" />
+        </GridLayoutItem>
+
+        <GridLayoutItem Row="1" Column="3">
+            <div class="flex-center-y k-mb-2">
+                <span>Reference:</span>
+                <TelerikTextBox @bind-Value="@paymentDocumentMain.Reference" Title="Reference" PlaceHolder="Type here..."></TelerikTextBox>
+            </div>
+            <div class="flex-center-y k-mb-2">
+                <span>Comment:</span>
+                <TelerikTextBox Id="comment" @bind-Value="@paymentDocumentMain.Comment" Title="Comment" PlaceHolder="Type here..."></TelerikTextBox>
+            </div>
+            <div class="flex-center-y k-mb-2">
+                <span>Priority:</span>
+                <ItemRadioGroup Id="priority_radio"
+                                Data="@paymentDocumentPriorityList"
+                                Item="@selectedPaymentDocumentPriority"
+                                ItemChanged="@PaymentDocumentPriorityChanged"
+                                UniqueField="PaymentDocumentPriorityId"
+                                TextField="PaymentDocumentPriorityName"
+                                TItem="PaymentDocumentPriority"
                                 TValue="int"
-                                Class="k-pl-1">
+                                Layout="RadioGroupLayout.Horizontal">
                 </ItemRadioGroup>
-            </GridLayoutItem>
+            </div>
+            <div class="flex-center-y k-mb-2">
+                <ReadOnlyField Value="@(paymentDocumentMain.OrNumber)" Label="OR Number: " LabelClass="column-3-label" Class="k-mr-2" />
+                <ReadOnlyField Value="@(paymentDocumentMain.JobNumber)" Label="Job Number: " LabelClass="column-3-label" />
+            </div>
+        </GridLayoutItem>
 
-        </GridLayoutItems>
-    </TelerikGridLayout>
+    </GridLayoutItems>
+</TelerikGridLayout>
 
-    <TelerikGridLayout RowSpacing="8px" ColumnSpacing="8px" VerticalAlign="GridLayoutVerticalAlign.Center">
-        <GridLayoutItems>
-            <GridLayoutItem Row="@(!AppState.MobileView ? 1 : 2)" Column="1" ColumnSpan="@(!AppState.MobileView ? 1 : 2)">
-                <div class="k-pb-3">
-                    <label class="k-input-label k-pb-1" for="expensecode">Expense Code:</label>
-                    <GridComboBox @bind-Value="@paymentDocumentMain.ExpenseCode"
-                                  Id="expensecode"
-                                  Data="@expenseAnalysisList"
-                                  TextField="AnalysisCode"
-                                  ValueField="AnalysisCode"
-                                  SearchFields="@(new List<string> {"AnalysisCode"})"
-                                  ShowHeader="false" />
-                </div>
-                <div class="k-pb-3">
-                    <label class="k-input-label k-pb-1" for="groupproject">Group Project:</label>
-                    <GridComboBox @bind-Value="@paymentDocumentMain.GroupProject"
-                                  Id="groupproject"
-                                  Data="@groupProjectAnalysisList"
-                                  TextField="AnalysisCode"
-                                  ValueField="AnalysisCode"
-                                  SearchFields="@(new List<string> {"AnalysisCode"})"
-                                  ShowHeader="false" />
-                </div>
-                <div class="k-pb-3">
-                    <label class="k-input-label k-pb-1" for="project">Project:</label>
-                    <GridComboBox @bind-Value="@paymentDocumentMain.Project"
-                                  Id="project"
-                                  Data="@projectAnalysisList"
-                                  TextField="AnalysisCode"
-                                  ValueField="AnalysisCode"
-                                  SearchFields="@(new List<string> {"AnalysisCode"})"
-                                  ShowHeader="false" />
-                </div>
-            </GridLayoutItem>
-            <GridLayoutItem Row="@(!AppState.MobileView ? 1 : 3)" Column="@(!AppState.MobileView ? 4 : 1)" ColumnSpan="@(!AppState.MobileView ? 1 : 2)">
-                <div class="flex-center-y k-mb-2">
-                    <span class="column-3-label">Reference:</span>
-                    <TelerikTextBox @bind-Value="@paymentDocumentMain.Reference" Title="Reference" PlaceHolder="Type here..."></TelerikTextBox>
-                </div>
-                <div class="flex-center-y k-mb-2">
-                    <span class="column-3-label">Comment:</span>
-                    <TelerikTextBox Id="comment" @bind-Value="@paymentDocumentMain.Comment" Title="Comment" PlaceHolder="Type here..."></TelerikTextBox>
-                </div>
-                <div class="flex-center-y k-mb-2">
-                    <span class="column-3-label">Priority:</span>
-                    <ItemRadioGroup Id="priority_radio"
-                                    Data="@paymentDocumentPriorityList"
-                                    Item="@selectedPaymentDocumentPriority"
-                                    ItemChanged="@PaymentDocumentPriorityChanged"
-                                    UniqueField="PaymentDocumentPriorityId"
-                                    TextField="PaymentDocumentPriorityName"
-                                    TItem="PaymentDocumentPriority"
-                                    TValue="int"
-                                    Layout="RadioGroupLayout.Horizontal">
-                    </ItemRadioGroup>
-                </div>
-                <div class="flex-center-y k-mb-2">
-                    <ReadOnlyField Value="@(paymentDocumentMain.OrNumber)" Label="OR Number: " LabelClass="column-3-label" Class="k-mr-2" />
-                    <ReadOnlyField Value="@(paymentDocumentMain.JobNumber)" Label="Job Number: " LabelClass="column-3-label" />
-                </div>
-            </GridLayoutItem>
-        </GridLayoutItems>
-    </TelerikGridLayout>
-</div>
 
 <div class="k-mt-4">
-    <TelerikGridLayout RowSpacing="8px" ColumnSpacing="8px">
+    <TelerikGridLayout RowSpacing="16px" ColumnSpacing="16px">
         <GridLayoutItems>
             <GridLayoutItem Row="1" Column="1">
                 <MudProgressLinear Color="@(vendorBalanceListLoading ? Color.Primary : Color.Transparent)" Indeterminate="true" />
@@ -165,6 +148,7 @@
             <GridLayoutItem Row="@(!AppState.MobileView? 1 : 3)" Column="@(!AppState.MobileView? 2 : 1)">
                 <div style="padding-top: 4px"></div>
                 <DataGrid Title="Order Balance"
+                          @ref="@orderBalanceRef"
                           Data="@orderBalanceList"
                           ShowContextMenu="false"
                           ShowToolbar="false"
@@ -297,6 +281,8 @@
     [CascadingParameter] AppState AppState { get; set; }
 
     PaymentDocumentMain paymentDocumentMain = new();
+
+    DataGrid<PaymentDocumentDetail>? orderBalanceRef = new();
 
     List<Model> vendorBalanceList = new();
     IEnumerable<Model> selectedVendorBalanceList = new List<Model>();
@@ -499,6 +485,7 @@
         selectedVendorDetail.VATToPay = value * (selectedVendorDetail.IsVAT / 100);
         selectedVendorDetail.RemainingAmount = selectedVendorDetail.POAmount - selectedVendorDetail.AdvanceAmount - selectedVendorDetail.PaidAmount - selectedVendorDetail.PaymentDocumentAmount - selectedVendorDetail.AmountToPay;
         selectedVendorDetail.RemainingVAT = selectedVendorDetail.PO_VAT - selectedVendorDetail.AdvanceVAT - selectedVendorDetail.PaidVAT - selectedVendorDetail.PaymentDocumentVAT - selectedVendorDetail.VATToPay;
+        selectedVendorDetail.TotalToPay = selectedVendorDetail.AmountToPay + selectedVendorDetail.VATToPay;
 
         var poIndex = orderBalanceList.FindIndex(e => e.PONum == selectedVendorDetail.PONum);
 
@@ -508,13 +495,16 @@
             orderBalanceList[poIndex].VATToPay = vendorDetailsList.Where(e => e.PONum == selectedVendorDetail.PONum).Sum(e => e.VATToPay);
             orderBalanceList[poIndex].RemainingAmount = vendorDetailsList.Where(e => e.PONum == selectedVendorDetail.PONum).Sum(e => e.RemainingAmount);
             orderBalanceList[poIndex].RemainingVAT = vendorDetailsList.Where(e => e.PONum == selectedVendorDetail.PONum).Sum(e => e.RemainingVAT);
+            orderBalanceList[poIndex].TotalToPay = vendorDetailsList.Where(e => e.PONum == selectedVendorDetail.PONum).Sum(e => e.TotalToPay);
         }
+        orderBalanceRef?.Rebind();
     }
 
     void VATToPayChanged(decimal value)
     {
         selectedVendorDetail.VATToPay = value;
         selectedVendorDetail.RemainingVAT = selectedVendorDetail.PO_VAT - selectedVendorDetail.AdvanceVAT - selectedVendorDetail.PaidVAT - selectedVendorDetail.PaymentDocumentVAT - selectedVendorDetail.VATToPay;
+        selectedVendorDetail.TotalToPay = selectedVendorDetail.AmountToPay + selectedVendorDetail.VATToPay;
 
         var poIndex = orderBalanceList.FindIndex(e => e.PONum == selectedVendorDetail.PONum);
 
@@ -522,7 +512,9 @@
         {
             orderBalanceList[poIndex].VATToPay = vendorDetailsList.Where(e => e.PONum == selectedVendorDetail.PONum).Sum(e => e.VATToPay);
             orderBalanceList[poIndex].RemainingVAT = vendorDetailsList.Where(e => e.PONum == selectedVendorDetail.PONum).Sum(e => e.RemainingVAT);
+            orderBalanceList[poIndex].TotalToPay = vendorDetailsList.Where(e => e.PONum == selectedVendorDetail.PONum).Sum(e => e.TotalToPay);
         }
+        orderBalanceRef?.Rebind();
     }
 
     void GeneratePaymentDocument()

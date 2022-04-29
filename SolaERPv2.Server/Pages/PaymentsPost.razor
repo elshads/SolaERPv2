@@ -102,44 +102,9 @@
                     </div>
                 </div>
 
-                <div class="flex-center-y flex-nowrap k-mb-2">
-                    <span class="k-mr-2 label-width">Expense Code:</span>
-                    <div class="item-width @(invalidExpenseCode ? "invalid-form" : "")">
-                        <GridComboBox @bind-Value="@currentModel.ExpenseCode"
-                                      Id="expensecode"
-                                      Data="@expenseAnalysisList"
-                                      TextField="AnalysisCode"
-                                      ValueField="AnalysisCode"
-                                      SearchFields="@(new List<string> {"AnalysisCode"})"
-                                      ShowHeader="false" />
-                    </div>
-                </div>
-
-                <div class="flex-center-y flex-nowrap k-mb-2">
-                    <span class="k-mr-2 label-width">Group Project:</span>
-                    <div class="item-width @(invalidGroupProject ? "invalid-form" : "")">
-                        <GridComboBox @bind-Value="@currentModel.GroupProject"
-                                      Id="groupproject"
-                                      Data="@groupProjectAnalysisList"
-                                      TextField="AnalysisCode"
-                                      ValueField="AnalysisCode"
-                                      SearchFields="@(new List<string> {"AnalysisCode"})"
-                                      ShowHeader="false" />
-                    </div>
-                </div>
-
-                <div class="flex-center-y flex-nowrap k-mb-2">
-                    <span class="k-mr-2 label-width">Project:</span>
-                    <div class="item-width @(invalidProject ? "invalid-form" : "")">
-                        <GridComboBox @bind-Value="@currentModel.Project"
-                                      Id="project"
-                                      Data="@projectAnalysisList"
-                                      TextField="AnalysisCode"
-                                      ValueField="AnalysisCode"
-                                      SearchFields="@(new List<string> {"AnalysisCode"})"
-                                      ShowHeader="false" />
-                    </div>
-                </div>
+                <ReadOnlyField Value="@(currentModel.ExpenseCode)" Label="Expense Code:" Class="flex-center-y flex-nowrap k-mb-2" LabelClass="k-mr-2 label-width" InputClass="item-width"/>
+                <ReadOnlyField Value="@(currentModel.GroupProject)" Label="Group Project:" Class="flex-center-y flex-nowrap k-mb-2" LabelClass="k-mr-2 label-width" InputClass="item-width"/>
+                <ReadOnlyField Value="@(currentModel.Project)" Label="Project:" Class="flex-center-y flex-nowrap k-mb-2" LabelClass="k-mr-2 label-width" InputClass="item-width"/>
 
                 <div class="flex-center-y flex-nowrap k-mb-2">
                     <span class="k-mr-2 label-width">Bank Charge:</span>
@@ -245,11 +210,6 @@
     [CascadingParameter] public DialogFactory Dialogs { get; set; }
 
     IEnumerable<Bank> bankList = new List<Bank>();
-    IEnumerable<Analysis> expenseAnalysisList = new List<Analysis>();
-    IEnumerable<Analysis> groupProjectAnalysisList = new List<Analysis>();
-    IEnumerable<Analysis> projectAnalysisList = new List<Analysis>();
-    IEnumerable<Analysis> orNumberAnalysisList = new List<Analysis>();
-    IEnumerable<Analysis> jobNumberAnalysisList = new List<Analysis>();
 
     Model currentModel = new();
     EditContext modelContext = new(new Model());
@@ -310,9 +270,6 @@
 
         currentModel = await PaymentDocumentService.GetPost(modelId);
         bankList = await BankService.GetAll();
-        expenseAnalysisList = await AnalysisService.GetExpenseTypes();
-        groupProjectAnalysisList = await AnalysisService.GetGroupProjects();
-        projectAnalysisList = await AnalysisService.GetProjectCodes();
 
         AppState.Loading = false;
     }

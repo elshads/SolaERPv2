@@ -90,33 +90,36 @@
         <GridLayoutItem Row="@(!AppState.MobileView ? 1 : 2)" Column="@(!AppState.MobileView ? 3 : 1)" ColumnSpan="@(!AppState.MobileView ? 1 : 2)">
             <div class="k-pb-3">
                 <label class="k-input-label k-pb-1" for="expensecode">Expense Code:</label>
-                <GridComboBox @bind-Value="@paymentDocumentMain.ExpenseCode"
-                              Id="expensecode"
-                              Data="@expenseAnalysisList"
-                              TextField="AnalysisCode"
-                              ValueField="AnalysisCode"
-                              SearchFields="@(new List<string> {"AnalysisCode"})"
-                              ShowHeader="false" />
+                <TelerikComboBox @bind-Value="@paymentDocumentMain.ExpenseCode"
+                                 Id="expensecode"
+                                 Data="@expenseAnalysisList"
+                                 TextField="AnalysisCode"
+                                 ValueField="AnalysisCode"
+                                 Placeholder="Select..."
+                                 Filterable="true"
+                                 FilterOperator="StringFilterOperator.Contains" />
             </div>
             <div class="k-pb-3">
                 <label class="k-input-label k-pb-1" for="groupproject">Group Project:</label>
-                <GridComboBox @bind-Value="@paymentDocumentMain.GroupProject"
-                              Id="groupproject"
-                              Data="@groupProjectAnalysisList"
-                              TextField="AnalysisCode"
-                              ValueField="AnalysisCode"
-                              SearchFields="@(new List<string> {"AnalysisCode"})"
-                              ShowHeader="false" />
+                <TelerikComboBox @bind-Value="@paymentDocumentMain.GroupProject"
+                                 Id="groupproject"
+                                 Data="@groupProjectAnalysisList"
+                                 TextField="AnalysisCode"
+                                 ValueField="AnalysisCode"
+                                 Placeholder="Select..."
+                                 Filterable="true"
+                                 FilterOperator="StringFilterOperator.Contains" />
             </div>
             <div class="k-pb-3">
                 <label class="k-input-label k-pb-1" for="project">Project:</label>
-                <GridComboBox @bind-Value="@paymentDocumentMain.Project"
-                              Id="project"
-                              Data="@projectAnalysisList"
-                              TextField="AnalysisCode"
-                              ValueField="AnalysisCode"
-                              SearchFields="@(new List<string> {"AnalysisCode"})"
-                              ShowHeader="false" />
+                <TelerikComboBox @bind-Value="@paymentDocumentMain.Project"
+                                 Id="project"
+                                 Data="@projectAnalysisList"
+                                 TextField="AnalysisCode"
+                                 ValueField="AnalysisCode"
+                                 Placeholder="Select..."
+                                 Filterable="true"
+                                 FilterOperator="StringFilterOperator.Contains" />
             </div>
         </GridLayoutItem>
         <GridLayoutItem Row="@(!AppState.MobileView ? 1 : 3)" Column="@(!AppState.MobileView ? 4 : 1)" ColumnSpan="@(!AppState.MobileView ? 1 : 2)">
@@ -305,6 +308,7 @@
 @code {
 
     [CascadingParameter] AppState AppState { get; set; }
+    [CascadingParameter] DialogFactory DialogFactory { get; set; }
 
     int modelId = 0;
     PaymentDocumentMain paymentDocumentMain = new() { PaymentDocumentDetailList = new(), AttachmentList = new() { new Attachment { AttachmentSubTypeId = 2, FileName = "InvoiceA_20220402 SomeLongDescription here for test purposes.pdf" }, new Attachment { AttachmentSubTypeId = 2, FileName = "InvoiceB_20220402.pdf" }, new Attachment { AttachmentSubTypeId = 2, FileName = "InvoiceC_20220402.pdf" }, new Attachment { AttachmentSubTypeId = 2, FileName = "InvoiceD_20220402.pdf" }, new Attachment { AttachmentSubTypeId = 2, FileName = "InvoiceE_20220402.pdf" }, new Attachment { AttachmentSubTypeId = 2, FileName = "InvoiceF_20220402.pdf" }, new Attachment { AttachmentSubTypeId = 2, FileName = "InvoiceG_20220402.pdf" }, new Attachment { AttachmentSubTypeId = 6, FileName = "InvoiceH_20220402.pdf" } } };
@@ -373,9 +377,9 @@
         AppState.CustomButton13Icon = "attachment";
         AppState.CustomButton14Icon = "attachment";
 
-        AppState.ReportButtonVisible = true;
         AppState.BackButtonVisible = true;
         AppState.SaveButtonVisible = true;
+        AppState.DeleteButtonVisible = true;
 
         AppState.OnCustomButton10Click += OnRequestLinkClick;
         AppState.OnCustomButton11Click += OnBidLinkClick;
@@ -385,6 +389,7 @@
 
         AppState.OnBackClick += BackClick;
         AppState.OnSaveClick += Save;
+        AppState.OnDeleteClick += Delete;
         AppState.OnReloadClick += ReloadClick;
     }
 
@@ -407,6 +412,7 @@
 
         AppState.OnBackClick -= BackClick;
         AppState.OnSaveClick -= Save;
+        AppState.OnDeleteClick -= Delete;
         AppState.OnReloadClick -= ReloadClick;
     }
 
@@ -549,6 +555,25 @@
             }
         }
         AppState.Loading = false;
+    }
+
+    async void Delete()
+    {
+        var confirmed = await DialogFactory.ConfirmAsync($"Are you sure you want to delete item: Id = {paymentDocumentMain.PaymentDocumentMainId}, Ref = {paymentDocumentMain.Reference}?", "Delete?");
+        if (confirmed)
+        {
+            var deletedId = new List<int>() { paymentDocumentMain.PaymentDocumentMainId };
+            var sqlResult = await PaymentDocumentService.Delete(deletedId);
+            if (sqlResult?.QueryResultMessage == null)
+            {
+                AppState.ShowAlert("Item successfully deleted", Severity.Success);
+                NavigationManager.NavigateTo("/payments");
+            }
+            else
+            {
+                AppState.ShowAlert(sqlResult.QueryResultMessage, Severity.Success);
+            }
+        }
     }
 
     bool Validate()

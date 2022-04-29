@@ -2,7 +2,7 @@
 
 @implements IDisposable
 
-<TelerikGrid @ref="@Ref"
+<TelerikGrid @ref="@gridRef"
              @key="@Key"
              Data="@Data"
              Height="@Height"
@@ -157,7 +157,6 @@
     [Parameter] public RenderFragment ChildContent { get; set; }
 
     [Parameter] public Guid Key { get; set; }
-    [Parameter] public TelerikGrid<TItem> Ref { get; set; }
 
     [Parameter] public Guid DestinationGridKey { get; set; }
     [Parameter] public EventCallback<Guid> DestinationGridKeyChanged { get; set; }
@@ -234,7 +233,7 @@
     // -----------------------
 
     // local variables - start
-
+    TelerikGrid<TItem>? gridRef;
     TelerikContextMenu<ContextMenuItem> contextMenuRef;
     List<ContextMenuItem> contextMenuItemList;
     IEnumerable<TItem> originalData = new List<TItem>();
@@ -517,7 +516,7 @@
         var destinationGrid = args.DestinationGrid;
         var destinationItem = args.DestinationItem;
         var destinationIndex = 0;
-        var destinationData = destinationGrid == Ref ? Data : DestinationGridData;
+        var destinationData = destinationGrid == gridRef ? Data : DestinationGridData;
 
         foreach (var item in args.Items)
         {
@@ -712,12 +711,12 @@
     async Task BeginEdit(TItem selectedItem)
     {
         await SetEditMode();
-        var currState = Ref.GetState();
+        var currState = gridRef.GetState();
         currState.InsertedItem = default(TItem);
         TItem itemToEdit = GetInstanceClone(selectedItem);
         currState.OriginalEditItem = selectedItem;
         currState.EditItem = itemToEdit;
-        await Ref.SetState(currState);
+        await gridRef.SetState(currState);
     }
 
     async Task SetEditMode()
@@ -790,7 +789,18 @@
     }
 
 
-    // component functions - start
+    // component functions - end
+
+    // -----------------------
+
+    // public functions - start
+
+    public void Rebind()
+    {
+        gridRef?.Rebind();
+    }
+
+    // public functions - end
 
     public class ContextMenuItem
     {

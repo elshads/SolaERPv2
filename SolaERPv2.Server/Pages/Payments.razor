@@ -222,12 +222,14 @@
 
 
 @code {
+    [CascadingParameter] AppState AppState { get; set; }
+    [CascadingParameter] DialogFactory DialogFactory { get; set; }
+
     // Grid specific variables - start
     Guid gridKey;
     TelerikGrid<Model> gridRef;
     List<Model> modelList = new();
     IEnumerable<Model> selectedModelList = new List<Model>();
-    List<Model> deletedModelList = new List<Model>();
     Model selectedModel;
     bool showRowButtons = false;
     bool showDecimals = false;
@@ -250,14 +252,22 @@
 
     int activeTabIndex = 0;
 
-    [CascadingParameter] public AppState AppState { get; set; }
-    [CascadingParameter] public DialogFactory Dialogs { get; set; }
-
     List<Model> deletedItems = new List<Model>();
     IEnumerable<Model> selectedItems = new List<Model>();
-    void DeleteHandler(IEnumerable<Model> items)
+
+    async Task DeleteHandler(IEnumerable<Model> items)
     {
-        deletedItems = items.ToList();
+        var deletedIdList = items.Select(e => e.PaymentDocumentMainId);
+        var sqlResult = await PaymentDocumentService.Delete(deletedIdList);
+        if (sqlResult?.QueryResultMessage == null)
+        {
+            AppState.ShowAlert("Item successfully deleted", Severity.Success);
+            NavigationManager.NavigateTo("/payments");
+        }
+        else
+        {
+            AppState.ShowAlert(sqlResult.QueryResultMessage, Severity.Success);
+        }
     }
 
     protected override async Task OnInitializedAsync()
@@ -534,7 +544,7 @@
         }
         if (selectedItems.Any())
         {
-            var confirmed = await Dialogs.ConfirmAsync($"Are you sure you want to change status of {selectedItems.Count()} item(s)?", title);
+            var confirmed = await DialogFactory.ConfirmAsync($"Are you sure you want to change status of {selectedItems.Count()} item(s)?", title);
             if (confirmed)
             {
                 AppState.Loading = true;

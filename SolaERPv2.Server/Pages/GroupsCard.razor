@@ -15,8 +15,8 @@
         <DataAnnotationsValidator></DataAnnotationsValidator>
     </FormValidation>
     <FormItems>
-        <FormItem Field="@nameof(Model.GroupName)" LabelText="Name"></FormItem>
-        <FormItem Field="@nameof(Model.Description)" LabelText="Description"></FormItem>
+        <FormItem Field="@nameof(Model.GroupName)" LabelText="Name" Enabled="@((pageAccess.CreateAccess && currentModel.GroupId == 0) || (pageAccess.EditAccess && currentModel.GroupId > 0))"></FormItem>
+        <FormItem Field="@nameof(Model.Description)" LabelText="Description" Enabled="@((pageAccess.CreateAccess && currentModel.GroupId == 0) || (pageAccess.EditAccess && currentModel.GroupId > 0))"></FormItem>
     </FormItems>
     <FormButtons />
 </TelerikForm>
@@ -38,7 +38,7 @@
             </span>
         </HeaderTemplate>
         <Content>
-            <DoubleGrid Height="calc(100vh - 340px)" @bind-LeftGridData="currentModel.Users" @bind-RightGridData="allUsers" LeftGridTitle="Group Users" RightGridTitle="All Users" SearchFields="@(new List<string> {"FullName", "UserName"})">
+            <DoubleGrid ReadOnly="@(!((pageAccess.CreateAccess && currentModel.GroupId == 0) || (pageAccess.EditAccess && currentModel.GroupId > 0)))" Height="calc(100vh - 340px)" @bind-LeftGridData="currentModel.Users" @bind-RightGridData="allUsers" LeftGridTitle="Group Users" RightGridTitle="All Users" SearchFields="@(new List<string> {"FullName", "UserName"})">
                 <GridColumn Field="@(nameof(AppUser.FullName))" Title="Name" />
                 <GridColumn Field="@(nameof(AppUser.UserName))" Title="UserName" />
             </DoubleGrid>
@@ -60,7 +60,7 @@
             </span>
         </HeaderTemplate>
         <Content>
-            <DoubleGrid Height="calc(100vh - 340px)" @bind-LeftGridData="currentModel.BusinessUnits" @bind-RightGridData="allBusinessUnits" LeftGridTitle="Group Business Units" RightGridTitle="All Business Units" SearchFields="@(new List<string> {"BusinessUnitCode", "BusinessUnitName"})">
+            <DoubleGrid ReadOnly="@(!((pageAccess.CreateAccess && currentModel.GroupId == 0) || (pageAccess.EditAccess && currentModel.GroupId > 0)))" Height="calc(100vh - 340px)" @bind-LeftGridData="currentModel.BusinessUnits" @bind-RightGridData="allBusinessUnits" LeftGridTitle="Group Business Units" RightGridTitle="All Business Units" SearchFields="@(new List<string> {"BusinessUnitCode", "BusinessUnitName"})">
                 <GridColumn Field="@(nameof(BusinessUnit.BusinessUnitCode))" Title="Code" />
                 <GridColumn Field="@(nameof(BusinessUnit.BusinessUnitName))" Title="Name" />
             </DoubleGrid>
@@ -104,7 +104,7 @@
             </span>
         </HeaderTemplate>
         <Content>
-            <DoubleGrid Height="calc(100vh - 340px)" @bind-LeftGridData="currentModel.ApproveRoles" @bind-RightGridData="allApproveRoles" LeftGridTitle="Group Approve Roles" RightGridTitle="All Approve Roles" SearchFields="@(new List<string> {"ApproveRoleName"})">
+            <DoubleGrid ReadOnly="@(!((pageAccess.CreateAccess && currentModel.GroupId == 0) || (pageAccess.EditAccess && currentModel.GroupId > 0)))" Height="calc(100vh - 340px)" @bind-LeftGridData="currentModel.ApproveRoles" @bind-RightGridData="allApproveRoles" LeftGridTitle="Group Approve Roles" RightGridTitle="All Approve Roles" SearchFields="@(new List<string> {"ApproveRoleName"})">
                 <GridColumn Field="@(nameof(ApproveRole.ApproveRoleName))" Title="Name" />
             </DoubleGrid>
         </Content>
@@ -135,7 +135,7 @@
                         <Template>
                             @{
                                 selectedMenu = (context as Menu);
-                                <div class="@(selectedMenu.ParentId == null ? "bg-gray" : "")"><TelerikCheckBox @bind-Value="@selectedMenu.CreateAccess" Enabled="true" OnChange="@(() => CreateAccessChanged(selectedMenu))" /></div>
+                                <div class="@(selectedMenu.ParentId == null ? "bg-gray" : "")"><TelerikCheckBox @bind-Value="@selectedMenu.CreateAccess" Enabled="@((pageAccess.CreateAccess && currentModel.GroupId == 0) || (pageAccess.EditAccess && currentModel.GroupId > 0))" OnChange="@(() => CreateAccessChanged(selectedMenu))" /></div>
                             }
                         </Template>
                     </TreeListColumn>
@@ -143,7 +143,7 @@
                         <Template>
                             @{
                                 selectedMenu = (context as Menu);
-                                <div class="@(selectedMenu.ParentId == null ? "bg-gray" : "")"><TelerikCheckBox @bind-Value="@selectedMenu.EditAccess" Enabled="true" OnChange="@(() => EditAccessChanged(selectedMenu))" /></div>
+                                <div class="@(selectedMenu.ParentId == null ? "bg-gray" : "")"><TelerikCheckBox @bind-Value="@selectedMenu.EditAccess" Enabled="@((pageAccess.CreateAccess && currentModel.GroupId == 0) || (pageAccess.EditAccess && currentModel.GroupId > 0))" OnChange="@(() => EditAccessChanged(selectedMenu))" /></div>
                             }
                         </Template>
                     </TreeListColumn>
@@ -151,7 +151,7 @@
                         <Template>
                             @{
                                 selectedMenu = (context as Menu);
-                                <div class="@(selectedMenu.ParentId == null ? "bg-gray" : "")"><TelerikCheckBox @bind-Value="@selectedMenu.DeleteAccess" Enabled="true" OnChange="@(() => DeleteAccessChanged(selectedMenu))" /></div>
+                                <div class="@(selectedMenu.ParentId == null ? "bg-gray" : "")"><TelerikCheckBox @bind-Value="@selectedMenu.DeleteAccess" Enabled="@((pageAccess.CreateAccess && currentModel.GroupId == 0) || (pageAccess.EditAccess && currentModel.GroupId > 0))" OnChange="@(() => DeleteAccessChanged(selectedMenu))" /></div>
                             }
                         </Template>
                     </TreeListColumn>
@@ -159,7 +159,7 @@
                         <Template>
                             @{
                                 selectedMenu = (context as Menu);
-                                <div class="@(selectedMenu.ParentId == null ? "bg-gray" : "")"><TelerikCheckBox @bind-Value="@selectedMenu.ExportAccess" Enabled="true" OnChange="@(() => ExportAccessChanged(selectedMenu))" /></div>
+                                <div class="@(selectedMenu.ParentId == null ? "bg-gray" : "")"><TelerikCheckBox @bind-Value="@selectedMenu.ExportAccess" Enabled="@((pageAccess.CreateAccess && currentModel.GroupId == 0) || (pageAccess.EditAccess && currentModel.GroupId > 0))" OnChange="@(() => ExportAccessChanged(selectedMenu))" /></div>
                             }
                         </Template>
                     </TreeListColumn>
@@ -174,6 +174,8 @@
 @code {
     [CascadingParameter] public AppState? AppState { get; set; }
     [CascadingParameter] public DialogFactory? Dialogs { get; set; }
+
+    Menu? pageAccess = new();
 
     int modelId = 0;
     Model? currentModel = new();
@@ -190,6 +192,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        GetPageAccessRights();
         SetQueryVariables();
         OnAppStateInitialized();
         await LoadData();
@@ -200,6 +203,7 @@
         AppState?.SetDefaults();
         AppState.BackButtonVisible = true;
         AppState.SaveButtonVisible = true;
+        //AppState.SaveButtonEnabled = (pageAccess.CreateAccess && currentModel.GroupId == 0) || (pageAccess.EditAccess && currentModel.GroupId > 0);
 
         AppState.OnBackClick += BackClick;
         AppState.OnSaveClick += SaveClick;
@@ -209,6 +213,16 @@
     {
         AppState.OnBackClick -= BackClick;
         AppState.OnSaveClick -= SaveClick;
+    }
+
+    void GetPageAccessRights()
+    {
+        var pageCode = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        if (SessionData?.CurrentUser?.UserMenuList != null)
+        {
+            var _pageAccess = SessionData?.CurrentUser?.UserMenuList.FirstOrDefault(e => pageCode.Contains(e.MenuCode));
+            if (_pageAccess != null) { pageAccess = _pageAccess; }
+        }
     }
 
     void SetQueryVariables()
@@ -232,6 +246,9 @@
         allApproveRoles = _allApproveRoles.Where(e => !currentModel.ApproveRoles.Any(p => p.ApproveRoleId == e.ApproveRoleId)).ToList();
         await GetMenuItems();
         editContext = new EditContext(currentModel);
+
+        AppState.SaveButtonEnabled = (pageAccess.CreateAccess && currentModel.GroupId == 0) || (pageAccess.EditAccess && currentModel.GroupId > 0);
+        AppState.Refresh();
     }
 
     void BackClick()
@@ -378,7 +395,7 @@
     async void SaveClick()
     {
         var validated = Validate();
-        if (validated) 
+        if (validated)
         {
             var sqlResult = await GroupService.Save(currentModel);
             if (sqlResult.QueryResultMessage == null)

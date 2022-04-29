@@ -19,7 +19,7 @@
                      ShowColumnMenu="true"
                      FilterMode="@GridFilterMode.FilterMenu"
                      SelectionMode="@GridSelectionMode.Multiple"
-                     RowDraggable="@(RowDraggable && !AppState.MobileView)">
+                     RowDraggable="@(RowDraggable && !ReadOnly && !AppState.MobileView)">
             <GridToolBar>
                 @if (LeftGridTitle != null)
                 {
@@ -28,7 +28,7 @@
                 <span class="k-toolbar-spacer" />
                 @if (RowDraggable)
                 {
-                    <GridCommandButton Icon="chevron-right" Enabled="@(leftGridSelectedItems.Count() > 0)" OnClick="@(() => MoveAllItemsRight(leftGridSelectedItems))">Move Right</GridCommandButton>
+                    <GridCommandButton Icon="chevron-right" Enabled="@(leftGridSelectedItems.Count() > 0 && !ReadOnly)" OnClick="@(() => MoveAllItemsRight(leftGridSelectedItems))">Move Right</GridCommandButton>
                 }
                 <span class="k-textbox k-input k-input-solid k-rounded-md k-input-md customsearch">
                     <span class="k-icon k-input-icon k-i-search" />
@@ -44,9 +44,9 @@
             <GridColumns>
                 <GridCommandColumn Width="55px"
                                    ShowColumnMenu="false" Reorderable="false"
-                                   Visible="@(RowDraggable && !AppState.MobileView)">
+                                   Visible="@(RowDraggable && !ReadOnly && !AppState.MobileView)">
 
-                    @if (RowDraggable)
+                    @if (RowDraggable && !ReadOnly)
                     {
                         <GridCommandButton Icon="chevron-right" ShowInEdit="false" OnClick="@((e) => MoveItemRight(e))" />
                     }
@@ -74,7 +74,7 @@
                      ShowColumnMenu="true"
                      FilterMode="@GridFilterMode.FilterMenu"
                      SelectionMode="@GridSelectionMode.Multiple"
-                     RowDraggable="@(RowDraggable && !AppState.MobileView)">
+                     RowDraggable="@(RowDraggable && !ReadOnly && !AppState.MobileView)">
 
             <GridToolBar>
                 @if (RightGridTitle != null)
@@ -84,7 +84,7 @@
                 <span class="k-toolbar-spacer" />
                 @if (RowDraggable)
                 {
-                    <GridCommandButton Icon="chevron-left" Enabled="@(rightGridSelectedItems.Count() > 0)" OnClick="@(() => MoveAllItemsLeft(rightGridSelectedItems))">Move Left</GridCommandButton>
+                    <GridCommandButton Icon="chevron-left" Enabled="@(rightGridSelectedItems.Count() > 0 && !ReadOnly)" OnClick="@(() => MoveAllItemsLeft(rightGridSelectedItems))">Move Left</GridCommandButton>
                 }
                 <span class="k-textbox k-input k-input-solid k-rounded-md k-input-md customsearch">
                     <span class="k-icon k-input-icon k-i-search" />
@@ -100,9 +100,9 @@
             <GridColumns>
                 <GridCommandColumn Width="55px"
                                    ShowColumnMenu="false" Reorderable="false"
-                                   Visible="@(RowDraggable && !AppState.MobileView)">
+                                   Visible="@(RowDraggable && !ReadOnly && !AppState.MobileView)">
 
-                    @if (RowDraggable)
+                    @if (RowDraggable && !ReadOnly)
                     {
                         <GridCommandButton Icon="chevron-left" ShowInEdit="false" OnClick="@((e) => MoveItemLeft(e))" />
                     }
@@ -126,6 +126,8 @@
 
     [Parameter] public string LeftGridTitle { get; set; }
     [Parameter] public string RightGridTitle { get; set; }
+
+    [Parameter] public bool ReadOnly { get; set; } = false;
 
 
     [Parameter] public List<TItem> LeftGridData { get; set; } = new List<TItem>();

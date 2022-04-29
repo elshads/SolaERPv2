@@ -1,11 +1,11 @@
 ﻿@page
-@model RegisterModel
+@model RegisterSupplierModel
 
 
 <div class="center-content text-center" style="width: 300px">
     <img src="~/img/logo.png" alt="logo" width="220" class="mb-2" />
     <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
-        <h3>Internal user registration</h3>
+        <h3>Supplier registration</h3>
         <hr />
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         <div class="form-floating mb-2">
@@ -29,7 +29,7 @@
                 <a asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl">Sign in</a>
             </p>
             <p>
-                <a asp-page="./RegisterSupplier" asp-route-returnUrl="@Model.ReturnUrl">Register as supplier</a>
+                <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">Register as a company user</a>
             </p>
             <p>
                 <a id="resend-confirmation" asp-page="./ResendEmailConfirmation">Resend email confirmation</a>

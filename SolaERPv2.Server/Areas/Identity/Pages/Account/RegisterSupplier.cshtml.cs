@@ -22,7 +22,7 @@ using SolaERPv2.Server.Identity;
 
 namespace SolaERPv2.Server.Areas.Identity.Pages.Account
 {
-    public class RegisterModel : PageModel
+    public class RegisterSupplierModel : PageModel
     {
         private readonly SignInManager<AppUser> _signInManager;
         private readonly UserManager<AppUser> _userManager;
@@ -32,7 +32,7 @@ namespace SolaERPv2.Server.Areas.Identity.Pages.Account
         private readonly IEmailSender _emailSender;
         private readonly MailService _mailService;
 
-        public RegisterModel(
+        public RegisterSupplierModel(
             UserManager<AppUser> userManager,
             IUserStore<AppUser> userStore,
             SignInManager<AppUser> signInManager,
@@ -117,7 +117,7 @@ namespace SolaERPv2.Server.Areas.Identity.Pages.Account
             if (ModelState.IsValid)
             {
                 var user = CreateUser();
-                user.UserTypeId = 0;
+                user.UserTypeId = 1;
 
                 await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);

@@ -158,6 +158,9 @@ public class PaymentDocumentService
             p.Add("@PaymentDocumentTypeId", paymentDocumentMain.PaymentDocumentTypeId, DbType.Int32, ParameterDirection.Input);
             p.Add("@BusinessUnitId", paymentDocumentMain.BusinessUnitId, DbType.Int32, ParameterDirection.Input);
             p.Add("@PaymentDocumentPriorityId", paymentDocumentMain.PaymentDocumentPriorityId, DbType.Int32, ParameterDirection.Input);
+            p.Add("@ExpenseCode", paymentDocumentMain.ExpenseCode, DbType.String, ParameterDirection.Input);
+            p.Add("@GroupProject", paymentDocumentMain.GroupProject, DbType.String, ParameterDirection.Input);
+            p.Add("@Project", paymentDocumentMain.Project, DbType.String, ParameterDirection.Input);
             p.Add("@UserId", user.Id, DbType.Int32, ParameterDirection.Input);
             p.Add("@NewPaymentDocumentMainId", dbType: DbType.Int32, direction: ParameterDirection.Output);
 
@@ -256,5 +259,19 @@ public class PaymentDocumentService
         p.Add("@PaymentDocumentMainId", paymentDocumentMainId, DbType.Int32, ParameterDirection.Input);
         p.Add("@AttachmentType", attachmentTypeId, DbType.Int32, ParameterDirection.Input);
         return await _sqlDataAccess.QueryAll<Attachment>("dbo.SP_PaymentDocumentsOtherAttachments", p);
+    }
+
+    public async Task<SqlResult?> Delete(IEnumerable<int> paymentDocumentMainIdList)
+    {
+        SqlResult? sqlResult = new();
+        foreach (var item in paymentDocumentMainIdList)
+        {
+            var p = new DynamicParameters();
+            p.Add("@PaymentDocumentMainId", item, DbType.Int32, ParameterDirection.Input);
+            p.Add("@NewPaymentDocumentMainId", dbType: DbType.Int32, direction: ParameterDirection.Output);
+            sqlResult = await _sqlDataAccess.ExecuteSql("dbo.SP_PaymentDocumentMain_IUD", p);
+            if (sqlResult.QueryResultMessage != null) { return sqlResult; }
+        }
+        return sqlResult;
     }
 }
