@@ -1,0 +1,101 @@
+﻿<div class="@(Class + (HideList ? " hidden-list" : ""))">
+    <MudProgressLinear Color="@(fileLoading ? Color.Primary : Color.Transparent)" Indeterminate="true" />
+    <TelerikFileSelect AllowedExtensions="@AllowedExtensions"
+                       MaxFileSize="@MaxFileSize"
+                       Enabled="@Enabled"
+                       Multiple="@Multiple"
+                       OnSelect="@OnFileSelect"
+                       OnRemove="OnFileRemove">
+    </TelerikFileSelect>
+    <div class="k-form-hint">
+        @if (fileLoading)
+        {
+            <div class="k-text-error">
+                Loading file: @(currentFile.FileName)
+                @(currentFile.Size >= 1048576 ? $"Size: {(currentFile.Size / 1024 / 1024).ToString("N2")}MB " : currentFile.Size >= 1024 ? $"Size: {(currentFile.Size / 1024).ToString("N2")}KB " : currentFile.Size > 0 ? $"Size: {(currentFile.Size).ToString("N2")}BYTES " : "")
+                . &nbsp Do not close this window while loading
+            </div>
+        }
+        else
+        {
+            <div>Allowed files: @(AllowedExtensions != null ? String.Join(", ", AllowedExtensions) : "") up to @(MaxFileSize / 1024 / 1024)MB</div>
+        }
+    </div>
+</div>
+
+@code {
+    [CascadingParameter] public AppState AppState { get; set; }
+
+    [Parameter] public EventCallback<List<Attachment>> OnSelect { get; set; }
+    [Parameter] public EventCallback<FileSelectEventArgs> OnRemove { get; set; }
+    [Parameter] public List<string>? AllowedExtensions { get; set; }
+    [Parameter] public int MaxFileSize { get; set; } = 1024 * 1024 * 10;
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public bool Enabled { get; set; } = true;
+    [Parameter] public bool Multiple { get; set; } = true;
+    [Parameter] public bool HideList { get; set; } = false;
+
+    List<Attachment>? files = new();
+    Attachment? currentFile;
+    bool fileLoading = false;
+
+    async Task OnFileSelect(FileSelectEventArgs args)
+    {
+        fileLoading = true;
+
+        files = new();
+
+        foreach (var file in args.Files)
+        {
+            if (!file.InvalidExtension && !file.InvalidMaxFileSize)
+            {
+                currentFile = new() { FileName = file.Name, Size = file.Size, };
+
+                await using MemoryStream ms = new();
+                await file.Stream.CopyToAsync(ms);
+                var fileData = ms.ToArray();
+                currentFile = new Attachment
+                    {
+                        AttachmentId = 0,
+                        ExtensionType = file.Extension,
+                        FileData = fileData,
+                        FileName = file.Name,
+                        Size = file.Size,
+                        //SourceId = this.SourceId,
+                        //SourceTypeName = this.SourceTypeName,
+                        //AttachmentTypeId = this.AttachmentTypeId,
+                        //AttachmentSubTypeId = this.AttachmentSubTypeId,
+                        //Reference = DocumentReference,
+                    };
+                files?.Add(currentFile);
+            }
+            else if (file.InvalidExtension && file.InvalidMaxFileSize)
+            {
+                AppState?.ShowAlert($"File '{file.Name}' exceeds allowed size & Selected file type not allowed", Severity.Error);
+            }
+            else if (file.InvalidExtension)
+            {
+                AppState?.ShowAlert($"Selected file type not allowed for '{file.Name}'", Severity.Error);
+            }
+            else if (file.InvalidMaxFileSize)
+            {
+                AppState?.ShowAlert($"File '{file.Name}' exceeds allowed size", Severity.Error);
+            }
+        }
+
+        fileLoading = false;
+
+        await OnSelect.InvokeAsync(files);
+    }
+
+    async Task OnFileRemove(FileSelectEventArgs args)
+    {
+        await OnRemove.InvokeAsync(args);
+    }
+}
+
+<style>
+    .hidden-list .k-upload .k-upload-files {
+        display: none;
+    }
+</style>
