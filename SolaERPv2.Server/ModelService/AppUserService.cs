@@ -63,4 +63,37 @@ public class AppUserService
         var sql = $"SELECT * FROM Config.AppUser WHERE Id = {id}";
         return await _sqlDataAccess.QuerySingle<AppUser>(sql, null, CommandType.Text);
     }
+
+    public async Task<IEnumerable<string>?> GetAllEmailsAsync()
+    {
+        IEnumerable<string>? result = new List<string>();
+        var sql = $"SELECT LOWER(Email) FROM Config.AppUser";
+        try
+        {
+            using IDbConnection cn = new SqlConnection(_sqlDataAccess.ConnectionString);
+            result = await cn.QueryAsync<string>(sql);
+        }
+        catch (Exception e)
+        {
+            var message = e.Message;
+        }
+        return result;
+    }
+
+    public async Task<bool> IsEmailUniqueAsync(string email)
+    {
+        var sql = $"SELECT LOWER(Email) FROM Config.AppUser WHERE Email = '{email}'";
+        try
+        {
+            using IDbConnection cn = new SqlConnection(_sqlDataAccess.ConnectionString);
+            var result = await cn.QueryAsync<string>(sql);
+            if (result != null) { return false; }
+        }
+        catch (Exception e)
+        {
+            var message = e.Message;
+            return false;
+        }
+        return true;
+    }
 }

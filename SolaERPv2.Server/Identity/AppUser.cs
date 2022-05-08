@@ -25,6 +25,8 @@ public class AppUser : IdentityUser<int>, IBaseModel
     public int UserTypeId { get; set; } // 0 - internal, 1 - supplier
     public string? Theme { get; set; }
     public string? SyteLineUserCode { get; set; }
+    public int CompanyId { get; set; }
+    public string? Position { get; set; }
     public DateTime ExpirationDate { get; set; }
     public int Sessions { get; set; }
     public DateTime LastActivity { get; set; }

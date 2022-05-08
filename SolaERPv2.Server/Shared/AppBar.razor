@@ -1,21 +1,35 @@
 ﻿@inject ThemeService ThemeService
 
 <MudAppBar Color="Color.Primary" Fixed="false">
+
     <MudIconButton OnClick="@OpenHandler" Icon="@Icons.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" />
+
     <a class="brand-wrapper" href="/">
         <span class="brand-name1">Sola</span>
         <span class="brand-name2">ERP</span>
     </a>
+
     <MudSpacer />
+
+    <MudTooltip Text="@fullName" Duration="500">
+        <button class="k-mx-2 avatar-button">
+            <MudAvatar Image="@avatar" Color="Color.Default">
+                <MudText Typo="Typo.h6" Color="Color.Dark">@initials</MudText>
+            </MudAvatar>
+        </button>
+    </MudTooltip>
+
     <MudTooltip Text="Change theme" Duration="500">
         <MudToggleIconButton Icon="@Icons.Filled.DarkMode" Color="@Color.Inherit"
                              ToggledIcon="@Icons.Filled.LightMode" ToggledColor="@Color.Inherit" Toggled="@(SessionData.CurrentUser?.Theme == "dark")" ToggledChanged="@ChangeTheme" />
     </MudTooltip>
+
     <form method="post" action="Identity/Account/Logout">
         <MudTooltip Text="Log out" Duration="500">
             <MudIconButton Icon="@Icons.Filled.Logout" Color="Color.Inherit" ButtonType="MudBlazor.ButtonType.Submit"></MudIconButton>
         </MudTooltip>
     </form>
+
 </MudAppBar>
 
 @code {
@@ -23,6 +37,21 @@
     [Parameter] public bool Open { get; set; }
     [Parameter] public EventCallback<bool> OpenChanged { get; set; }
 
+    string? avatar;
+    string? fullName;
+    string? initials;
+
+    protected override void OnParametersSet()
+    {
+        avatar = (SessionData.CurrentUser != null && SessionData.CurrentUser.Photo != null ? string.Format($"data:image/png;base64," + Convert.ToBase64String(SessionData.CurrentUser.Photo)) : null);
+        fullName = (SessionData.CurrentUser != null && SessionData.CurrentUser.FullName != null ? SessionData.CurrentUser.FullName : null);
+        if (fullName != null)
+        {
+            var stringList = fullName.Split(' ').ToList();
+            var firstLetters = stringList.Where(s => s.Length > 0).Take(3).Select(e => e.Substring(0, 1).ToUpper());
+            initials = string.Join("", firstLetters);
+        }
+    }
 
     async Task OpenHandler()
     {
@@ -47,6 +76,14 @@
 }
 
 <style>
+    .avatar-button {
+    }
+
+        .avatar-button:hover {
+            outline: solid 4px #41389f;
+            border-radius: 50%;
+        }
+
     .brand-wrapper {
         font-size: 1rem;
         padding-left: 10px;

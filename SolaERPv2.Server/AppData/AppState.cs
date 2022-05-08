@@ -95,7 +95,7 @@ public class AppState
         CustomButton14Icon = "";
     }
 
-    public void ShowAlert(string message, Severity severity, Action? onClick = null)
+    public void ShowAlert(string message, MudBlazor.Severity severity, Action? onClick = null)
     {
         Snackbar.Add(message, severity, config =>
         {

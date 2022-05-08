@@ -23,4 +23,13 @@ public class VendorService
         p.Add("@TaxId", taxId, DbType.String, ParameterDirection.Input);
         return await _sqlDataAccess.QuerySingle<Vendor>("dbo.SP_VendorsTaxCheck", p);
     }
+
+    public async Task<bool> IsVendorUniqueAsync(string taxId)
+    {
+        var p = new DynamicParameters();
+        p.Add("@TaxId", taxId, DbType.String, ParameterDirection.Input);
+        var result = await _sqlDataAccess.QuerySingle<Vendor>("dbo.SP_VendorsTaxCheck", p);
+        if (result != null && result.TaxId != null) { return false; }
+        return true;
+    }
 }

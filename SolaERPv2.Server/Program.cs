@@ -65,6 +65,9 @@ builder.Services.AddScoped<PaymentDocumentService>();
 builder.Services.AddScoped<ThemeService>();
 builder.Services.AddScoped<VendorService>();
 
+builder.Services.AddTransient<IValidator<AppUser>, AppUserValidator>();
+builder.Services.AddTransient<IValidator<Vendor>, VendorValidator>();
+
 builder.Services.Configure<HubOptions>(options =>
 {
     options.MaximumReceiveMessageSize = 1024 * 1024 * 1; // 1MB

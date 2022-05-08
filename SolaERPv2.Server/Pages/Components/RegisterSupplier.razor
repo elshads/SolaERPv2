@@ -1,5 +1,16 @@
-﻿<RegisterSupplierInitial />
+﻿<RegisterSupplierInitial @bind-CurrentPerson="@CurrentPerson" @bind-CurrentVendor="@CurrentVendor" OnNextClick="@GoToNextPage" />
 
 @code {
+    [Parameter] public AppUser? CurrentPerson { get; set; } = new();
+    [Parameter] public Vendor? CurrentVendor { get; set; } = new();
 
+    protected override void OnInitialized()
+    {
+        CurrentPerson = SessionData.CurrentUser;
+    }
+
+    void GoToNextPage()
+    {
+        //
+    }
 }

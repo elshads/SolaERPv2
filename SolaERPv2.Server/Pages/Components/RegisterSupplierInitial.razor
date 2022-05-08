@@ -6,14 +6,14 @@
 
         <TelerikForm EditContext="@personContext" Orientation="FormOrientation.Horizontal">
             <FormValidation>
-                <DataAnnotationsValidator></DataAnnotationsValidator>
+                <FluentValidationValidator @ref="personValidator" DisableAssemblyScanning="true" />
             </FormValidation>
             <FormItems>
                 <FormGroup LabelText="Contact Person">
-                    <FormItem LabelText="Email: " Field="@nameof(Person.UserName)" Enabled="false" />
-                    <FormItem LabelText="Full Name: " Field="@nameof(Person.PersonName)" />
-                    <FormItem LabelText="Position: " Field="@nameof(Person.Position)" />
-                    <FormItem LabelText="Phone Number: " Field="@nameof(Person.PhoneNumber)" />
+                    <FormItem LabelText="Email: " Field="@nameof(AppUser.Email)" Enabled="false" />
+                    <FormItem LabelText="Full Name: " Field="@nameof(AppUser.FullName)" />
+                    <FormItem LabelText="Position: " Field="@nameof(AppUser.Position)" />
+                    <FormItem LabelText="Phone Number: " Field="@nameof(AppUser.PhoneNumber)" />
                 </FormGroup>
             </FormItems>
             <FormButtons />
@@ -21,15 +21,15 @@
 
         <TelerikForm EditContext="@vendorContext" Orientation="FormOrientation.Horizontal">
             <FormValidation>
-                <DataAnnotationsValidator></DataAnnotationsValidator>
+                <FluentValidationValidator @ref="vendorValidator" DisableAssemblyScanning="true" />
             </FormValidation>
             <FormItems>
                 <FormGroup LabelText="Company Information">
                     <FormItem LabelText="Tax ID / VÖEN: " Field="@nameof(Vendor.TaxId)">
                         <Template>
                             <label for="taxid" class="k-label k-form-label">Tax ID / VÖEN: </label>
-                            <TelerikTextBox Class="k-form-field-wrap" Id="taxid" Value="@(currentVendor.TaxId)" ValueChanged="@((string? value) => TaxIdChanged(value))" OnBlur="@(() => TaxIdBlured())" ValueExpression="@(() => currentVendor.TaxId)" />
-                            <TelerikValidationMessage For="@(() => currentVendor.TaxId)" />
+                            <TelerikTextBox Class="k-form-field-wrap" Id="taxid" Value="@(CurrentVendor.TaxId)" ValueChanged="@((string? value) => TaxIdChanged(value))" OnBlur="@(() => TaxIdBlured())" ValueExpression="@(() => CurrentVendor.TaxId)" />
+                            <TelerikValidationMessage For="@(() => CurrentVendor.TaxId)" />
                         </Template>
                     </FormItem>
                     <FormItem LabelText="Company Name: " Field="@nameof(Vendor.VendorName)" Enabled="@(!vendorExists)" />
@@ -41,16 +41,17 @@
                             <TelerikMultiSelect Id="productlist"
                                                 Class="k-form-field-wrap"
                                                 Data="@productList"
-                                                @bind-Value="@currentVendor.ProvidedProducts"
+                                                @bind-Value="@CurrentVendor.ProvidedProducts"
                                                 Placeholder="Select ..."
                                                 Width="100%" />
-                            <TelerikValidationMessage For="@(() => currentVendor.ProvidedProducts)" />
+                            <TelerikValidationMessage For="@(() => CurrentVendor.ProvidedProducts)" />
                         </Template>
                     </FormItem>
                     <FormItem LabelText="Company logo: " Field="@nameof(Vendor.Logo)" Enabled="@(!vendorExists)">
                         <Template>
                             <label for="companylogo" class="k-label k-form-label">Company logo: </label>
                             <FileSelect Class="k-form-field-wrap" HideList="true" Multiple="false" AllowedExtensions="@(new List<string> { ".png", ".jpg", ".jpeg" })" OnSelect="@OnLogoSelect" />
+                                <TelerikValidationMessage For="@(() => CurrentVendor.Logo)" />
                         </Template>
                     </FormItem>
                     <FormItem LabelText="Represented Products: " Field="@nameof(Vendor.RepresentedProducts)" Enabled="@(!vendorExists)" />
@@ -63,7 +64,7 @@
                             <TelerikRadioGroup Id="agreement"
                                                Class="k-form-field-wrap"
                                                Data="@BooleanModel.BooleanModelList"
-                                               @bind-Value="@currentVendor.AgreeWithDefaultDays"
+                                               @bind-Value="@CurrentVendor.AgreeWithDefaultDays"
                                                TextField="Name"
                                                ValueField="Value" />
                         </Template>
@@ -71,19 +72,26 @@
                 </FormGroup>
             </FormItems>
             <FormButtons>
-                <TelerikButton ButtonType="Telerik.Blazor.ButtonType.Button">Next</TelerikButton>
+                <TelerikButton ButtonType="Telerik.Blazor.ButtonType.Button" OnClick="@(() => NextClickHandler())">Next</TelerikButton>
             </FormButtons>
         </TelerikForm>
     </div>
 </MudCard>
+
 @code {
     [CascadingParameter] public AppState AppState { get; set; }
 
-    EditContext? personContext = new(new Person());
+    [Parameter] public AppUser? CurrentPerson { get; set; }
+    [Parameter] public Vendor? CurrentVendor { get; set; }
+    [Parameter] public EventCallback<AppUser> CurrentPersonChanged { get; set; }
+    [Parameter] public EventCallback<Vendor> CurrentVendorChanged { get; set; }
+    [Parameter] public EventCallback OnNextClick { get; set; } = new();
+
+    EditContext? personContext = new(new AppUser());
     EditContext? vendorContext = new(new Vendor());
 
-    Person? currentPerson = new();
-    Vendor? currentVendor = new();
+    FluentValidationValidator? personValidator;
+    FluentValidationValidator? vendorValidator;
 
     List<string>? productList = new();
 
@@ -91,24 +99,22 @@
 
     protected override void OnInitialized()
     {
-        personContext = new(currentPerson);
-        vendorContext = new(currentVendor);
-        currentPerson.UserName = SessionData.CurrentUser.UserName;
+        personContext = new(CurrentPerson);
+        vendorContext = new(CurrentVendor);
     }
 
     void TaxIdChanged(string? taxId)
     {
-        currentVendor.TaxId = taxId;
+        CurrentVendor.TaxId = taxId;
     }
 
     async Task TaxIdBlured()
     {
-        AppState.Loading = true;
         Vendor? vendor = new();
-        if (currentVendor != null && currentVendor.TaxId != null) { vendor = await VendorService.GetByTaxIdAsync(currentVendor.TaxId); }
+        if (CurrentVendor != null && CurrentVendor.TaxId != null) { vendor = await VendorService.GetByTaxIdAsync(CurrentVendor.TaxId); }
         if (vendor != null && vendor.TaxId != null && vendor.TaxId.Length > 0)
         {
-            currentVendor = vendor;
+            CurrentVendor = vendor;
             vendorExists = true;
         }
         else
@@ -116,7 +122,6 @@
             ResetVendorFields();
             vendorExists = false;
         }
-        AppState.Loading = false;
     }
 
     void ResetVendorFields()
@@ -134,6 +139,31 @@
         {
             AppState.ShowAlert("List is NULL", Severity.Warning);
         }
+    }
+
+    async Task NextClickHandler()
+    {
+        var valid = ValidatePerson() && ValidateVendor();
+        if (valid)
+        {
+            await OnNextClick.InvokeAsync();
+        }
+        else
+        {
+            AppState.ShowAlert("Validation error", Severity.Error);
+        }
+    }
+
+    bool ValidatePerson()
+    {
+        if (personValidator != null) { return personValidator.Validate(options => options.IncludeRuleSets(nameof(AppUser.FullName))); }
+        return false;
+    }
+
+    bool ValidateVendor()
+    {
+        if (vendorValidator != null) { return vendorValidator.Validate(options => options.IncludeAllRuleSets()); }
+        return false;
     }
 }
 
