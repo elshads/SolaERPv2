@@ -1,6 +1,6 @@
 ﻿namespace SolaERPv2.Server.ModelService;
 
-public class AnalysisService
+public class AnalysisService : BaseModelervice<Analysis>
 {
     AppUserService _appUserService;
     SqlDataAccess _sqlDataAccess;

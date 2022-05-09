@@ -32,7 +32,7 @@ else
         if (SessionData?.CurrentUser?.UserMenuList != null)
         {
             var _readAccess = SessionData?.CurrentUser?.UserMenuList.FirstOrDefault(e => pageCode.Contains(e.MenuCode));
-            readAccess = pageCode == "" ? true : _readAccess != null ? (_readAccess.ExportAccess || _readAccess.CreateAccess || _readAccess.EditAccess || _readAccess.DeleteAccess) : false;
+            readAccess = pageCode == "" || pageCode == "profile" ? true : _readAccess != null ? (_readAccess.ExportAccess || _readAccess.CreateAccess || _readAccess.EditAccess || _readAccess.DeleteAccess) : false;
         }
     }
 }

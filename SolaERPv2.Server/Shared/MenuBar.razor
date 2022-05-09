@@ -2,7 +2,8 @@
 <TelerikToolBar>
     <ToolBarSeparator />
     <ToolBarButton Icon="arrow-left" Enabled="@AppState.BackButtonEnabled" Visible="@AppState.BackButtonVisible" OnClick="@BackClick">Back</ToolBarButton>
-    <ToolBarSeparator Visible="@AppState.BackButtonVisible" />
+    <ToolBarButton Enabled="@AppState.NextButtonEnabled" Visible="@AppState.NextButtonVisible" OnClick="@NextClick">Next<TelerikIcon Icon="arrow-right"/></ToolBarButton>
+    <ToolBarSeparator Visible="@(AppState.BackButtonVisible || AppState.NextButtonVisible)" />
     <ToolBarButton Icon="@AppState.CustomButton01Icon" Enabled="@AppState.CustomButton01Enabled" Visible="@AppState.CustomButton01Visible" OnClick="@CustomButton01Click">@(AppState.CustomButton01Title)</ToolBarButton>
     <ToolBarButton Icon="@AppState.CustomButton02Icon" Enabled="@AppState.CustomButton02Enabled" Visible="@AppState.CustomButton02Visible" OnClick="@CustomButton02Click">@(AppState.CustomButton02Title)</ToolBarButton>
     <ToolBarButton Icon="@AppState.CustomButton03Icon" Enabled="@AppState.CustomButton03Enabled" Visible="@AppState.CustomButton03Visible" OnClick="@CustomButton03Click">@(AppState.CustomButton03Title)</ToolBarButton>
@@ -46,6 +47,11 @@
     void BackClick(MouseEventArgs args)
     {
         AppState.BackClick();
+    }
+
+    void NextClick(MouseEventArgs args)
+    {
+        AppState.NextClick();
     }
 
     void AddClick(MouseEventArgs args)

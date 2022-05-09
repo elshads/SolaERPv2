@@ -2,7 +2,7 @@
 
 namespace SolaERPv2.Server.ModelService;
 
-public class AppUserService
+public class AppUserService : BaseModelervice<AppUser>
 {
     //IHttpContextAccessor _httpContextAccessor;
     AuthenticationStateProvider _authenticationStateProvider;

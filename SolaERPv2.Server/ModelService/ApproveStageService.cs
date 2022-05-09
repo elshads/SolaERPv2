@@ -1,6 +1,6 @@
 ﻿namespace SolaERPv2.Server.ModelService;
 
-public class ApproveStageService
+public class ApproveStageService : BaseModelervice<ApproveStage>
 {
     AppUserService _appUserService;
     SqlDataAccess _sqlDataAccess;

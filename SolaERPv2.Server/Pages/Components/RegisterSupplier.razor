@@ -1,16 +1,32 @@
-﻿<RegisterSupplierInitial @bind-CurrentPerson="@CurrentPerson" @bind-CurrentVendor="@CurrentVendor" OnNextClick="@GoToNextPage" />
+﻿<RegisterSupplierInitial @ref="@registerSupplierInitial"
+                         CurrentPerson="@CurrentPerson"
+                         CurrentPersonChanged="@CurrentPersonChangedHandler"
+                         CurrentVendor="@CurrentVendor"
+                         CurrentVendorChanged="@CurrentVendorChangedHandler" />
 
 @code {
-    [Parameter] public AppUser? CurrentPerson { get; set; } = new();
-    [Parameter] public Vendor? CurrentVendor { get; set; } = new();
+    [Parameter] public AppUser? CurrentPerson { get; set; }
+    [Parameter] public Vendor? CurrentVendor { get; set; }
+    [Parameter] public EventCallback<AppUser> CurrentPersonChanged { get; set; }
+    [Parameter] public EventCallback<Vendor> CurrentVendorChanged { get; set; }
 
-    protected override void OnInitialized()
+    RegisterSupplierInitial? registerSupplierInitial;
+
+    public async Task<bool> NextClickValid()
     {
-        CurrentPerson = SessionData.CurrentUser;
+        var valid = await registerSupplierInitial.NextClickValid();
+        return valid;
     }
 
-    void GoToNextPage()
+    async Task CurrentPersonChangedHandler(AppUser currentPerson)
     {
-        //
+        CurrentPerson = currentPerson;
+        await CurrentPersonChanged.InvokeAsync(CurrentPerson);
+    }
+
+    async Task CurrentVendorChangedHandler(Vendor currentVendor)
+    {
+        CurrentVendor = currentVendor;
+        await CurrentVendorChanged.InvokeAsync(CurrentVendor);
     }
 }

@@ -4,24 +4,77 @@
 
 <PageTitle>Index</PageTitle>
 
-<RegisterSupplier/>
+@if (showSupplierRegistration)
+{
+    <RegisterSupplier @ref="@registerSupplier" @bind-CurrentPerson="@currentPerson" @bind-CurrentVendor="@currentVendor" />
+}
+else
+{
+    <h3>Dashboard Placeholder</h3>
+}
 
 @code {
     [CascadingParameter] public AppState AppState { get; set; }
 
+    AppUser? currentPerson = new();
+    Vendor? currentVendor = new();
+
+    RegisterSupplier? registerSupplier;
+    bool showSupplierRegistration = false;
+
     protected override void OnInitialized()
     {
         OnAppStateInitialized();
+        ShowSupplierRegistrationPage();
+        currentPerson = SessionData.CurrentUser;
+    }
+
+    void ShowSupplierRegistrationPage()
+    {
+        if(SessionData.CurrentUser != null && SessionData.CurrentUser.StatusId == 0)
+        {
+            AppState.BackButtonVisible = true;
+            AppState.NextButtonVisible = true;
+
+            showSupplierRegistration = true;
+        }
+        else
+        {
+            AppState.BackButtonVisible = false;
+            AppState.NextButtonVisible = false;
+            showSupplierRegistration = false;
+        }
     }
 
     void OnAppStateInitialized()
     {
         AppState.SetDefaults();
+        AppState.BackButtonEnabled = false;
+        AppState.OnBackClick += BackClickHandler;
+        AppState.OnNextClick += NextClickHandler;
+        AppState.OnSaveClick += SaveClickHandler;
     }
 
     void IDisposable.Dispose()
     {
+        AppState.OnBackClick -= BackClickHandler;
+        AppState.OnNextClick -= NextClickHandler;
+        AppState.OnSaveClick -= SaveClickHandler;
+    }
 
+    void BackClickHandler()
+    {
+    //
+    }
+
+    async void NextClickHandler()
+    {
+        var valid = await registerSupplier.NextClickValid();
+    }
+
+    async void SaveClickHandler()
+    {
+        //
     }
 
     //async Task SendEmail(MouseEventArgs args)

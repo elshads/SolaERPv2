@@ -12,7 +12,7 @@
     <MudSpacer />
 
     <MudTooltip Text="@fullName" Duration="500">
-        <button class="k-mx-2 avatar-button">
+        <button class="k-mx-2 avatar-button" onclick="@(() => NavigationManager.NavigateTo("/profile"))">
             <MudAvatar Image="@avatar" Color="Color.Default">
                 <MudText Typo="Typo.h6" Color="Color.Dark">@initials</MudText>
             </MudAvatar>

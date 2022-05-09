@@ -11,13 +11,13 @@ public class VendorValidator : AbstractValidator<Model>
         RuleSet(nameof(Model.TaxId), () =>
         {
             RuleFor(p => p.TaxId)
-                .NotEmpty().WithMessage("This field is mandatory");
+                .NotEmpty().WithMessage("'Tax ID' is mandatory");
         });
 
         RuleSet(nameof(Model.VendorName), () =>
         {
             RuleFor(p => p.VendorName)
-                .NotEmpty().WithMessage("This field is mandatory")
+                .NotEmpty().WithMessage("'Company Name' is mandatory")
                 .MaximumLength(50).WithMessage("Max length 50 characters");
         });
 
@@ -29,8 +29,8 @@ public class VendorValidator : AbstractValidator<Model>
         //});
     }
 
-    async Task<bool> IsVendorUniqueAsync(string taxId)
-    {
-        return await _vendorService.IsVendorUniqueAsync(taxId);
-    }
+    //async Task<bool> IsVendorUniqueAsync(string taxId)
+    //{
+    //    return await _vendorService.IsVendorUniqueAsync(taxId);
+    //}
 }

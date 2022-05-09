@@ -1,0 +1,109 @@
+﻿@page "/profile"
+@implements IDisposable
+
+<MudCard Class="k-p-8" Style="max-width:800px;">
+    <h3 class="k-mb-4">Profile</h3>
+    <TelerikGridLayout RowSpacing="16px" ColumnSpacing="16px">
+        <GridLayoutColumns>
+            <GridLayoutColumn Width="252px" />
+            <GridLayoutColumn />
+        </GridLayoutColumns>
+        <GridLayoutItems>
+            <GridLayoutItem Row="1" Column="1">
+                <div style="height: 252px">
+                    <MudImage Src="@imgUrl" Width="250" Height="250" Alt="avatar" Elevation="25" Class="rounded-lg" />
+                </div>
+                <TelerikButton Class="w-100 k-my-2" OnClick="@DeletePhotoHandler" ThemeColor="@Telerik.Blazor.ThemeConstants.Button.ThemeColor.Error">Delete Photo</TelerikButton>
+                <FileSelect HideList="true" Multiple="false" AllowedExtensions="@(new List<string> { ".png", ".jpg", ".jpeg" })" OnSelect="@OnAvatarSelect" />
+            </GridLayoutItem>
+            <GridLayoutItem Row="@(AppState.MobileView ? 2 : 1)" Column="@(AppState.MobileView ? 1 : 2)" ColumnSpan="@(AppState.MobileView ? 2 : 1)">
+                <TelerikForm Model="@currentUser" Orientation="FormOrientation.Vertical">
+                    <FormValidation>
+                        <FluentValidationValidator @ref="userValidator" DisableAssemblyScanning="true" />
+                    </FormValidation>
+                    <FormItems>
+                        <FormItem LabelText="Email: " Field="@nameof(AppUser.Email)" Enabled="false" />
+                        <FormItem LabelText="Full Name: " Field="@nameof(AppUser.FullName)" />
+                        <FormItem LabelText="Position: " Field="@nameof(AppUser.Position)" />
+                        <FormItem LabelText="Phone Number: " Field="@nameof(AppUser.PhoneNumber)" />
+                        <TelerikValidationSummary Class="k-mt-4" />
+                    </FormItems>
+                    <FormButtons />
+                </TelerikForm>
+            </GridLayoutItem>
+        </GridLayoutItems>
+    </TelerikGridLayout>
+</MudCard>
+<div>@showPasswordChange</div>
+<PasswordChange @bind-Visible="showPasswordChange" AppUser="@(SessionData.CurrentUser)"/>
+
+@code {
+    [CascadingParameter] public AppState AppState { get; set; }
+
+    AppUser? currentUser;
+    FluentValidationValidator? userValidator;
+
+    string? imgUrl = "img/avatar.png";
+    bool showPasswordChange = false;
+
+    protected override void OnInitialized()
+    {
+        OnAppStateInitialized();
+        currentUser = SessionData.CurrentUser;
+    }
+
+    void OnAppStateInitialized()
+    {
+        AppState.SetDefaults();
+        AppState.SaveButtonVisible = true;
+        AppState.CustomButton04Visible = true;
+        AppState.CustomButton04Icon = "password";
+        AppState.CustomButton04Title = "Change Password";
+
+        AppState.OnCustomButton04Click += ShowPasswordDialog;
+        AppState.OnSaveClick += SaveClickHandler;
+    }
+
+    void IDisposable.Dispose()
+    {
+        AppState.OnCustomButton04Click -= ShowPasswordDialog;
+        AppState.OnSaveClick -= SaveClickHandler;
+    }
+
+    bool ValidatePerson()
+    {
+        if (userValidator != null) { return userValidator.Validate(options => options.IncludeAllRuleSets()); }
+        return false;
+    }
+
+    void OnAvatarSelect(List<Attachment> files)
+    {
+        if (files != null && files.Any())
+        {
+            currentUser.Photo = files.FirstOrDefault().FileData;
+            imgUrl = string.Format($"data:image/png;base64," + Convert.ToBase64String(currentUser.Photo));
+        }
+    }
+
+    void DeletePhotoHandler()
+    {
+        currentUser.Photo = null;
+        imgUrl = "img/avatar.png";
+    }
+
+    async void ShowPasswordDialog()
+    {
+        showPasswordChange = true;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    async void SaveClickHandler()
+    {
+        var isValid = ValidatePerson();
+        if (isValid)
+        {
+            SessionData.CurrentUser = currentUser;
+            //update database
+        }
+    }
+}

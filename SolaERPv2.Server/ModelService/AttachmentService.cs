@@ -1,6 +1,6 @@
 ﻿namespace SolaERPv2.Server.ModelService;
 
-public class AttachmentService
+public class AttachmentService : BaseModelervice<Attachment>
 {
     AppUserService _appUserService;
     SqlDataAccess _sqlDataAccess;

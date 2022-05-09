@@ -17,6 +17,8 @@ public class AppState
     {
         BackButtonVisible = false;
         BackButtonEnabled = true;
+        NextButtonVisible = false;
+        NextButtonEnabled = true;
         AddButtonVisible = false;
         AddButtonEnabled = true;
         DeleteButtonVisible = false;
@@ -118,6 +120,8 @@ public class AppState
     public bool Loading { get { return loading; } set { loading = value; Refresh(); } }
     public bool BackButtonVisible { get; set; }
     public bool BackButtonEnabled { get; set; }
+    public bool NextButtonVisible { get; set; }
+    public bool NextButtonEnabled { get; set; }
     public bool AddButtonVisible { get; set; }
     public bool AddButtonEnabled { get; set; }
     public bool DeleteButtonVisible { get; set; }
@@ -200,6 +204,7 @@ public class AppState
 
     public event Action? OnRefreshClick;
     public event Action? OnBackClick;
+    public event Action? OnNextClick;
     public event Action? OnAddClick;
     public event Action? OnDeleteClick;
     public event Action? OnSaveClick;
@@ -233,6 +238,11 @@ public class AppState
     public void BackClick()
     {
         OnBackClick?.Invoke();
+    }
+
+    public void NextClick()
+    {
+        OnNextClick?.Invoke();
     }
 
     public void AddClick()

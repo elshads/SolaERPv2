@@ -1,6 +1,6 @@
 ﻿namespace SolaERPv2.Server.ModelService;
 
-public class GroupService
+public class GroupService : BaseModelervice<Group>
 {
     AppUserService _appUserService;
     SqlDataAccess _sqlDataAccess;

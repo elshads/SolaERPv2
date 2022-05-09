@@ -48,6 +48,10 @@ html, body {
     transform: translate(-50%, -50%);
 }
 
+.w-100{
+    width: 100%;
+}
+
 .flex-center-y {
     display: flex;
     align-items: center;

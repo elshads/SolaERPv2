@@ -9,6 +9,7 @@ global using SolaERPv2.Server.ModelValidators;
 
 global using Microsoft.Data.SqlClient;
 global using System.Data;
+global using System.Text;
 global using System.ComponentModel.DataAnnotations;
 global using Microsoft.AspNetCore.Identity;
 global using Dapper;

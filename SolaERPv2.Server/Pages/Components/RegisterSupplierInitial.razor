@@ -4,7 +4,7 @@
     <div>
         <h3 class="k-mb-4">INITIAL REGISTRATION FORM</h3>
 
-        <TelerikForm EditContext="@personContext" Orientation="FormOrientation.Horizontal">
+        <TelerikForm Model="@CurrentPerson" Orientation="FormOrientation.Horizontal">
             <FormValidation>
                 <FluentValidationValidator @ref="personValidator" DisableAssemblyScanning="true" />
             </FormValidation>
@@ -15,11 +15,12 @@
                     <FormItem LabelText="Position: " Field="@nameof(AppUser.Position)" />
                     <FormItem LabelText="Phone Number: " Field="@nameof(AppUser.PhoneNumber)" />
                 </FormGroup>
+                <TelerikValidationSummary/>
             </FormItems>
             <FormButtons />
         </TelerikForm>
 
-        <TelerikForm EditContext="@vendorContext" Orientation="FormOrientation.Horizontal">
+        <TelerikForm Model="@CurrentVendor" Orientation="FormOrientation.Horizontal" >
             <FormValidation>
                 <FluentValidationValidator @ref="vendorValidator" DisableAssemblyScanning="true" />
             </FormValidation>
@@ -28,55 +29,61 @@
                     <FormItem LabelText="Tax ID / VÖEN: " Field="@nameof(Vendor.TaxId)">
                         <Template>
                             <label for="taxid" class="k-label k-form-label">Tax ID / VÖEN: </label>
-                            <TelerikTextBox Class="k-form-field-wrap" Id="taxid" Value="@(CurrentVendor.TaxId)" ValueChanged="@((string? value) => TaxIdChanged(value))" OnBlur="@(() => TaxIdBlured())" ValueExpression="@(() => CurrentVendor.TaxId)" />
-                            <TelerikValidationMessage For="@(() => CurrentVendor.TaxId)" />
+                            <div class="k-form-field-wrap">
+                                <TelerikTextBox Id="taxid" Value="@(CurrentVendor.TaxId)" ValueChanged="@((string? value) => TaxIdChanged(value))" OnBlur="@(() => TaxIdBlured(CurrentVendor.TaxId))" ValueExpression="@(() => CurrentVendor.TaxId)" />
+                                <TelerikValidationMessage For="@(() => CurrentVendor.TaxId)" />
+                            </div>
                         </Template>
                     </FormItem>
                     <FormItem LabelText="Company Name: " Field="@nameof(Vendor.VendorName)" Enabled="@(!vendorExists)" />
-                    <FormItem LabelText="Location: " Field="@nameof(Vendor.Location)" Enabled="@(!vendorExists)" />
-                    <FormItem LabelText="Website: " Field="@nameof(Vendor.Website)" Enabled="@(!vendorExists)" />
+                    <FormItem LabelText="Location: " Field="@nameof(Vendor.CompanyLocation)" Enabled="@(!vendorExists)" />
+                    <FormItem LabelText="Website: " Field="@nameof(Vendor.CompanyWebsite)" Enabled="@(!vendorExists)" />
                     <FormItem LabelText="Products / Services provided: " Field="@nameof(Vendor.ProvidedProducts)" Enabled="@(!vendorExists)">
                         <Template>
                             <label for="productlist" class="k-label k-form-label">Products / Services provided: </label>
-                            <TelerikMultiSelect Id="productlist"
-                                                Class="k-form-field-wrap"
-                                                Data="@productList"
-                                                @bind-Value="@CurrentVendor.ProvidedProducts"
-                                                Placeholder="Select ..."
-                                                Width="100%" />
-                            <TelerikValidationMessage For="@(() => CurrentVendor.ProvidedProducts)" />
+                            <div class="k-form-field-wrap">
+                                <TelerikMultiSelect Id="productlist"
+                                                    Data="@productList"
+                                                    @bind-Value="@CurrentVendor.ProvidedProducts"
+                                                    Placeholder="Select ..."
+                                                    Width="100%" />
+                                <TelerikValidationMessage For="@(() => CurrentVendor.ProvidedProducts)" />
+                            </div>
                         </Template>
                     </FormItem>
-                    <FormItem LabelText="Company logo: " Field="@nameof(Vendor.Logo)" Enabled="@(!vendorExists)">
+                    <FormItem LabelText="Company logo: " Field="@nameof(Vendor.CompanyLogo)" Enabled="@(!vendorExists)">
                         <Template>
                             <label for="companylogo" class="k-label k-form-label">Company logo: </label>
-                            <FileSelect Class="k-form-field-wrap" HideList="true" Multiple="false" AllowedExtensions="@(new List<string> { ".png", ".jpg", ".jpeg" })" OnSelect="@OnLogoSelect" />
-                                <TelerikValidationMessage For="@(() => CurrentVendor.Logo)" />
+                            <div class="k-form-field-wrap">
+                                <FileSelect HideList="true" Multiple="false" AllowedExtensions="@(new List<string> { ".png", ".jpg", ".jpeg" })" OnSelect="@OnLogoSelect" />
+                                <TelerikValidationMessage For="@(() => CurrentVendor.CompanyLogo)" />
+                            </div>
                         </Template>
                     </FormItem>
                     <FormItem LabelText="Represented Products: " Field="@nameof(Vendor.RepresentedProducts)" Enabled="@(!vendorExists)" />
                     <FormItem LabelText="Represented Companies: " Field="@nameof(Vendor.RepresentedCompanies)" Enabled="@(!vendorExists)" />
                     <FormItem LabelText="Payment Terms: " Field="@nameof(Vendor.PaymentTermsCode)" Enabled="@(!vendorExists)" />
                     <FormItem LabelText="Credit Days: " Field="@nameof(Vendor.CreditDays)" Enabled="@(!vendorExists)" />
-                    <FormItem LabelText="Please confirm that you agree with the 60-days payment" Field="@nameof(Vendor.AgreeWithDefaultDays)" Enabled="@(!vendorExists)">
+                    <FormItem LabelText="Please confirm that you agree with the 60-days payment" Field="@nameof(Vendor.AgreeWithDefaultDays)" Class="k-pb-4" Enabled="@(!vendorExists)">
                         <Template>
                             <label for="agreement" class="k-label k-form-label">Please confirm that you agree with the 60-days payment </label>
-                            <TelerikRadioGroup Id="agreement"
-                                               Class="k-form-field-wrap"
-                                               Data="@BooleanModel.BooleanModelList"
-                                               @bind-Value="@CurrentVendor.AgreeWithDefaultDays"
-                                               TextField="Name"
-                                               ValueField="Value" />
+                            <div class="k-form-field-wrap">
+                                <TelerikRadioGroup Id="agreement"
+                                                   Data="@BooleanModel.BooleanModelList"
+                                                   @bind-Value="@CurrentVendor.AgreeWithDefaultDays"
+                                                   TextField="Name"
+                                                   ValueField="Value" />
+                            </div>
                         </Template>
                     </FormItem>
                 </FormGroup>
+                <TelerikValidationSummary/>
             </FormItems>
-            <FormButtons>
-                <TelerikButton ButtonType="Telerik.Blazor.ButtonType.Button" OnClick="@(() => NextClickHandler())">Next</TelerikButton>
-            </FormButtons>
+            <FormButtons/>
         </TelerikForm>
     </div>
 </MudCard>
+
 
 @code {
     [CascadingParameter] public AppState AppState { get; set; }
@@ -85,7 +92,6 @@
     [Parameter] public Vendor? CurrentVendor { get; set; }
     [Parameter] public EventCallback<AppUser> CurrentPersonChanged { get; set; }
     [Parameter] public EventCallback<Vendor> CurrentVendorChanged { get; set; }
-    [Parameter] public EventCallback OnNextClick { get; set; } = new();
 
     EditContext? personContext = new(new AppUser());
     EditContext? vendorContext = new(new Vendor());
@@ -108,7 +114,7 @@
         CurrentVendor.TaxId = taxId;
     }
 
-    async Task TaxIdBlured()
+    async Task TaxIdBlured(string taxId)
     {
         Vendor? vendor = new();
         if (CurrentVendor != null && CurrentVendor.TaxId != null) { vendor = await VendorService.GetByTaxIdAsync(CurrentVendor.TaxId); }
@@ -119,21 +125,15 @@
         }
         else
         {
-            ResetVendorFields();
             vendorExists = false;
         }
     }
 
-    void ResetVendorFields()
-    {
-    //
-    }
-
     void OnLogoSelect(List<Attachment> files)
     {
-        if (files != null)
+        if (files != null && files.Any())
         {
-            AppState.ShowAlert(files.Count().ToString(), Severity.Success);
+            CurrentVendor.CompanyLogo = files.FirstOrDefault().FileData;
         }
         else
         {
@@ -141,17 +141,16 @@
         }
     }
 
-    async Task NextClickHandler()
+    public async Task<bool> NextClickValid()
     {
         var valid = ValidatePerson() && ValidateVendor();
-        if (valid)
-        {
-            await OnNextClick.InvokeAsync();
-        }
-        else
+        if (!valid)
         {
             AppState.ShowAlert("Validation error", Severity.Error);
         }
+        await CurrentPersonChanged.InvokeAsync(CurrentPerson);
+        await CurrentVendorChanged.InvokeAsync(CurrentVendor);
+        return valid;
     }
 
     bool ValidatePerson()
@@ -162,7 +161,7 @@
 
     bool ValidateVendor()
     {
-        if (vendorValidator != null) { return vendorValidator.Validate(options => options.IncludeAllRuleSets()); }
+        if (vendorValidator != null) { return vendorValidator.Validate(options => options.IncludeRuleSets(nameof(Vendor.TaxId), nameof(Vendor.VendorName))); }
         return false;
     }
 }

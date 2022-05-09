@@ -1,6 +1,6 @@
 ﻿namespace SolaERPv2.Server.ModelService;
 
-public class PaymentDocumentService
+public class PaymentDocumentService : BaseModelervice<PaymentDocumentMain>
 {
     AppUserService _appUserService;
     SqlDataAccess _sqlDataAccess;
