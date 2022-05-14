@@ -1,6 +1,6 @@
 ﻿namespace SolaERPv2.Server.ModelService;
 
-public class BankService : BaseModelervice<Bank>
+public class BankService : BaseModelService<Bank>
 {
     AppUserService _appUserService;
     SqlDataAccess _sqlDataAccess;

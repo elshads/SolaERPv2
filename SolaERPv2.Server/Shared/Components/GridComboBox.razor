@@ -44,7 +44,12 @@
             <div class="combo-table combo-items">
                 @foreach (var item in columns)
                 {
-                    <div class="combo-column">@(typeof(TItem).GetProperty(item).GetValue(context))</div>
+                    var propertyType = typeof(TItem).GetProperty(item);
+                    @if(propertyType != null) {
+                        var itemType = propertyType.PropertyType;
+                        var itemValue = propertyType.GetValue(context);
+                        <div class="combo-column @(itemType == typeof(int) || itemType == typeof(decimal) ? "text-right" : "")">@itemValue</div>
+                    }
                 }
             </div>
         }

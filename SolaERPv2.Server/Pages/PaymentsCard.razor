@@ -26,7 +26,7 @@
                     <ReadOnlyField Value="@($"{paymentDocumentMain.CreatedDate.ToString("yyyy-MM-dd")} / {paymentDocumentMain.CreatedUser}")" Label="Created On/By: " />
                 </GridLayoutItem>
                 <GridLayoutItem Row="@(!AppState.MobileView ? 1 : 5)" Column="@(!AppState.MobileView ? 5 : 1)">
-                    <ReadOnlyField Value="@("--potype")" Label="PO Type: " />
+                    <ReadOnlyField Value="@(paymentDocumentMain.POType)" Label="PO Type: " />
                 </GridLayoutItem>
             </GridLayoutItems>
         </TelerikGridLayout>

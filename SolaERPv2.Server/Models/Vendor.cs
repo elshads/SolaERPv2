@@ -11,9 +11,12 @@ public class Vendor : BaseModel
     public byte[]? CompanyLogo { get; set; }
     public int CreditDays { get; set; } = 60;
     public string? PaymentTermsCode { get; set; }
+    public string? CountryCode { get; set; }
     public Analysis? PaymentTerms { get; set; }
-    public List<string>? ProvidedProducts { get; set; }
-    public List<string>? RepresentedProducts { get; set; }
-    public List<string>? RepresentedCompanies { get; set; }
+    public List<int>? ProvidedProducts { get; set; }
+    public List<Bank>? BankList { get; set; }
+    public string? OtherProducts { get; set; }
+    public string? RepresentedProducts { get; set; }
+    public string? RepresentedCompanies { get; set; }
     public bool AgreeWithDefaultDays { get; set; } = true;
 }

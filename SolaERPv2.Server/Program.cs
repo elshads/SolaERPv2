@@ -54,6 +54,7 @@ builder.Services.AddScoped<SessionData>();
 builder.Services.AddTransient<PageData>();
 
 builder.Services.AddScoped<MailService>();
+builder.Services.AddScoped<GenericDataService>();
 builder.Services.AddScoped<AnalysisService>();
 builder.Services.AddScoped<ApproveStageService>();
 builder.Services.AddScoped<AttachmentService>();
@@ -64,6 +65,8 @@ builder.Services.AddScoped<MenuService>();
 builder.Services.AddScoped<PaymentDocumentService>();
 builder.Services.AddScoped<ThemeService>();
 builder.Services.AddScoped<VendorService>();
+builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<CountryService>();
 
 builder.Services.AddTransient<IValidator<AppUser>, AppUserValidator>();
 builder.Services.AddTransient<IValidator<Vendor>, VendorValidator>();

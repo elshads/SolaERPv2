@@ -1,6 +1,6 @@
 ﻿namespace SolaERPv2.Server.ModelService;
 
-public class BaseModelervice<T> where T : IBaseModel, new()
+public class BaseModelService<T> where T : IBaseModel, new()
 {
     public T GetInstanceClone(T originalItem)
     {

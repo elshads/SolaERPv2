@@ -5,24 +5,22 @@ public class SqlDataAccess
     public string? ConnectionString { get; private set; }
     public SqlDataAccess(string connectionString) => ConnectionString = connectionString;
 
-    public async Task<IEnumerable<T>?> QueryAll<T>(string sql, DynamicParameters? p, CommandType commandType = CommandType.StoredProcedure) where T : IBaseModel, new()
+    public async Task<IEnumerable<T>?> QueryAll<T>(string sql, DynamicParameters? p, CommandType commandType = CommandType.StoredProcedure)
     {
-        IEnumerable<T>? result = new List<T>();
         try
         {
             using IDbConnection cn = new SqlConnection(ConnectionString);
-            result = await cn.QueryAsync<T>(sql, p, commandType: commandType);
+            return await cn.QueryAsync<T>(sql, p, commandType: commandType);
         }
         catch (Exception e)
         {
             var message = e.Message;
+            return null;
         }
-        return result;
     }
 
-    public async Task<T?> QuerySingle<T>(string sql, DynamicParameters? p, CommandType commandType = CommandType.StoredProcedure) where T : IBaseModel, new()
+    public async Task<T?> QuerySingle<T>(string sql, DynamicParameters? p, CommandType commandType = CommandType.StoredProcedure)
     {
-        T? result = new();
         try
         {
             using IDbConnection cn = new SqlConnection(ConnectionString);
@@ -31,9 +29,9 @@ public class SqlDataAccess
         }
         catch (Exception e)
         {
-            result.ReturnMessage = e.Message;
+            var message = e.Message;
+            return default(T);
         }
-        return result;
     }
 
     public async Task<SqlResult?> ExecuteSql(string sql, DynamicParameters? p, CommandType commandType = CommandType.StoredProcedure)

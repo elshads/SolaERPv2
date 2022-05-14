@@ -11,6 +11,7 @@ public class PaymentDocumentMain : BaseModel
     public string? Comment { get; set; }
     public int PaymentDocumentTypeId { get; set; }
     public string? PaymentDocumentTypeName { get; set; }
+    public string? POType { get; set; }
     public int PaymentDocumentPriorityId { get; set; } = 2;
     public string? PaymentDocumentPriorityName { get; set; }
     public string? CurrencyCode { get; set; }
@@ -21,6 +22,7 @@ public class PaymentDocumentMain : BaseModel
     public int PaymentStatusId { get; set; }
     public string? PaymentStatusName { get; set; }
     public int ApproveStatusId { get; set; }
+    public string? ApproveStatusName { get; set; }
     public int Sequence { get; set; }
     public DateTime PaymentDate { get; set; } = DateTime.Now;
     public string? BankCode { get; set; }

@@ -17,8 +17,14 @@ public class VendorValidator : AbstractValidator<Model>
         RuleSet(nameof(Model.VendorName), () =>
         {
             RuleFor(p => p.VendorName)
-                .NotEmpty().WithMessage("'Company Name' is mandatory")
+                .NotEmpty().WithMessage("'Name' is mandatory")
                 .MaximumLength(50).WithMessage("Max length 50 characters");
+        });
+
+        RuleSet(nameof(Model.CountryCode), () =>
+        {
+            RuleFor(p => p.CountryCode)
+                .NotEmpty().WithMessage("'Country' is mandatory");
         });
 
         //RuleSet(nameof(Model.TaxId), () =>

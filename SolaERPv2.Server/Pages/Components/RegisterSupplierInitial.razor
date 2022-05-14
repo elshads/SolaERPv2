@@ -1,4 +1,6 @@
 ﻿@inject VendorService VendorService
+@inject ProductService ProductService
+@inject CountryService CountryService
 
 <MudCard Class="k-p-8" Style="max-width:600px; margin:auto">
     <div>
@@ -15,12 +17,12 @@
                     <FormItem LabelText="Position: " Field="@nameof(AppUser.Position)" />
                     <FormItem LabelText="Phone Number: " Field="@nameof(AppUser.PhoneNumber)" />
                 </FormGroup>
-                <TelerikValidationSummary/>
+                <TelerikValidationSummary />
             </FormItems>
             <FormButtons />
         </TelerikForm>
 
-        <TelerikForm Model="@CurrentVendor" Orientation="FormOrientation.Horizontal" >
+        <TelerikForm Model="@CurrentVendor" Orientation="FormOrientation.Horizontal">
             <FormValidation>
                 <FluentValidationValidator @ref="vendorValidator" DisableAssemblyScanning="true" />
             </FormValidation>
@@ -30,12 +32,29 @@
                         <Template>
                             <label for="taxid" class="k-label k-form-label">Tax ID / VÖEN: </label>
                             <div class="k-form-field-wrap">
-                                <TelerikTextBox Id="taxid" Value="@(CurrentVendor.TaxId)" ValueChanged="@((string? value) => TaxIdChanged(value))" OnBlur="@(() => TaxIdBlured(CurrentVendor.TaxId))" ValueExpression="@(() => CurrentVendor.TaxId)" />
+                                <TelerikTextBox Id="taxid" @bind-Value="@(CurrentVendor.TaxId)" OnBlur="@(() => TaxIdBlured(CurrentVendor.TaxId))" />
                                 <TelerikValidationMessage For="@(() => CurrentVendor.TaxId)" />
                             </div>
                         </Template>
                     </FormItem>
                     <FormItem LabelText="Company Name: " Field="@nameof(Vendor.VendorName)" Enabled="@(!vendorExists)" />
+                    <FormItem LabelText="Country: " Field="@nameof(Vendor.CountryCode)">
+                        <Template>
+                            <label for="countrylist" class="k-label k-form-label">Country: </label>
+                            <div class="k-form-field-wrap">
+                                <TelerikComboBox Id="countrylist"
+                                                    Data="@countryList"
+                                                    @bind-Value="@CurrentVendor.CountryCode"
+                                                    TextField="@nameof(Country.CountryName)"
+                                                    ValueField="@nameof(Country.CountryCode)"
+                                                    Placeholder="Select ..."
+                                                    Filterable="true"
+                                                    FilterOperator="StringFilterOperator.Contains"
+                                                    Width="100%"/>
+                                <TelerikValidationMessage For="@(() => CurrentVendor.CountryCode)" />
+                            </div>
+                        </Template>
+                    </FormItem>
                     <FormItem LabelText="Location: " Field="@nameof(Vendor.CompanyLocation)" Enabled="@(!vendorExists)" />
                     <FormItem LabelText="Website: " Field="@nameof(Vendor.CompanyWebsite)" Enabled="@(!vendorExists)" />
                     <FormItem LabelText="Products / Services provided: " Field="@nameof(Vendor.ProvidedProducts)" Enabled="@(!vendorExists)">
@@ -44,13 +63,33 @@
                             <div class="k-form-field-wrap">
                                 <TelerikMultiSelect Id="productlist"
                                                     Data="@productList"
-                                                    @bind-Value="@CurrentVendor.ProvidedProducts"
+                                                    Value="@CurrentVendor.ProvidedProducts"
+                                                    ValueChanged="@((List<int> selectedList) => ProvidedProductsChanged(selectedList))"
+                                                    TItem="Product"
+                                                    TValue="int"
+                                                    ValueExpression="@(() => CurrentVendor.ProvidedProducts)"
+                                                    TextField="@nameof(Product.ProductServiceName)"
+                                                    ValueField="@nameof(Product.ProductServiceId)"
                                                     Placeholder="Select ..."
+                                                    Filterable="true"
+                                                    FilterOperator="StringFilterOperator.Contains"
                                                     Width="100%" />
                                 <TelerikValidationMessage For="@(() => CurrentVendor.ProvidedProducts)" />
                             </div>
                         </Template>
                     </FormItem>
+                    @if (otherProductsVisible)
+                    {
+                        <FormItem LabelText="Other Products: " Field="@nameof(Vendor.OtherProducts)">
+                            <Template>
+                                <label for="otherproducts" class="k-label k-form-label">Other Products: </label>
+                                <div class="k-form-field-wrap">
+                                    <TelerikTextArea Id="otherproducts" @bind-Value="@(CurrentVendor.OtherProducts)" />
+                                    <TelerikValidationMessage For="@(() => CurrentVendor.OtherProducts)" />
+                                </div>
+                            </Template>
+                        </FormItem>
+                    }
                     <FormItem LabelText="Company logo: " Field="@nameof(Vendor.CompanyLogo)" Enabled="@(!vendorExists)">
                         <Template>
                             <label for="companylogo" class="k-label k-form-label">Company logo: </label>
@@ -77,9 +116,9 @@
                         </Template>
                     </FormItem>
                 </FormGroup>
-                <TelerikValidationSummary/>
+                <TelerikValidationSummary />
             </FormItems>
-            <FormButtons/>
+            <FormButtons />
         </TelerikForm>
     </div>
 </MudCard>
@@ -99,19 +138,46 @@
     FluentValidationValidator? personValidator;
     FluentValidationValidator? vendorValidator;
 
-    List<string>? productList = new();
+    IEnumerable<Product>? productList = new List<Product>();
+    IEnumerable<Country>? countryList = new List<Country>();
 
     bool vendorExists = false;
+    bool otherProductsVisible = false;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         personContext = new(CurrentPerson);
         vendorContext = new(CurrentVendor);
+        await LoadData();
     }
 
-    void TaxIdChanged(string? taxId)
+    protected override void OnParametersSet()
     {
-        CurrentVendor.TaxId = taxId;
+        SetOtherProductsVisibility();
+    }
+
+    async Task LoadData()
+    {
+        productList = await ProductService.GetAll();
+        countryList = await CountryService.GetAll();
+    }
+
+    void ProvidedProductsChanged(List<int> selectedList)
+    {
+        CurrentVendor.ProvidedProducts = selectedList;
+        SetOtherProductsVisibility();
+    }
+
+    void SetOtherProductsVisibility()
+    {
+        if (CurrentVendor != null && CurrentVendor.ProvidedProducts != null && productList != null)
+        {
+            var otherId = 0;
+            var otherProduct = productList.FirstOrDefault(e => e.Other == 1);
+            if (otherProduct != null) { otherId = otherProduct.ProductServiceId; }
+            otherProductsVisible = CurrentVendor.ProvidedProducts.Contains(otherId);
+            if(!otherProductsVisible) { CurrentVendor.OtherProducts = null; }
+        }
     }
 
     async Task TaxIdBlured(string taxId)

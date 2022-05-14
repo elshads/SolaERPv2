@@ -1,6 +1,6 @@
 ﻿namespace SolaERPv2.Server.ModelService;
 
-public class VendorService : BaseModelervice<Vendor>
+public class VendorService : BaseModelService<Vendor>
 {
     AppUserService _appUserService;
     SqlDataAccess _sqlDataAccess;

@@ -1,6 +1,6 @@
 ﻿namespace SolaERPv2.Server.ModelService;
 
-public class MenuService : BaseModelervice<Menu>
+public class MenuService : BaseModelService<Menu>
 {
     AppUserService _appUserService;
     SqlDataAccess _sqlDataAccess;

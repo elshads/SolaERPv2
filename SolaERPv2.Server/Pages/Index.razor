@@ -6,7 +6,7 @@
 
 @if (showSupplierRegistration)
 {
-    <RegisterSupplier @ref="@registerSupplier" @bind-CurrentPerson="@currentPerson" @bind-CurrentVendor="@currentVendor" />
+    <RegisterSupplier @ref="@registerSupplier" @bind-CurrentPerson="@currentPerson" @bind-CurrentVendor="@currentVendor" CurrentPageNumber="@currentPageNumber" />
 }
 else
 {
@@ -21,6 +21,7 @@ else
 
     RegisterSupplier? registerSupplier;
     bool showSupplierRegistration = false;
+    int currentPageNumber = 1; // total 3 pages
 
     protected override void OnInitialized()
     {
@@ -31,11 +32,10 @@ else
 
     void ShowSupplierRegistrationPage()
     {
-        if(SessionData.CurrentUser != null && SessionData.CurrentUser.StatusId == 0)
+        if (SessionData.CurrentUser != null && SessionData.CurrentUser.StatusId == 0)
         {
             AppState.BackButtonVisible = true;
             AppState.NextButtonVisible = true;
-
             showSupplierRegistration = true;
         }
         else
@@ -49,7 +49,7 @@ else
     void OnAppStateInitialized()
     {
         AppState.SetDefaults();
-        AppState.BackButtonEnabled = false;
+        SetBackNextButtonsAbility();
         AppState.OnBackClick += BackClickHandler;
         AppState.OnNextClick += NextClickHandler;
         AppState.OnSaveClick += SaveClickHandler;
@@ -64,12 +64,47 @@ else
 
     void BackClickHandler()
     {
-    //
+        currentPageNumber -= 1;
+        SetBackNextButtonsAbility();
     }
 
     async void NextClickHandler()
     {
-        var valid = await registerSupplier.NextClickValid();
+        var isVendorValid = await registerSupplier.NextClickValid();
+        if (isVendorValid)
+        {
+            currentPageNumber += 1;
+        }
+        SetBackNextButtonsAbility();
+    }
+
+    void SetBackNextButtonsAbility()
+    {
+        if (currentPageNumber == 1)
+        {
+            AppState.BackButtonEnabled = false;
+            AppState.NextButtonEnabled = true;
+            AppState.SaveButtonVisible = false;
+        }
+        else if (currentPageNumber == 2)
+        {
+            AppState.BackButtonEnabled = true;
+            AppState.NextButtonEnabled = true;
+            AppState.SaveButtonVisible = false;
+        }
+        else if (currentPageNumber == 3)
+        {
+            AppState.BackButtonEnabled = true;
+            AppState.NextButtonEnabled = false;
+            AppState.SaveButtonVisible = true;
+        }
+        else
+        {
+            AppState.BackButtonEnabled = false;
+            AppState.NextButtonEnabled = false;
+            AppState.SaveButtonVisible = false;
+        }
+        AppState.Refresh();
     }
 
     async void SaveClickHandler()

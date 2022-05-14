@@ -1,14 +1,32 @@
-﻿<RegisterSupplierInitial @ref="@registerSupplierInitial"
+﻿@if (CurrentPageNumber == 1)
+{
+    <RegisterSupplierInitial @ref="@registerSupplierInitial"
                          CurrentPerson="@CurrentPerson"
                          CurrentPersonChanged="@CurrentPersonChangedHandler"
                          CurrentVendor="@CurrentVendor"
                          CurrentVendorChanged="@CurrentVendorChangedHandler" />
+}
+else if (CurrentPageNumber == 2)
+{
+    <RegisterSupplierBank CurrentVendor="@CurrentVendor" CurrentVendorChanged="@CurrentVendorChangedHandler"/>
+}
+else if (CurrentPageNumber == 3)
+{
+    <RegisterSupplierFinal/>
+}
+else
+{
+    <div>Supplier Registration - Empty Page (contact developers)</div>
+}
 
 @code {
     [Parameter] public AppUser? CurrentPerson { get; set; }
     [Parameter] public Vendor? CurrentVendor { get; set; }
+    [Parameter] public int CurrentPageNumber { get; set; } = 1;
     [Parameter] public EventCallback<AppUser> CurrentPersonChanged { get; set; }
     [Parameter] public EventCallback<Vendor> CurrentVendorChanged { get; set; }
+    [Parameter] public EventCallback<int> CurrentPageNumberChanged { get; set; }
+
 
     RegisterSupplierInitial? registerSupplierInitial;
 
@@ -28,5 +46,11 @@
     {
         CurrentVendor = currentVendor;
         await CurrentVendorChanged.InvokeAsync(CurrentVendor);
+    }
+
+    async Task CurrentPageNumberChangedHandler(int currentPageNumber)
+    {
+        CurrentPageNumber = currentPageNumber;
+        await CurrentPageNumberChanged.InvokeAsync(CurrentPageNumber);
     }
 }

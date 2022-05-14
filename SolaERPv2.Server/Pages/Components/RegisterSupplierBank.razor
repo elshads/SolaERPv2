@@ -1,0 +1,62 @@
+﻿<TelerikGrid Data="@(CurrentVendor.BankList)" 
+EditMode="@GridEditMode.Popup"
+             Height="calc(100vh - 200px)" 
+             Pageable="true" 
+             PageSize="20"
+             OnUpdate=@UpdateItem 
+             OnDelete=@DeleteItem 
+             OnCreate=@CreateItem>
+    <GridToolBar>
+        <GridCommandButton Command="Add" Icon="add">Add Product</GridCommandButton>
+    </GridToolBar>
+    <GridSettings>
+        <GridPopupEditFormSettings ButtonsLayout="FormButtonsLayout.End" Orientation="FormOrientation.Horizontal"/>
+        <GridPopupEditSettings />
+    </GridSettings>
+    <GridColumns>
+        <GridColumn Field=@nameof(Bank.BankAccountNumber) />
+        <GridColumn Field=@nameof(Bank.CurrencyCode) />
+        <GridColumn Field=@nameof(Bank.BeneficiaryFullName) />
+        <GridColumn Field=@nameof(Bank.BeneficiaryAddress) Width="0" />
+        <GridColumn Field=@nameof(Bank.BeneficiaryAddress1) Width="0" />
+        <GridColumn Field=@nameof(Bank.BeneficiaryBankName) Width="0" />
+        <GridColumn Field=@nameof(Bank.BeneficiaryBankAddress) Width="0" />
+        <GridColumn Field=@nameof(Bank.BeneficiaryBankAddress1) Width="0" />
+        <GridColumn Field=@nameof(Bank.BeneficiaryBankCode) Width="0" />
+        <GridColumn Field=@nameof(Bank.IntermediaryBankCodeNumber) Width="0" />
+        <GridColumn Field=@nameof(Bank.IntermediaryBankCodeType) Width="0" />
+    </GridColumns>
+</TelerikGrid>
+
+@code {
+    [CascadingParameter] public AppState AppState { get; set; }
+
+    [Parameter] public Vendor? CurrentVendor { get; set; }
+    [Parameter] public EventCallback<Vendor> CurrentVendorChanged { get; set; }
+
+
+    protected override void OnInitialized()
+    {
+        LoadData();
+    }
+
+    void LoadData()
+    {
+        //
+    }
+
+    void CreateItem(GridCommandEventArgs args)
+    {
+        //
+    }
+
+    void DeleteItem(GridCommandEventArgs args)
+    {
+        //
+    }
+
+    void UpdateItem(GridCommandEventArgs args)
+    {
+        //
+    }
+}

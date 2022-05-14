@@ -2,7 +2,7 @@
 
 namespace SolaERPv2.Server.ModelService;
 
-public class AppUserService : BaseModelervice<AppUser>
+public class AppUserService : BaseModelService<AppUser>
 {
     //IHttpContextAccessor _httpContextAccessor;
     AuthenticationStateProvider _authenticationStateProvider;
@@ -95,5 +95,17 @@ public class AppUserService : BaseModelervice<AppUser>
             return false;
         }
         return true;
+    }
+
+    public async Task<SqlResult?> UpdateAsync(AppUser appUser)
+    {
+        var p = new DynamicParameters();
+        p.Add("@Id", appUser.Id, DbType.Int32, ParameterDirection.Input);
+        p.Add("@FullName", appUser.FullName, DbType.String, ParameterDirection.Input);
+        p.Add("@Position", appUser.Position, DbType.String, ParameterDirection.Input);
+        p.Add("@PhoneNumber", appUser.PhoneNumber, DbType.String, ParameterDirection.Input);
+        p.Add("@Photo", appUser.Photo, DbType.Binary, ParameterDirection.Input);
+        var sql = $"UPDATE Config.AppUser SET FullName = @FullName, Position = @Position, PhoneNumber = @PhoneNumber, Photo = @Photo WHERE Id = @Id";
+        return await _sqlDataAccess.ExecuteSql(sql, p, CommandType.Text);
     }
 }

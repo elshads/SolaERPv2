@@ -50,6 +50,10 @@
     {
         OnAppStateInitialized();
         currentUser = SessionData.CurrentUser;
+        if (currentUser.Photo != null)
+        {
+            imgUrl = string.Format($"data:image/png;base64," + Convert.ToBase64String(currentUser.Photo));
+        }
     }
 
     void OnAppStateInitialized()
@@ -102,8 +106,17 @@
         var isValid = ValidatePerson();
         if (isValid)
         {
-            SessionData.CurrentUser = currentUser;
-            //update database
+            var sqlResult = await AppUserService.UpdateAsync(currentUser);
+            if (sqlResult.QueryResultMessage == null)
+            {
+                SessionData.CurrentUser = currentUser;
+                AppState.Refresh();
+                AppState.ShowAlert("Successfully updated", Severity.Success);
+            }
+            else
+            {
+                AppState.ShowAlert(sqlResult.QueryResultMessage, Severity.Error);
+            }
         }
     }
 }
