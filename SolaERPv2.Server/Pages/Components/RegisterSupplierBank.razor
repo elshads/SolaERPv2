@@ -1,19 +1,24 @@
-﻿<TelerikGrid Data="@(CurrentVendor.BankList)" 
-EditMode="@GridEditMode.Popup"
-             Height="calc(100vh - 200px)" 
-             Pageable="true" 
+﻿
+<TelerikGrid Data="@(CurrentVendor.BankList)"
+             EditMode="@GridEditMode.Popup"
+             Height="calc(100vh - 200px)"
+             Pageable="true"
              PageSize="20"
-             OnUpdate=@UpdateItem 
-             OnDelete=@DeleteItem 
-             OnCreate=@CreateItem>
+             OnDelete=@DeleteBank>
     <GridToolBar>
-        <GridCommandButton Command="Add" Icon="add">Add Product</GridCommandButton>
+        <GridCommandButton Icon="add" OnClick="@AddBank">Add Bank Details</GridCommandButton>
     </GridToolBar>
     <GridSettings>
-        <GridPopupEditFormSettings ButtonsLayout="FormButtonsLayout.End" Orientation="FormOrientation.Horizontal"/>
+        <GridPopupEditFormSettings ButtonsLayout="FormButtonsLayout.End" Orientation="FormOrientation.Horizontal" />
         <GridPopupEditSettings />
     </GridSettings>
     <GridColumns>
+        <GridCommandColumn>
+            <GridCommandButton Command="Edit" Icon="edit" ShowInEdit="false" />
+            <GridCommandButton Command="Delete" Icon="delete" ShowInEdit="false" />
+            <GridCommandButton Command="Save" Icon="save" ShowInEdit="true" />
+            <GridCommandButton Command="Cancel" Icon="cancel" ShowInEdit="true" />
+        </GridCommandColumn>
         <GridColumn Field=@nameof(Bank.BankAccountNumber) />
         <GridColumn Field=@nameof(Bank.CurrencyCode) />
         <GridColumn Field=@nameof(Bank.BeneficiaryFullName) />
@@ -28,35 +33,72 @@ EditMode="@GridEditMode.Popup"
     </GridColumns>
 </TelerikGrid>
 
+<RegisterSupplierBankDialog @bind-Visible="showEditDialog" CurrentBank="@selectedBank" CurrentBankChanged="CurrentBankChangedHandler" />
+
 @code {
     [CascadingParameter] public AppState AppState { get; set; }
 
     [Parameter] public Vendor? CurrentVendor { get; set; }
     [Parameter] public EventCallback<Vendor> CurrentVendorChanged { get; set; }
 
+    EditContext? vendorContext = new(new Vendor());
+    Bank? selectedBank = new();
+
+    bool showEditDialog = false;
 
     protected override void OnInitialized()
     {
+        vendorContext = new(CurrentVendor);
         LoadData();
     }
 
     void LoadData()
     {
-        //
+    //
     }
 
-    void CreateItem(GridCommandEventArgs args)
+    async Task CurrentBankChangedHandler(Bank bank)
     {
-        //
+        selectedBank = bank;
+        if (bank.IsNewItem)
+        {
+            if (CurrentVendor.BankList == null) { CurrentVendor.BankList = new(); }
+            bank.IsNewItem = false;
+            CurrentVendor.BankList.Add(bank);
+        }
+        else
+        {
+            //update item in list
+        }
+        await CurrentVendorChanged.InvokeAsync(CurrentVendor);
     }
 
-    void DeleteItem(GridCommandEventArgs args)
+    void AddBank(GridCommandEventArgs args)
     {
-        //
+        selectedBank = new Bank() { IsNewItem = true };
+        showEditDialog = true;
     }
 
-    void UpdateItem(GridCommandEventArgs args)
+    void DeleteBank(GridCommandEventArgs args)
     {
-        //
+        selectedBank = args.Item as Bank;
+        CurrentVendor.BankList.Remove(selectedBank);
+    }
+
+    void EditBank(GridCommandEventArgs args)
+    {
+        selectedBank = args.Item as Bank;
+        showEditDialog = true;
     }
 }
+
+
+<style>
+    .k-form-horizontal .k-form-field > .k-form-label {
+        width: 40%;
+    }
+
+    .k-form-horizontal .k-form-field-wrap {
+        max-width: calc(60% - 10px);
+    }
+</style>

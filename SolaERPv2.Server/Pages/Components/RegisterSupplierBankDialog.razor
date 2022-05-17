@@ -1,0 +1,140 @@
+﻿<TelerikDialog @ref="dialogRef"
+               Visible="@Visible"
+               VisibleChanged="@VisibleChangedHandler"
+               Title="Bank Details"
+               CloseOnOverlayClick="false"
+               ShowCloseButton="true">
+    <DialogContent>
+        <EditForm EditContext="@currentBankContext">
+            <FluentValidationValidator DisableAssemblyScanning="true" />
+            <div class="k-form-horizontal">
+                <div class="k-form-field k-pb-4">
+                    <label for="accountnumber" class="k-label k-form-label k-pb-1">Bank Account Number: </label>
+                    <div class="k-form-field-wrap">
+                        <TelerikTextBox Id="accountnumber" @bind-Value="@CurrentBank.BankAccountNumber" />
+                        <TelerikValidationMessage For="@(() => CurrentBank.BankAccountNumber)" />
+                    </div>
+                </div>
+
+                <div class="k-form-field k-pb-4">
+                    <label for="currencycode" class="k-label k-form-label k-pb-1">Currency Code: </label>
+                    <div class="k-form-field-wrap">
+                        <TelerikTextBox Id="currencycode" @bind-Value="@CurrentBank.CurrencyCode" />
+                        <TelerikValidationMessage For="@(() => CurrentBank.CurrencyCode)" />
+                    </div>
+                </div>
+
+                <div class="k-form-field k-pb-4">
+                    <label for="fullname" class="k-label k-form-label k-pb-1">Beneficiary Full Name: </label>
+                    <div class="k-form-field-wrap">
+                        <TelerikTextBox Id="fullname" @bind-Value="@CurrentBank.BeneficiaryFullName" />
+                        <TelerikValidationMessage For="@(() => CurrentBank.BeneficiaryFullName)" />
+                    </div>
+                </div>
+
+                <div class="k-form-field k-pb-4">
+                    <label for="beneficiaryaddress" class="k-label k-form-label k-pb-1">Beneficiary Address: </label>
+                    <div class="k-form-field-wrap">
+                        <TelerikTextBox Id="beneficiaryaddress" @bind-Value="@CurrentBank.BeneficiaryAddress" />
+                        <TelerikValidationMessage For="@(() => CurrentBank.BeneficiaryAddress)" />
+                    </div>
+                </div>
+
+                <div class="k-form-field k-pb-4">
+                    <label for="beneficiaryaddress1" class="k-label k-form-label k-pb-1">Beneficiary Address 1: </label>
+                    <div class="k-form-field-wrap">
+                        <TelerikTextBox Id="beneficiaryaddress1" @bind-Value="@CurrentBank.BeneficiaryAddress1" />
+                        <TelerikValidationMessage For="@(() => CurrentBank.BeneficiaryAddress1)" />
+                    </div>
+                </div>
+
+                <div class="k-form-field k-pb-4">
+                    <label for="beneficiarybankname" class="k-label k-form-label k-pb-1">Beneficiary Bank Name: </label>
+                    <div class="k-form-field-wrap">
+                        <TelerikTextBox Id="beneficiarybankname" @bind-Value="@CurrentBank.BeneficiaryBankName" />
+                        <TelerikValidationMessage For="@(() => CurrentBank.BeneficiaryBankName)" />
+                    </div>
+                </div>
+
+                <div class="k-form-field k-pb-4">
+                    <label for="beneficiarybankaddress" class="k-label k-form-label k-pb-1">Beneficiary Bank Address: </label>
+                    <div class="k-form-field-wrap">
+                        <TelerikTextBox Id="beneficiarybankaddress" @bind-Value="@CurrentBank.BeneficiaryBankAddress" />
+                        <TelerikValidationMessage For="@(() => CurrentBank.BeneficiaryBankAddress)" />
+                    </div>
+                </div>
+
+                <div class="k-form-field k-pb-4">
+                    <label for="beneficiarybankaddress1" class="k-label k-form-label k-pb-1">Beneficiary Bank Address 1: </label>
+                    <div class="k-form-field-wrap">
+                        <TelerikTextBox Id="beneficiarybankaddress1" @bind-Value="@CurrentBank.BeneficiaryBankAddress1" />
+                        <TelerikValidationMessage For="@(() => CurrentBank.BeneficiaryBankAddress1)" />
+                    </div>
+                </div>
+
+                <div class="k-form-field k-pb-4">
+                    <label for="beneficiarybankcode" class="k-label k-form-label k-pb-1">Beneficiary Bank Code: </label>
+                    <div class="k-form-field-wrap">
+                        <TelerikTextBox Id="beneficiarybankcode" @bind-Value="@CurrentBank.BeneficiaryBankCode" />
+                        <TelerikValidationMessage For="@(() => CurrentBank.BeneficiaryBankCode)" />
+                    </div>
+                </div>
+
+                <div class="k-form-field k-pb-4">
+                    <label for="intermediarybankcodenumber" class="k-label k-form-label k-pb-1">Intermediary Bank Code Number: </label>
+                    <div class="k-form-field-wrap">
+                        <TelerikTextBox Id="intermediarybankcodenumber" @bind-Value="@CurrentBank.IntermediaryBankCodeNumber" />
+                        <TelerikValidationMessage For="@(() => CurrentBank.IntermediaryBankCodeNumber)" />
+                    </div>
+                </div>
+
+                <div class="k-form-field k-pb-4">
+                    <label for="intermediarybankcodetype" class="k-label k-form-label k-pb-1">Intermediary Bank Code Type: </label>
+                    <div class="k-form-field-wrap">
+                        <TelerikTextBox Id="intermediarybankcodetype" @bind-Value="@CurrentBank.IntermediaryBankCodeType" />
+                        <TelerikValidationMessage For="@(() => CurrentBank.IntermediaryBankCodeType)" />
+                    </div>
+                </div>
+            </div>
+
+        </EditForm>
+    </DialogContent>
+    <DialogButtons>
+        <TelerikButton Rounded="@Telerik.Blazor.ThemeConstants.Button.Rounded.Small" OnClick="@SaveHandler" ThemeColor="primary">Save</TelerikButton>
+        <TelerikButton Rounded="@Telerik.Blazor.ThemeConstants.Button.Rounded.Small" OnClick="@CancelHandler">Cancel</TelerikButton>
+    </DialogButtons>
+</TelerikDialog>
+
+@code {
+    [Parameter] public bool Visible { get; set; } = false;
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+
+    [Parameter] public Bank? CurrentBank { get; set; }
+    [Parameter] public EventCallback<Bank> CurrentBankChanged { get; set; }
+
+    EditContext? currentBankContext = new(new Bank());
+    TelerikDialog? dialogRef;
+
+    protected override void OnInitialized()
+    {
+        currentBankContext = new(CurrentBank);
+    }
+
+    async Task VisibleChangedHandler(bool visible)
+    {
+        Visible = visible;
+        await VisibleChanged.InvokeAsync(Visible);
+    }
+
+    async Task SaveHandler()
+    {
+        await CurrentBankChanged.InvokeAsync(CurrentBank);
+        await CancelHandler();
+    }
+
+    async Task CancelHandler()
+    {
+        Visible = false;
+        await VisibleChanged.InvokeAsync(Visible);
+    }
+}
