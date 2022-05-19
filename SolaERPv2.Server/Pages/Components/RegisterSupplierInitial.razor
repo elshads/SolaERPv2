@@ -43,14 +43,14 @@
                             <label for="countrylist" class="k-label k-form-label">Country: </label>
                             <div class="k-form-field-wrap">
                                 <TelerikComboBox Id="countrylist"
-                                                    Data="@countryList"
-                                                    @bind-Value="@CurrentVendor.CountryCode"
-                                                    TextField="@nameof(Country.CountryName)"
-                                                    ValueField="@nameof(Country.CountryCode)"
-                                                    Placeholder="Select ..."
-                                                    Filterable="true"
-                                                    FilterOperator="StringFilterOperator.Contains"
-                                                    Width="100%"/>
+                                                 Data="@countryList"
+                                                 @bind-Value="@CurrentVendor.CountryCode"
+                                                 TextField="@nameof(Country.CountryName)"
+                                                 ValueField="@nameof(Country.CountryCode)"
+                                                 Placeholder="Select ..."
+                                                 Filterable="true"
+                                                 FilterOperator="StringFilterOperator.Contains"
+                                                 Width="100%" />
                                 <TelerikValidationMessage For="@(() => CurrentVendor.CountryCode)" />
                             </div>
                         </Template>
@@ -101,15 +101,40 @@
                     </FormItem>
                     <FormItem LabelText="Represented Products: " Field="@nameof(Vendor.RepresentedProducts)" Enabled="@(!vendorExists)" />
                     <FormItem LabelText="Represented Companies: " Field="@nameof(Vendor.RepresentedCompanies)" Enabled="@(!vendorExists)" />
-                    <FormItem LabelText="Payment Terms: " Field="@nameof(Vendor.PaymentTermsCode)" Enabled="@(!vendorExists)" />
-                    <FormItem LabelText="Credit Days: " Field="@nameof(Vendor.CreditDays)" Enabled="@(!vendorExists)" />
+                    <FormItem LabelText="Payment Terms: " Field="@nameof(Vendor.PaymentTermsCode)" Enabled="@(!vendorExists)">
+                        <Template>
+                            <label for="paymentterms" class="k-label k-form-label">Payment Terms: </label>
+                            <div class="k-form-field-wrap">
+                                <GridDropDownList Data="@paymentTermsList"
+                                                  Id="paymentterms"
+                                                  @bind-Value="@CurrentVendor.PaymentTermsCode"
+                                                  TextField="@nameof(Analysis.AnalysisCode)"
+                                                  ValueField="@nameof(Analysis.AnalysisCode)"
+                                                  SearchFields="@(new List<string>() {"AnalysisCode", "AnalysisName"})"
+                                                  HeaderNames="@(new List<string>() {"Code", "Name"})" />
+                                                  <label class="k-form-hint">@paymentTermsName</label>
+                                <TelerikValidationMessage For="@(() => CurrentVendor.PaymentTermsCode)" />
+                            </div>
+                        </Template>
+                    </FormItem>
+                    <FormItem LabelText="Credit Days: " Field="@nameof(Vendor.CreditDays)" Enabled="@(!vendorExists && !CurrentVendor.AgreeWithDefaultDays)">
+                        <Template>
+                            <label for="creditdays" class="k-label k-form-label">Credit Days: </label>
+                            <div class="k-form-field-wrap">
+                                <TelerikNumericTextBox Id="creditdays" T="int" Min="0" @bind-Value="@(CurrentVendor.CreditDays)" />
+                                <TelerikValidationMessage For="@(() => CurrentVendor.CreditDays)" />
+                            </div>
+                        </Template>
+                    </FormItem>
                     <FormItem LabelText="Please confirm that you agree with the 60-days payment" Field="@nameof(Vendor.AgreeWithDefaultDays)" Class="k-pb-4" Enabled="@(!vendorExists)">
                         <Template>
                             <label for="agreement" class="k-label k-form-label">Please confirm that you agree with the 60-days payment </label>
                             <div class="k-form-field-wrap">
                                 <TelerikRadioGroup Id="agreement"
                                                    Data="@BooleanModel.BooleanModelList"
-                                                   @bind-Value="@CurrentVendor.AgreeWithDefaultDays"
+                                                   Value="@CurrentVendor.AgreeWithDefaultDays"
+                                                   ValueChanged="@((bool isAgree) => AgreeWithDefaultDaysChanged(isAgree))"
+                                                   ValueExpression="@(() => CurrentVendor.AgreeWithDefaultDays)"
                                                    TextField="Name"
                                                    ValueField="Value" />
                             </div>
@@ -140,9 +165,12 @@
 
     IEnumerable<Product>? productList = new List<Product>();
     IEnumerable<Country>? countryList = new List<Country>();
+    IEnumerable<Analysis>? paymentTermsList = new List<Analysis>();
+
 
     bool vendorExists = false;
     bool otherProductsVisible = false;
+    string? paymentTermsName => paymentTermsList?.FirstOrDefault(e => e.AnalysisCode == CurrentVendor?.PaymentTermsCode)?.AnalysisName;
 
     protected override async Task OnInitializedAsync()
     {
@@ -160,6 +188,7 @@
     {
         productList = await ProductService.GetAll();
         countryList = await CountryService.GetAll();
+        paymentTermsList = await AnalysisService.GetPaymentTerms();
     }
 
     void ProvidedProductsChanged(List<int> selectedList)
@@ -176,8 +205,14 @@
             var otherProduct = productList.FirstOrDefault(e => e.Other == 1);
             if (otherProduct != null) { otherId = otherProduct.ProductServiceId; }
             otherProductsVisible = CurrentVendor.ProvidedProducts.Contains(otherId);
-            if(!otherProductsVisible) { CurrentVendor.OtherProducts = null; }
+            if (!otherProductsVisible) { CurrentVendor.OtherProducts = null; }
         }
+    }
+
+    void AgreeWithDefaultDaysChanged(bool isAgree)
+    {
+        CurrentVendor.AgreeWithDefaultDays = isAgree;
+        if (isAgree) { CurrentVendor.CreditDays = 60; }
     }
 
     async Task TaxIdBlured(string taxId)
@@ -227,7 +262,7 @@
 
     bool ValidateVendor()
     {
-        if (vendorValidator != null) { return vendorValidator.Validate(options => options.IncludeRuleSets(nameof(Vendor.TaxId), nameof(Vendor.VendorName))); }
+        if (vendorValidator != null) { return vendorValidator.Validate(options => options.IncludeAllRuleSets()); }
         return false;
     }
 }

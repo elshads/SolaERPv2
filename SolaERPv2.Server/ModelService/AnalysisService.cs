@@ -45,4 +45,10 @@ public class AnalysisService : BaseModelService<Analysis>
         var sql = $"SELECT * FROM dbo.JobNumberList";
         return await _sqlDataAccess.QueryAll<Analysis>(sql, null, CommandType.Text);
     }
+
+    public async Task<IEnumerable<Analysis>?> GetPaymentTerms()
+    {
+        var sql = $"SELECT * FROM dbo.VW_PaymentTerms_List";
+        return await _sqlDataAccess.QueryAll<Analysis>(sql, null, CommandType.Text);
+    }
 }

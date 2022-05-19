@@ -8,11 +8,13 @@
 }
 else if (CurrentPageNumber == 2)
 {
-    <RegisterSupplierBank CurrentVendor="@CurrentVendor" CurrentVendorChanged="@CurrentVendorChangedHandler"/>
+    <RegisterSupplierBank @ref="@registerSupplierBank"
+                      CurrentVendor="@CurrentVendor"
+                      CurrentVendorChanged="@CurrentVendorChangedHandler" />
 }
 else if (CurrentPageNumber == 3)
 {
-    <RegisterSupplierFinal/>
+    <RegisterSupplierFinal />
 }
 else
 {
@@ -29,11 +31,24 @@ else
 
 
     RegisterSupplierInitial? registerSupplierInitial;
+    RegisterSupplierBank? registerSupplierBank;
 
     public async Task<bool> NextClickValid()
     {
-        var valid = await registerSupplierInitial.NextClickValid();
-        return valid;
+        if (CurrentPageNumber == 1)
+        {
+            return await registerSupplierInitial.NextClickValid();
+        }
+        else if (CurrentPageNumber == 2)
+        {
+            return await registerSupplierBank.NextClickValid();
+        }
+        return false;
+    }
+
+    public void AddClickHandler()
+    {
+        registerSupplierBank.AddBank();
     }
 
     async Task CurrentPersonChangedHandler(AppUser currentPerson)

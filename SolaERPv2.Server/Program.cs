@@ -67,9 +67,11 @@ builder.Services.AddScoped<ThemeService>();
 builder.Services.AddScoped<VendorService>();
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<CountryService>();
+builder.Services.AddScoped<CurrencyService>();
 
 builder.Services.AddTransient<IValidator<AppUser>, AppUserValidator>();
 builder.Services.AddTransient<IValidator<Vendor>, VendorValidator>();
+builder.Services.AddTransient<IValidator<Bank>, BankValidator>();
 
 builder.Services.Configure<HubOptions>(options =>
 {

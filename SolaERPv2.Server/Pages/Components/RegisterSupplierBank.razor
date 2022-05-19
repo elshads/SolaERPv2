@@ -1,19 +1,129 @@
-﻿
+﻿@inject CurrencyService CurrencyService
+
+<TelerikForm Class="k-pb-4" EditContext="@bankContext" Orientation="FormOrientation.Horizontal" ColumnSpacing="16px" Columns="@(AppState.MobileView ? 1 : 2)">
+    <FormValidation>
+        <FluentValidationValidator @ref="bankValidator" DisableAssemblyScanning="true" />
+    </FormValidation>
+    <FormItems>
+            <FormItem LabelText="Bank Account Number: " Field="@nameof(Bank.BankAccountNumber)">
+                <Template>
+                    <label for="accountnumber" class="k-label k-form-label">Bank Account Number: </label>
+                    <div class="k-form-field-wrap">
+                        <TelerikTextBox Id="accountnumber" @bind-Value="@selectedBank.BankAccountNumber" />
+                        <TelerikValidationMessage For="@(() => selectedBank.BankAccountNumber)" />
+                    </div>
+                </Template>
+            </FormItem>
+            <FormItem LabelText="Currency Code: " Field="@nameof(Bank.CurrencyCode)">
+                <Template>
+                    <label for="currencycode" class="k-label k-form-label">Currency Code: </label>
+                    <div class="k-form-field-wrap">
+                        <GridDropDownList Data="@currencyList"
+                                                  Id="currencycode"
+                                                  @bind-Value="@CurrentVendor.PaymentTermsCode"
+                                                  TextField="@nameof(Currency.CurrencyCode)"
+                                                  ValueField="@nameof(Currency.CurrencyCode)"
+                                                  SearchFields="@(new List<string>() {"CurrencyCode", "CurrencyName"})"
+                                                  HeaderNames="@(new List<string>() {"Code", "Name"})" />
+                        <TelerikValidationMessage For="@(() => selectedBank.CurrencyCode)" />
+                    </div>
+                </Template>
+            </FormItem>
+            <FormItem LabelText="Beneficiary Full Name: " Field="@nameof(Bank.BeneficiaryFullName)">
+                <Template>
+                    <label for="fullname" class="k-label k-form-label">Beneficiary Full Name: </label>
+                    <div class="k-form-field-wrap">
+                        <TelerikTextBox Id="fullname" @bind-Value="@selectedBank.BeneficiaryFullName" />
+                        <TelerikValidationMessage For="@(() => selectedBank.BeneficiaryFullName)" />
+                    </div>
+                </Template>
+            </FormItem>
+            <FormItem LabelText="Beneficiary Address: " Field="@nameof(Bank.BeneficiaryAddress)">
+                <Template>
+                    <label for="beneficiaryaddress" class="k-label k-form-label">Beneficiary Address: </label>
+                    <div class="k-form-field-wrap">
+                        <TelerikTextBox Id="beneficiaryaddress" @bind-Value="@selectedBank.BeneficiaryAddress" />
+                        <TelerikValidationMessage For="@(() => selectedBank.BeneficiaryAddress)" />
+                    </div>
+                </Template>
+            </FormItem>
+            <FormItem LabelText="Beneficiary Address 1: " Field="@nameof(Bank.BeneficiaryAddress1)">
+                <Template>
+                    <label for="beneficiaryaddress1" class="k-label k-form-label">Beneficiary Address 1: </label>
+                    <div class="k-form-field-wrap">
+                        <TelerikTextBox Id="beneficiaryaddress1" @bind-Value="@selectedBank.BeneficiaryAddress1" />
+                        <TelerikValidationMessage For="@(() => selectedBank.BeneficiaryAddress1)" />
+                    </div>
+                </Template>
+            </FormItem>
+            <FormItem LabelText="Beneficiary Bank Name: " Field="@nameof(Bank.BeneficiaryBankName)">
+                <Template>
+                    <label for="beneficiarybankname" class="k-label k-form-label">Beneficiary Bank Name: </label>
+                    <div class="k-form-field-wrap">
+                        <TelerikTextBox Id="beneficiarybankname" @bind-Value="@selectedBank.BeneficiaryBankName" />
+                        <TelerikValidationMessage For="@(() => selectedBank.BeneficiaryBankName)" />
+                    </div>
+                </Template>
+            </FormItem>
+            <FormItem LabelText="Beneficiary Bank Address: " Field="@nameof(Bank.BeneficiaryBankAddress)">
+                <Template>
+                    <label for="beneficiarybankaddress" class="k-label k-form-label">Beneficiary Bank Address: </label>
+                    <div class="k-form-field-wrap">
+                        <TelerikTextBox Id="beneficiarybankaddress" @bind-Value="@selectedBank.BeneficiaryBankAddress" />
+                        <TelerikValidationMessage For="@(() => selectedBank.BeneficiaryBankAddress)" />
+                    </div>
+                </Template>
+            </FormItem>
+            <FormItem LabelText="Beneficiary Bank Address 1: " Field="@nameof(Bank.BeneficiaryBankAddress1)">
+                <Template>
+                    <label for="beneficiarybankaddress1" class="k-label k-form-label">Beneficiary Bank Address 1: </label>
+                    <div class="k-form-field-wrap">
+                        <TelerikTextBox Id="beneficiarybankaddress1" @bind-Value="@selectedBank.BeneficiaryBankAddress1" />
+                        <TelerikValidationMessage For="@(() => selectedBank.BeneficiaryBankAddress1)" />
+                    </div>
+                </Template>
+            </FormItem>
+            <FormItem LabelText="Beneficiary Bank Code: " Field="@nameof(Bank.BeneficiaryBankCode)">
+                <Template>
+                    <label for="beneficiarybankcode" class="k-label k-form-label">Beneficiary Bank Code: </label>
+                    <div class="k-form-field-wrap">
+                        <TelerikTextBox Id="beneficiarybankcode" @bind-Value="@selectedBank.BeneficiaryBankCode" />
+                        <TelerikValidationMessage For="@(() => selectedBank.BeneficiaryBankCode)" />
+                    </div>
+                </Template>
+            </FormItem>
+            <FormItem LabelText="Intermediary Bank Code Number: " Field="@nameof(Bank.IntermediaryBankCodeNumber)">
+                <Template>
+                    <label for="intermediarybankcodenumber" class="k-label k-form-label">Intermediary Bank Code Number: </label>
+                    <div class="k-form-field-wrap">
+                        <TelerikTextBox Id="intermediarybankcodenumber" @bind-Value="@selectedBank.IntermediaryBankCodeNumber" />
+                        <TelerikValidationMessage For="@(() => selectedBank.IntermediaryBankCodeNumber)" />
+                    </div>
+                </Template>
+            </FormItem>
+            <FormItem LabelText="Intermediary Bank Code Type: " Field="@nameof(Bank.IntermediaryBankCodeType)">
+                <Template>
+                    <label for="intermediarybankcodetype" class="k-label k-form-label">Intermediary Bank Code Type: </label>
+                    <div class="k-form-field-wrap">
+                        <TelerikTextBox Id="intermediarybankcodetype" @bind-Value="@selectedBank.IntermediaryBankCodeType" />
+                        <TelerikValidationMessage For="@(() => selectedBank.IntermediaryBankCodeType)" />
+                    </div>
+                </Template>
+            </FormItem>
+    </FormItems>
+    <FormButtons>
+        <TelerikButton Rounded="@Telerik.Blazor.ThemeConstants.Button.Rounded.Small" OnClick="@SaveHandler" ThemeColor="primary">Save</TelerikButton>
+        <TelerikButton Rounded="@Telerik.Blazor.ThemeConstants.Button.Rounded.Small" OnClick="@CancelHandler">Cancel</TelerikButton>
+    </FormButtons>
+</TelerikForm>
+
 <TelerikGrid Data="@(CurrentVendor.BankList)"
-             EditMode="@GridEditMode.Popup"
-             Height="calc(100vh - 200px)"
+             EditMode="@GridEditMode.None"
              Pageable="true"
              PageSize="20"
              OnDelete=@DeleteBank>
-    <GridToolBar>
-        <GridCommandButton Icon="add" OnClick="@AddBank">Add Bank Details</GridCommandButton>
-    </GridToolBar>
-    <GridSettings>
-        <GridPopupEditFormSettings ButtonsLayout="FormButtonsLayout.End" Orientation="FormOrientation.Horizontal" />
-        <GridPopupEditSettings />
-    </GridSettings>
     <GridColumns>
-        <GridCommandColumn>
+        <GridCommandColumn Width="90px">
             <GridCommandButton Command="Edit" Icon="edit" ShowInEdit="false" />
             <GridCommandButton Command="Delete" Icon="delete" ShowInEdit="false" />
             <GridCommandButton Command="Save" Icon="save" ShowInEdit="true" />
@@ -33,7 +143,7 @@
     </GridColumns>
 </TelerikGrid>
 
-<RegisterSupplierBankDialog @bind-Visible="showEditDialog" CurrentBank="@selectedBank" CurrentBankChanged="CurrentBankChangedHandler" />
+
 
 @code {
     [CascadingParameter] public AppState AppState { get; set; }
@@ -41,20 +151,23 @@
     [Parameter] public Vendor? CurrentVendor { get; set; }
     [Parameter] public EventCallback<Vendor> CurrentVendorChanged { get; set; }
 
-    EditContext? vendorContext = new(new Vendor());
+    EditContext? bankContext = new(new Bank());
     Bank? selectedBank = new();
+    IEnumerable<Currency>? currencyList = new List<Currency>();
+
+    FluentValidationValidator? bankValidator;
 
     bool showEditDialog = false;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        vendorContext = new(CurrentVendor);
-        LoadData();
+        bankContext = new(selectedBank);
+        await LoadData();
     }
 
-    void LoadData()
+    async Task LoadData()
     {
-    //
+        currencyList = await CurrencyService.GetAll();
     }
 
     async Task CurrentBankChangedHandler(Bank bank)
@@ -73,10 +186,9 @@
         await CurrentVendorChanged.InvokeAsync(CurrentVendor);
     }
 
-    void AddBank(GridCommandEventArgs args)
+    public void AddBank()
     {
-        selectedBank = new Bank() { IsNewItem = true };
-        showEditDialog = true;
+        AppState.ShowAlert("Add Bank", Severity.Success);
     }
 
     void DeleteBank(GridCommandEventArgs args)
@@ -89,6 +201,33 @@
     {
         selectedBank = args.Item as Bank;
         showEditDialog = true;
+    }
+
+    bool ValidateBank()
+    {
+        if (bankValidator != null) { return bankValidator.Validate(options => options.IncludeAllRuleSets()); }
+        return false;
+    }
+
+    public async Task<bool> NextClickValid()
+    {
+        var isValid = ValidateBank();
+        if (!isValid)
+        {
+            AppState.ShowAlert("Validation error", Severity.Error);
+        }
+        await CurrentVendorChanged.InvokeAsync(CurrentVendor);
+        return isValid;
+    }
+
+    void SaveHandler()
+    {
+
+    }
+
+    void CancelHandler()
+    {
+        
     }
 }
 

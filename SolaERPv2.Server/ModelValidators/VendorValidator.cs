@@ -27,6 +27,31 @@ public class VendorValidator : AbstractValidator<Model>
                 .NotEmpty().WithMessage("'Country' is mandatory");
         });
 
+        RuleSet(nameof(Model.CompanyLocation), () =>
+        {
+            RuleFor(p => p.CompanyLocation)
+                .NotEmpty().WithMessage("'Location' is mandatory");
+        });
+
+        RuleSet(nameof(Model.ProvidedProducts), () =>
+        {
+            RuleFor(p => p.ProvidedProducts)
+            .NotEmpty().WithMessage("Choose at least one item");
+        });
+
+        RuleSet(nameof(Model.PaymentTermsCode), () =>
+        {
+            RuleFor(p => p.PaymentTermsCode)
+            .NotEmpty().WithMessage("'Payment Terms' is mandatory");
+        });
+
+        RuleSet(nameof(Model.CreditDays), () =>
+        {
+            RuleFor(p => p.CreditDays)
+            .GreaterThan(0)
+            .WithMessage("Numeric value must be more than 0");
+        });
+
         //RuleSet(nameof(Model.TaxId), () =>
         //{
         //    RuleFor(p => p.TaxId)
