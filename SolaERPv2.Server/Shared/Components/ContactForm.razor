@@ -1,0 +1,101 @@
+﻿@using Telerik.Blazor.Components.Editor
+
+
+    <TelerikForm Model="messageDefinition" Orientation="FormOrientation.Vertical">
+        <FormValidation>
+            <FluentValidationValidator @ref="messageDefinitionValidator" DisableAssemblyScanning="true" />
+        </FormValidation>
+        <FormItems>
+            <FormItem LabelText="Subject: " Field="@nameof(MessageDefinition.Subject)">
+                <Template>
+                    <label for="subject" class="k-label k-form-label">Subject: </label>
+                    <div class="k-form-field-wrap">
+                        <TelerikTextBox Id="subject" @bind-Value="@messageDefinition.Subject" />
+                        <TelerikValidationMessage For="@(() => messageDefinition.Subject)" />
+                    </div>
+                </Template>
+            </FormItem>
+            <FormItem LabelText="Message: " Field="@nameof(MessageDefinition.MessageText)">
+                <Template>
+                    <label for="message" class="k-label k-form-label">Message: </label>
+                    <div class="k-form-field-wrap">
+                        <TelerikEditor @bind-Value="@messageDefinition.MessageText"
+                                       Tools="@editorTools"
+                                       Height="300px">
+                        </TelerikEditor>
+                        <TelerikValidationMessage For="@(() => messageDefinition.MessageText)" />
+                    </div>
+                </Template>
+            </FormItem>
+        </FormItems>
+        <FormButtons>
+            <TelerikButton Rounded="@Telerik.Blazor.ThemeConstants.Button.Rounded.Small" OnClick="@SendHandler" ThemeColor="primary">Send</TelerikButton>
+            <TelerikButton Rounded="@Telerik.Blazor.ThemeConstants.Button.Rounded.Small" OnClick="@CancelHandler">Cancel</TelerikButton>
+        </FormButtons>
+    </TelerikForm>
+
+
+@code {
+    [CascadingParameter] public AppState? AppState { get; set; }
+
+    [Parameter] public IEnumerable<string>? ToAddressList { get; set; } = new List<string> { "support@apertech.net" };
+    [Parameter] public EventCallback<MessageDefinition> OnSendClick { get; set; }
+    [Parameter] public EventCallback OnCancelClick { get; set; }
+
+    MessageDefinition? messageDefinition = new();
+    FluentValidationValidator? messageDefinitionValidator;
+
+    //List<IEditorTool> editorTools = EditorToolSets.All;
+    List<IEditorTool> editorTools { get; set; } =
+        new List<IEditorTool>()
+                {
+            new EditorButtonGroup(new Bold(), new Italic(), new Telerik.Blazor.Components.Editor.Underline()),
+            new EditorButtonGroup(new AlignLeft(), new AlignCenter(), new AlignRight()),
+            new UnorderedList(),
+            new EditorButtonGroup(new CreateLink(), new Unlink(), new InsertImage()),
+            new InsertTable(),
+            new EditorButtonGroup(new AddRowBefore(), new AddRowAfter(), new MergeCells(), new SplitCell()),
+            new Format(),
+            new FontSize(),
+            new FontFamily(),
+            new ForeColor(),
+            new BackgroundColor(),
+                };
+
+    async Task SendHandler()
+    {
+        var isValid = ValidateForm();
+        if (isValid)
+        {
+            await SendEmail();
+        }
+        await OnSendClick.InvokeAsync(messageDefinition);
+    }
+
+    async Task CancelHandler()
+    {
+        messageDefinition = new();
+        await OnCancelClick.InvokeAsync();
+    }
+
+    bool ValidateForm()
+    {
+        return true;
+    }
+
+    async Task SendEmail()
+    {
+        // loader start
+        var mailSent = await MailService.SendContactForm(ToAddressList, messageDefinition);
+        //loader end
+        if (mailSent)
+        {
+            AppState.ShowAlert("Email successfully sent", Severity.Success);
+        }
+        else
+        {
+            AppState.ShowAlert("Could not send an email", Severity.Error);
+        }
+    }
+}
+

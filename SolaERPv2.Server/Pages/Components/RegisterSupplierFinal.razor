@@ -1,6 +1,13 @@
 ﻿
 <MudCard Class="k-p-8" Style="max-width:1280px; margin:auto">
-    <TelerikForm Model="@currentEvaluationForm" Orientation="@(AppState.MobileView ? FormOrientation.Vertical : FormOrientation.Horizontal)">
+    <h3 class="k-mb-4">SUPPLIER EVALUATION FORM</h3>
+
+    <div>Score @supplierScore.ToString("P")</div>
+    <div>Formula: sumOfAll / (5 * countOfNonZeros)</div>
+    <div>Sum of all @sumOfAll.ToString()</div>
+    <div class="k-mb-4">Count of non-zeros @countOfNonZeros.ToString()</div>
+
+    <TelerikForm Model="@CurrentVendor.EvaluationForm" Orientation="@(AppState != null && AppState.MobileView ? FormOrientation.Vertical : FormOrientation.Horizontal)">
         <FormValidation>
             <FluentValidationValidator @ref="evaluationFormValidator" DisableAssemblyScanning="true" />
         </FormValidation>
@@ -8,16 +15,22 @@
             <FormGroup LabelText="CONTEXT OF THE ORGANIZATION">
                 <FormItem Field="@nameof(EvaluationForm.ContextOfTheOrganization1)">
                     <Template>
-                        <label for="context1" class="k-label k-form-label k-mr-10">Is your company ISO 9001:2015 certified? (If "Yes", please attach copy of certificate)</label>
+                        <label for="context1" class="k-label k-form-label k-mr-10">
+                            <span>Is your company ISO 9001:2015 certified? (If "Yes", please attach copy of certificate) </span>
+                            <div>
+                                <label for="expirationdate">Expiration Date: </label>
+                                <TelerikDatePicker Class="expiration-date-picker" Id="expirationdate" Min="@(new DateTime(2022, 1, 1))" Max="@(new DateTime(2050, 12, 31))" @bind-Value="@(CurrentVendor.EvaluationForm.ExpirationDate)" />
+                            </div>
+                        </label>
                         <div class="k-form-field-wrap">
                             <TelerikRadioGroup Id="context1"
                                                Layout="RadioGroupLayout.Horizontal"
                                                Data="@selectOptions"
-                                               @bind-Value="@currentEvaluationForm.ContextOfTheOrganization1"
+                                               @bind-Value="@CurrentVendor.EvaluationForm.ContextOfTheOrganization1"
                                                ValueField="@nameof(EvaluationOptions.Selection)"
                                                TextField="@nameof(EvaluationOptions.Name)">
                             </TelerikRadioGroup>
-                            <TelerikValidationMessage For="@(() => currentEvaluationForm.ContextOfTheOrganization1)" />
+                            <TelerikValidationMessage For="@(() => CurrentVendor.EvaluationForm.ContextOfTheOrganization1)" />
                         </div>
                     </Template>
                 </FormItem>
@@ -28,11 +41,11 @@
                             <TelerikRadioGroup Id="context2"
                                                Layout="RadioGroupLayout.Horizontal"
                                                Data="@selectOptions"
-                                               @bind-Value="@currentEvaluationForm.ContextOfTheOrganization2"
+                                               @bind-Value="@CurrentVendor.EvaluationForm.ContextOfTheOrganization2"
                                                ValueField="@nameof(EvaluationOptions.Selection)"
                                                TextField="@nameof(EvaluationOptions.Name)">
                             </TelerikRadioGroup>
-                            <TelerikValidationMessage For="@(() => currentEvaluationForm.ContextOfTheOrganization2)" />
+                            <TelerikValidationMessage For="@(() => CurrentVendor.EvaluationForm.ContextOfTheOrganization2)" />
                         </div>
                     </Template>
                 </FormItem>
@@ -43,11 +56,11 @@
                             <TelerikRadioGroup Id="context3"
                                                Layout="RadioGroupLayout.Horizontal"
                                                Data="@selectOptions"
-                                               @bind-Value="@currentEvaluationForm.ContextOfTheOrganization3"
+                                               @bind-Value="@CurrentVendor.EvaluationForm.ContextOfTheOrganization3"
                                                ValueField="@nameof(EvaluationOptions.Selection)"
                                                TextField="@nameof(EvaluationOptions.Name)">
                             </TelerikRadioGroup>
-                            <TelerikValidationMessage For="@(() => currentEvaluationForm.ContextOfTheOrganization3)" />
+                            <TelerikValidationMessage For="@(() => CurrentVendor.EvaluationForm.ContextOfTheOrganization3)" />
                         </div>
                     </Template>
                 </FormItem>
@@ -60,11 +73,11 @@
                             <TelerikRadioGroup Id="leadership1"
                                                Layout="RadioGroupLayout.Horizontal"
                                                Data="@selectOptions"
-                                               @bind-Value="@currentEvaluationForm.Leadership1"
+                                               @bind-Value="@CurrentVendor.EvaluationForm.Leadership1"
                                                ValueField="@nameof(EvaluationOptions.Selection)"
                                                TextField="@nameof(EvaluationOptions.Name)">
                             </TelerikRadioGroup>
-                            <TelerikValidationMessage For="@(() => currentEvaluationForm.Leadership1)" />
+                            <TelerikValidationMessage For="@(() => CurrentVendor.EvaluationForm.Leadership1)" />
                         </div>
                     </Template>
                 </FormItem>
@@ -75,11 +88,11 @@
                             <TelerikRadioGroup Id="leadership2"
                                                Layout="RadioGroupLayout.Horizontal"
                                                Data="@selectOptions"
-                                               @bind-Value="@currentEvaluationForm.Leadership2"
+                                               @bind-Value="@CurrentVendor.EvaluationForm.Leadership2"
                                                ValueField="@nameof(EvaluationOptions.Selection)"
                                                TextField="@nameof(EvaluationOptions.Name)">
                             </TelerikRadioGroup>
-                            <TelerikValidationMessage For="@(() => currentEvaluationForm.Leadership2)" />
+                            <TelerikValidationMessage For="@(() => CurrentVendor.EvaluationForm.Leadership2)" />
                         </div>
                     </Template>
                 </FormItem>
@@ -92,11 +105,11 @@
                             <TelerikRadioGroup Id="planning1"
                                                Layout="RadioGroupLayout.Horizontal"
                                                Data="@selectOptions"
-                                               @bind-Value="@currentEvaluationForm.Planning1"
+                                               @bind-Value="@CurrentVendor.EvaluationForm.Planning1"
                                                ValueField="@nameof(EvaluationOptions.Selection)"
                                                TextField="@nameof(EvaluationOptions.Name)">
                             </TelerikRadioGroup>
-                            <TelerikValidationMessage For="@(() => currentEvaluationForm.Planning1)" />
+                            <TelerikValidationMessage For="@(() => CurrentVendor.EvaluationForm.Planning1)" />
                         </div>
                     </Template>
                 </FormItem>
@@ -107,11 +120,11 @@
                             <TelerikRadioGroup Id="planning2"
                                                Layout="RadioGroupLayout.Horizontal"
                                                Data="@selectOptions"
-                                               @bind-Value="@currentEvaluationForm.Planning2"
+                                               @bind-Value="@CurrentVendor.EvaluationForm.Planning2"
                                                ValueField="@nameof(EvaluationOptions.Selection)"
                                                TextField="@nameof(EvaluationOptions.Name)">
                             </TelerikRadioGroup>
-                            <TelerikValidationMessage For="@(() => currentEvaluationForm.Planning2)" />
+                            <TelerikValidationMessage For="@(() => CurrentVendor.EvaluationForm.Planning2)" />
                         </div>
                     </Template>
                 </FormItem>
@@ -122,11 +135,11 @@
                             <TelerikRadioGroup Id="planning3"
                                                Layout="RadioGroupLayout.Horizontal"
                                                Data="@selectOptions"
-                                               @bind-Value="@currentEvaluationForm.Planning3"
+                                               @bind-Value="@CurrentVendor.EvaluationForm.Planning3"
                                                ValueField="@nameof(EvaluationOptions.Selection)"
                                                TextField="@nameof(EvaluationOptions.Name)">
                             </TelerikRadioGroup>
-                            <TelerikValidationMessage For="@(() => currentEvaluationForm.Planning3)" />
+                            <TelerikValidationMessage For="@(() => CurrentVendor.EvaluationForm.Planning3)" />
                         </div>
                     </Template>
                 </FormItem>
@@ -139,17 +152,48 @@
 
 
 @code {
-    [CascadingParameter] public AppState AppState { get; set; }
+    [CascadingParameter] public AppState? AppState { get; set; }
 
-    EvaluationForm? currentEvaluationForm = new();
+    [Parameter] public Vendor? CurrentVendor { get; set; }
+    [Parameter] public EventCallback<Vendor> CurrentVendorChanged { get; set; }
+
+    int ev1 => CurrentVendor != null && CurrentVendor.EvaluationForm != null ? CurrentVendor.EvaluationForm.ContextOfTheOrganization1 : 0;
+    int ev2 => CurrentVendor != null && CurrentVendor.EvaluationForm != null ? CurrentVendor.EvaluationForm.ContextOfTheOrganization2 : 0;
+    int ev3 => CurrentVendor != null && CurrentVendor.EvaluationForm != null ? CurrentVendor.EvaluationForm.ContextOfTheOrganization3 : 0;
+    int ev4 => CurrentVendor != null && CurrentVendor.EvaluationForm != null ? CurrentVendor.EvaluationForm.Leadership1 : 0;
+    int ev5 => CurrentVendor != null && CurrentVendor.EvaluationForm != null ? CurrentVendor.EvaluationForm.Leadership2 : 0;
+    int ev6 => CurrentVendor != null && CurrentVendor.EvaluationForm != null ? CurrentVendor.EvaluationForm.Planning1 : 0;
+    int ev7 => CurrentVendor != null && CurrentVendor.EvaluationForm != null ? CurrentVendor.EvaluationForm.Planning2 : 0;
+    int ev8 => CurrentVendor != null && CurrentVendor.EvaluationForm != null ? CurrentVendor.EvaluationForm.Planning3 : 0;
+    int sumOfAll => ev1 + ev2 + ev3 + ev4 + ev5 + ev6 + ev7 + ev8;
+    List<int> listOfValues => new() {ev1, ev2, ev3, ev4, ev5, ev6, ev7, ev8};
+    int countOfNonZeros => listOfValues.Count(e => e != 0);
+    decimal supplierScore => CurrentVendor != null && CurrentVendor.EvaluationForm != null ? countOfNonZeros != 0 ? ((decimal)sumOfAll / (5 * (decimal)countOfNonZeros)) : 0 : 0;
+
     FluentValidationValidator? evaluationFormValidator;
     List<EvaluationOptions>? selectOptions = new()
     {
-        new EvaluationOptions { Selection=0, Name="Not applicable to the industry" },
-        new EvaluationOptions { Selection=1, Name="No" },
+        new EvaluationOptions { Selection=5, Name="Yes, documented" },
         new EvaluationOptions { Selection=3, Name="Yes, but not documented" },
-        new EvaluationOptions { Selection=5, Name="Yes, documented" }
+        new EvaluationOptions { Selection=1, Name="No" },
+        new EvaluationOptions { Selection=0, Name="Not applicable to the industry" },
     };
+
+    public async Task<bool> SaveValid()
+    {
+        var isFormValid = ValidateEvaluationForm();
+        if (!isFormValid)
+        {
+            AppState?.ShowAlert("Validation errors", Severity.Error);
+        }
+        await CurrentVendorChanged.InvokeAsync(CurrentVendor);
+        return isFormValid;
+    }
+
+    bool ValidateEvaluationForm()
+    {
+        return true;
+    }
 
     public class EvaluationOptions
     {
@@ -160,14 +204,18 @@
 
 <style>
     .k-form-horizontal .k-form-field > .k-form-label {
-        width: 30%;
+        width: 40%;
     }
 
     .k-form-horizontal .k-form-field-wrap {
-        max-width: calc(70% - 10px);
+        max-width: calc(60% - 40px);
     }
 
     .k-radio-list-horizontal, .k-radio-list.k-list-horizontal {
         gap: 24px;
+    }
+
+    .expiration-date-picker {
+        max-width: 120px;
     }
 </style>

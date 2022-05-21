@@ -5,8 +5,8 @@ namespace SolaERPv2.Server.ModelService;
 
 public class MailService
 {
-    MailSettings _mailSettings;
-    AppSettings _appSettings;
+    MailSettings? _mailSettings;
+    AppSettings? _appSettings;
     public MailService(MailSettings mailSettings, AppSettings appSettings)
     {
         _mailSettings = mailSettings;
@@ -37,7 +37,7 @@ public class MailService
                             ";
 
             message.IsBodyHtml = true;
-            message.From = new MailAddress(_mailSettings?.FromEmail);
+            message.From = new MailAddress(_mailSettings.FromEmail);
             foreach (var item in toAddresses)
             {
                 message.To.Add(item);
@@ -73,5 +73,12 @@ public class MailService
             $"<div>The Apertech team.</div><br/><div style=\"font-size: 0.75rem\">&#169; 2022 Sola ERP SOCAR-STP All rights reserved.</div>";
 
         return await SendMail(toAddresses, subject, htmlBody);
+    }
+
+    public async Task<bool> SendContactForm(IEnumerable<string> toAddresses, MessageDefinition messageDefinition)
+    {
+        var htmlBody = $"Heading & body from {messageDefinition}";
+
+        return await SendMail(toAddresses, messageDefinition.Subject != null ? messageDefinition.Subject : "Subject is null", htmlBody);
     }
 }

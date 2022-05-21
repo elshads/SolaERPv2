@@ -83,28 +83,23 @@ public class VendorService : BaseModelService<Vendor>
                     }
                 }
 
-                if (vendor.EvaluationFormList != null && vendor.EvaluationFormList.Any())
+                if (vendor.EvaluationForm != null)
                 {
-                    foreach (var item in vendor.EvaluationFormList)
-                    {
-                        var ep = new DynamicParameters();
-                        ep.Add("@VendorEvaluationFormId", item.VendorEvaluationFormId, DbType.Int32, ParameterDirection.Input);
-                        ep.Add("@VendorId", vendor.VendorId, DbType.Int32, ParameterDirection.Input);
-                        ep.Add("@ContextOfTheOrganization1", item.ContextOfTheOrganization1, DbType.Int32, ParameterDirection.Input);
-                        ep.Add("@ContextOfTheOrganization2", item.ContextOfTheOrganization2, DbType.Int32, ParameterDirection.Input);
-                        ep.Add("@ContextOfTheOrganization3", item.ContextOfTheOrganization3, DbType.Int32, ParameterDirection.Input);
-                        ep.Add("@ExpirationDate", item.ExpirationDate, DbType.DateTime, ParameterDirection.Input);
-                        ep.Add("@Leadership1", item.Leadership1, DbType.Int32, ParameterDirection.Input);
-                        ep.Add("@Leadership2", item.Leadership2, DbType.Int32, ParameterDirection.Input);
-                        ep.Add("@Planning1", item.Planning1, DbType.Int32, ParameterDirection.Input);
-                        ep.Add("@Planning2", item.Planning2, DbType.Int32, ParameterDirection.Input);
-                        ep.Add("@Planning3", item.Planning3, DbType.Int32, ParameterDirection.Input);
-                        var evaluationResult = await _sqlDataAccess.ExecuteSql("dbo.SP_VendorEvaluationForm_IUD", ep);
-                    }
+                    var ep = new DynamicParameters();
+                    ep.Add("@VendorEvaluationFormId", vendor.EvaluationForm.VendorEvaluationFormId, DbType.Int32, ParameterDirection.Input);
+                    ep.Add("@VendorId", vendor.VendorId, DbType.Int32, ParameterDirection.Input);
+                    ep.Add("@ContextOfTheOrganization1", vendor.EvaluationForm.ContextOfTheOrganization1, DbType.Int32, ParameterDirection.Input);
+                    ep.Add("@ContextOfTheOrganization2", vendor.EvaluationForm.ContextOfTheOrganization2, DbType.Int32, ParameterDirection.Input);
+                    ep.Add("@ContextOfTheOrganization3", vendor.EvaluationForm.ContextOfTheOrganization3, DbType.Int32, ParameterDirection.Input);
+                    ep.Add("@ExpirationDate", vendor.EvaluationForm.ExpirationDate, DbType.DateTime, ParameterDirection.Input);
+                    ep.Add("@Leadership1", vendor.EvaluationForm.Leadership1, DbType.Int32, ParameterDirection.Input);
+                    ep.Add("@Leadership2", vendor.EvaluationForm.Leadership2, DbType.Int32, ParameterDirection.Input);
+                    ep.Add("@Planning1", vendor.EvaluationForm.Planning1, DbType.Int32, ParameterDirection.Input);
+                    ep.Add("@Planning2", vendor.EvaluationForm.Planning2, DbType.Int32, ParameterDirection.Input);
+                    ep.Add("@Planning3", vendor.EvaluationForm.Planning3, DbType.Int32, ParameterDirection.Input);
+                    var evaluationResult = await _sqlDataAccess.ExecuteSql("dbo.SP_VendorEvaluationForm_IUD", ep);
                 }
             }
-
-            
         }
         return supplierResult;
     }

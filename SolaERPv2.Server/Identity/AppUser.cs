@@ -21,7 +21,7 @@ public class AppUser : IdentityUser<int>, IBaseModel
     public string? FullName { get; set; }
     public string? NotificationEmail { get; set; }
     public bool ChangePassword { get; set; }
-    public int StatusId { get; set; }
+    public int StatusId { get; set; } // 0 - Open, 1 - Registered, 2 - Suspended, 3 - Closed
     public int UserTypeId { get; set; } // 0 - internal, 1 - supplier
     public string? Theme { get; set; }
     public string? SyteLineUserCode { get; set; }
@@ -36,6 +36,7 @@ public class AppUser : IdentityUser<int>, IBaseModel
     public int CreatedBy { get; set; }
     public DateTime UpdatedOn { get; set; }
     public int UpdatedBy { get; set; }
+    public int VendorId { get; set; }
     [NotMapped]
     public IEnumerable<Menu>? UserMenuList { get; set; } = new List<Menu>();
 }

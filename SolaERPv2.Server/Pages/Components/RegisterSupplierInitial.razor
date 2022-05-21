@@ -63,7 +63,7 @@
                             <div class="k-form-field-wrap">
                                 <TelerikMultiSelect Id="productlist"
                                                     Data="@productList"
-                                                    Value="@CurrentVendor.ProvidedProducts"
+                                                    Value="@CurrentVendor?.ProvidedProducts"
                                                     ValueChanged="@((List<int> selectedList) => ProvidedProductsChanged(selectedList))"
                                                     TItem="Product"
                                                     TValue="int"
@@ -112,12 +112,12 @@
                                                   ValueField="@nameof(Analysis.AnalysisCode)"
                                                   SearchFields="@(new List<string>() {"AnalysisCode", "AnalysisName"})"
                                                   HeaderNames="@(new List<string>() {"Code", "Name"})" />
-                                                  <label class="k-form-hint">@paymentTermsName</label>
+                                <label class="k-form-hint">@paymentTermsName</label>
                                 <TelerikValidationMessage For="@(() => CurrentVendor.PaymentTermsCode)" />
                             </div>
                         </Template>
                     </FormItem>
-                    <FormItem LabelText="Credit Days: " Field="@nameof(Vendor.CreditDays)" Enabled="@(!vendorExists && !CurrentVendor.AgreeWithDefaultDays)">
+                    <FormItem LabelText="Credit Days: " Field="@nameof(Vendor.CreditDays)" Enabled="@(CurrentVendor != null && !vendorExists && !CurrentVendor.AgreeWithDefaultDays)">
                         <Template>
                             <label for="creditdays" class="k-label k-form-label">Credit Days: </label>
                             <div class="k-form-field-wrap">
@@ -150,15 +150,12 @@
 
 
 @code {
-    [CascadingParameter] public AppState AppState { get; set; }
+    [CascadingParameter] public AppState? AppState { get; set; }
 
     [Parameter] public AppUser? CurrentPerson { get; set; }
     [Parameter] public Vendor? CurrentVendor { get; set; }
     [Parameter] public EventCallback<AppUser> CurrentPersonChanged { get; set; }
     [Parameter] public EventCallback<Vendor> CurrentVendorChanged { get; set; }
-
-    EditContext? personContext = new(new AppUser());
-    EditContext? vendorContext = new(new Vendor());
 
     FluentValidationValidator? personValidator;
     FluentValidationValidator? vendorValidator;
@@ -174,8 +171,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        personContext = new(CurrentPerson);
-        vendorContext = new(CurrentVendor);
         await LoadData();
     }
 
@@ -193,8 +188,11 @@
 
     void ProvidedProductsChanged(List<int> selectedList)
     {
-        CurrentVendor.ProvidedProducts = selectedList;
-        SetOtherProductsVisibility();
+        if (CurrentVendor != null)
+        {
+            CurrentVendor.ProvidedProducts = selectedList;
+            SetOtherProductsVisibility();
+        }
     }
 
     void SetOtherProductsVisibility()
@@ -211,8 +209,11 @@
 
     void AgreeWithDefaultDaysChanged(bool isAgree)
     {
-        CurrentVendor.AgreeWithDefaultDays = isAgree;
-        if (isAgree) { CurrentVendor.CreditDays = 60; }
+        if (CurrentVendor != null)
+        {
+            CurrentVendor.AgreeWithDefaultDays = isAgree;
+            if (isAgree) { CurrentVendor.CreditDays = 60; }
+        }
     }
 
     async Task TaxIdBlured(string taxId)
@@ -232,13 +233,13 @@
 
     void OnLogoSelect(List<Attachment> files)
     {
-        if (files != null && files.Any())
+        if (CurrentVendor != null && files != null && files.Any())
         {
-            CurrentVendor.CompanyLogo = files.FirstOrDefault().FileData;
+            CurrentVendor.CompanyLogo = files?.FirstOrDefault()?.FileData;
         }
         else
         {
-            AppState.ShowAlert("List is NULL", Severity.Warning);
+            AppState?.ShowAlert("List is NULL", Severity.Warning);
         }
     }
 
@@ -247,7 +248,7 @@
         var valid = ValidatePerson() && ValidateVendor();
         if (!valid)
         {
-            AppState.ShowAlert("Validation error", Severity.Error);
+            AppState?.ShowAlert("Validation error", Severity.Error);
         }
         await CurrentPersonChanged.InvokeAsync(CurrentPerson);
         await CurrentVendorChanged.InvokeAsync(CurrentVendor);

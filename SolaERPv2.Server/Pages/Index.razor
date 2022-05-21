@@ -9,19 +9,24 @@
 {
     <RegisterSupplier @ref="@registerSupplier" @bind-CurrentPerson="@currentPerson" @bind-CurrentVendor="@currentVendor" CurrentPageIndex="@currentPageIndex" CurrentPageIndexChanged="@CurrentPageIndexChangeHandler" />
 }
+else if (showWaitForConfirmation)
+{
+    <h3>Wait for Confirmation</h3>
+}
 else
 {
     <h3>Dashboard Placeholder</h3>
 }
 
 @code {
-    [CascadingParameter] public AppState AppState { get; set; }
+    [CascadingParameter] public AppState? AppState { get; set; }
 
     AppUser? currentPerson = new();
-    Vendor? currentVendor = new();
+    Vendor? currentVendor = new() { BankList = new(), EvaluationForm = new() };
 
     RegisterSupplier? registerSupplier;
     bool showSupplierRegistration = false;
+    bool showWaitForConfirmation = false;
     int currentPageIndex = 0; // total 3 pages
 
     protected override void OnInitialized()
@@ -33,36 +38,60 @@ else
 
     void ShowSupplierRegistrationPage()
     {
-        if (SessionData.CurrentUser != null && SessionData.CurrentUser.StatusId == 0)
+        if (SessionData.CurrentUser != null && SessionData.CurrentUser.StatusId == 1)
         {
-            AppState.BackButtonVisible = true;
-            AppState.NextButtonVisible = true;
+            if (AppState != null)
+            {
+                AppState.BackButtonVisible = true;
+                AppState.NextButtonVisible = true;
+            }
             showSupplierRegistration = true;
+            showWaitForConfirmation = false;
+        }
+        else if (SessionData.CurrentUser != null && SessionData.CurrentUser.StatusId == 2)
+        {
+            if (AppState != null)
+            {
+                AppState.BackButtonVisible = false;
+                AppState.NextButtonVisible = false;
+            }
+            showSupplierRegistration = false;
+            showWaitForConfirmation = true;
         }
         else
         {
-            AppState.BackButtonVisible = false;
-            AppState.NextButtonVisible = false;
+            if (AppState != null)
+            {
+                AppState.BackButtonVisible = false;
+                AppState.NextButtonVisible = false;
+            }
             showSupplierRegistration = false;
+            showWaitForConfirmation = false;
         }
     }
 
     void OnAppStateInitialized()
     {
-        AppState.SetDefaults();
-        SetButtonsAbility();
-        AppState.OnBackClick += BackClickHandler;
-        AppState.OnNextClick += NextClickHandler;
-        AppState.OnAddClick += AddClickHandler;
-        AppState.OnSaveClick += SaveClickHandler;
+        if (AppState != null)
+        {
+            AppState.SetDefaults();
+            SetButtonsAbility();
+            AppState.OnBackClick += BackClickHandler;
+            AppState.OnNextClick += NextClickHandler;
+            AppState.OnAddClick += AddClickHandler;
+            AppState.OnSaveClick += SaveClickHandler;
+        }
     }
 
     void IDisposable.Dispose()
     {
-        AppState.OnBackClick -= BackClickHandler;
-        AppState.OnNextClick -= NextClickHandler;
-        AppState.OnAddClick -= AddClickHandler;
-        AppState.OnSaveClick -= SaveClickHandler;
+        if (AppState != null)
+        {
+            AppState.OnBackClick -= BackClickHandler;
+            AppState.OnNextClick -= NextClickHandler;
+            AppState.OnAddClick -= AddClickHandler;
+            AppState.OnSaveClick -= SaveClickHandler;
+        }
     }
 
     void BackClickHandler()
@@ -73,7 +102,7 @@ else
 
     async void NextClickHandler()
     {
-        var isVendorValid = await registerSupplier.NextClickValid();
+        var isVendorValid = registerSupplier != null ? await registerSupplier.NextClickValid() : false;
         if (isVendorValid)
         {
             currentPageIndex += 1;
@@ -85,40 +114,61 @@ else
     {
         if (currentPageIndex == 0)
         {
-            AppState.BackButtonEnabled = false;
-            AppState.NextButtonEnabled = true;
-            AppState.AddButtonVisible = false;
-            AppState.SaveButtonVisible = false;
+            if (AppState != null)
+            {
+                AppState.BackButtonEnabled = false;
+                AppState.NextButtonEnabled = true;
+                AppState.AddButtonVisible = false;
+                AppState.SaveButtonVisible = false;
+            }
         }
         else if (currentPageIndex == 1)
         {
-            AppState.BackButtonEnabled = true;
-            AppState.NextButtonEnabled = true;
-            AppState.AddButtonVisible = true;
-            AppState.SaveButtonVisible = false;
+            if (AppState != null)
+            {
+                AppState.BackButtonEnabled = true;
+                AppState.NextButtonEnabled = true;
+                AppState.AddButtonVisible = true;
+                AppState.SaveButtonVisible = false;
+            }
         }
         else if (currentPageIndex == 2)
         {
-            AppState.BackButtonEnabled = true;
-            AppState.NextButtonEnabled = false;
-            AppState.AddButtonVisible = false;
-            AppState.SaveButtonVisible = true;
+            if (AppState != null)
+            {
+                AppState.BackButtonEnabled = true;
+                AppState.NextButtonEnabled = false;
+                AppState.AddButtonVisible = false;
+                AppState.SaveButtonVisible = true;
+            }
         }
         else
         {
-            AppState.BackButtonEnabled = false;
-            AppState.NextButtonEnabled = false;
-            AppState.AddButtonVisible = false;
-            AppState.SaveButtonVisible = false;
+            if (AppState != null)
+            {
+                AppState.BackButtonEnabled = false;
+                AppState.NextButtonEnabled = false;
+                AppState.AddButtonVisible = false;
+                AppState.SaveButtonVisible = false;
+            }
         }
-        AppState.Refresh();
+        AppState?.Refresh();
     }
 
     async void SaveClickHandler()
     {
-        //if valid
-        var sqlResult = await VendorService.RegisterSupplier(currentVendor);
-        AppState.ShowAlert(sqlResult.QueryResultMessage, Severity.Success);
+        var isValid = registerSupplier != null ? await registerSupplier.SaveValid() : false;
+        var sqlResult = currentVendor != null ? await VendorService.RegisterSupplier(currentVendor) : null;
+        if (AppState != null && sqlResult != null && sqlResult.QueryResultMessage == null)
+        {
+            SessionData.CurrentUser = await AppUserService.GetCurrentUserAsync();
+            ShowSupplierRegistrationPage();
+            NavigationManager.NavigateTo("/", true);
+        }
+        else
+        {
+            AppState.ShowAlert(sqlResult.QueryResultMessage, Severity.Error);
+        }
     }
 
     void AddClickHandler()

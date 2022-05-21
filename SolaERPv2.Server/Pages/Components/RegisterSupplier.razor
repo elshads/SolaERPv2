@@ -3,7 +3,7 @@
         <StepperSteps>
             <StepperStep Icon="home" Label="Company Info"></StepperStep>
             <StepperStep Icon="dollar" Label="Bank Details"></StepperStep>
-            <StepperStep Icon="paste-plain-text" Label="Evaluation"></StepperStep>
+            <StepperStep Icon="paste-plain-text" Label="Evaluation Form"></StepperStep>
         </StepperSteps>
     </TelerikStepper>
 </MudCard>
@@ -24,7 +24,9 @@ else if (CurrentPageIndex == 1)
 }
 else if (CurrentPageIndex == 2)
 {
-    <RegisterSupplierFinal />
+    <RegisterSupplierFinal @ref="@registerSupplierFinal"
+                       CurrentVendor="@CurrentVendor"
+                       CurrentVendorChanged="@CurrentVendorChangedHandler" />
 }
 else
 {
@@ -32,7 +34,7 @@ else
 }
 
 @code {
-    [CascadingParameter] public AppState AppState { get; set; }
+    [CascadingParameter] public AppState? AppState { get; set; }
 
     [Parameter] public AppUser? CurrentPerson { get; set; }
     [Parameter] public Vendor? CurrentVendor { get; set; }
@@ -44,18 +46,24 @@ else
 
     RegisterSupplierInitial? registerSupplierInitial;
     RegisterSupplierBank? registerSupplierBank;
+    RegisterSupplierFinal? registerSupplierFinal;
 
     public async Task<bool> NextClickValid()
     {
         if (CurrentPageIndex == 0)
         {
-            return await registerSupplierInitial.NextClickValid();
+            return registerSupplierInitial != null ? await registerSupplierInitial.NextClickValid() : false;
         }
         else if (CurrentPageIndex == 1)
         {
-            return await registerSupplierBank.NextClickValid();
+            return registerSupplierBank != null ? await registerSupplierBank.NextClickValid() : false;
         }
         return false;
+    }
+
+    public async Task<bool> SaveValid()
+    {
+        return registerSupplierFinal != null ? await registerSupplierFinal.SaveValid() : false;
     }
 
     public void AddClickHandler()
