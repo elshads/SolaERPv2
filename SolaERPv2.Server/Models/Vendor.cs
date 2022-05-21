@@ -2,6 +2,7 @@
 
 public class Vendor : BaseModel
 {
+    public int VendorId { get; set; }
     public int BusinessUnitId { get; set; }
     public string? VendorCode { get; set; }
     public string? VendorName { get; set; }
@@ -15,6 +16,7 @@ public class Vendor : BaseModel
     public Analysis? PaymentTerms { get; set; }
     public List<int>? ProvidedProducts { get; set; }
     public List<Bank>? BankList { get; set; }
+    public List<EvaluationForm>? EvaluationFormList { get; set; }
     public string? OtherProducts { get; set; }
     public string? RepresentedProducts { get; set; }
     public string? RepresentedCompanies { get; set; }

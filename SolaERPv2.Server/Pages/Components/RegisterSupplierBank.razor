@@ -1,10 +1,12 @@
 ﻿@inject CurrencyService CurrencyService
 
-<TelerikForm Class="k-pb-4" EditContext="@bankContext" Orientation="FormOrientation.Horizontal" ColumnSpacing="16px" Columns="@(AppState.MobileView ? 1 : 2)">
-    <FormValidation>
-        <FluentValidationValidator @ref="bankValidator" DisableAssemblyScanning="true" />
-    </FormValidation>
-    <FormItems>
+@if (showAddPanel)
+{
+    <TelerikForm Class="k-pb-4" Model="selectedBank" Orientation="FormOrientation.Horizontal" ColumnSpacing="16px" Columns="@(AppState.MobileView ? 1 : 2)">
+        <FormValidation>
+            <FluentValidationValidator @ref="bankValidator" DisableAssemblyScanning="true" />
+        </FormValidation>
+        <FormItems>
             <FormItem LabelText="Bank Account Number: " Field="@nameof(Bank.BankAccountNumber)">
                 <Template>
                     <label for="accountnumber" class="k-label k-form-label">Bank Account Number: </label>
@@ -14,17 +16,17 @@
                     </div>
                 </Template>
             </FormItem>
-            <FormItem LabelText="Currency Code: " Field="@nameof(Bank.CurrencyCode)">
+            <FormItem LabelText="Currency Code: " Field="@nameof(Bank.CurrencyCode)" Enabled="@(CurrentVendor.CountryCode != "AZ")">
                 <Template>
                     <label for="currencycode" class="k-label k-form-label">Currency Code: </label>
                     <div class="k-form-field-wrap">
                         <GridDropDownList Data="@currencyList"
-                                                  Id="currencycode"
-                                                  @bind-Value="@CurrentVendor.PaymentTermsCode"
-                                                  TextField="@nameof(Currency.CurrencyCode)"
-                                                  ValueField="@nameof(Currency.CurrencyCode)"
-                                                  SearchFields="@(new List<string>() {"CurrencyCode", "CurrencyName"})"
-                                                  HeaderNames="@(new List<string>() {"Code", "Name"})" />
+                                      Id="currencycode"
+                                      @bind-Value="@selectedBank.CurrencyCode"
+                                      TextField="@nameof(Currency.CurrencyCode)"
+                                      ValueField="@nameof(Currency.CurrencyCode)"
+                                      SearchFields="@(new List<string>() {"CurrencyCode", "CurrencyName"})"
+                                      HeaderNames="@(new List<string>() {"Code", "Name"})" />
                         <TelerikValidationMessage For="@(() => selectedBank.CurrencyCode)" />
                     </div>
                 </Template>
@@ -110,36 +112,33 @@
                     </div>
                 </Template>
             </FormItem>
-    </FormItems>
-    <FormButtons>
-        <TelerikButton Rounded="@Telerik.Blazor.ThemeConstants.Button.Rounded.Small" OnClick="@SaveHandler" ThemeColor="primary">Save</TelerikButton>
-        <TelerikButton Rounded="@Telerik.Blazor.ThemeConstants.Button.Rounded.Small" OnClick="@CancelHandler">Cancel</TelerikButton>
-    </FormButtons>
-</TelerikForm>
+            <TelerikValidationSummary Class="k-my-4" />
+        </FormItems>
+        <FormButtons>
+            <TelerikButton Rounded="@Telerik.Blazor.ThemeConstants.Button.Rounded.Small" OnClick="@SaveHandler" ThemeColor="primary">Save</TelerikButton>
+            <TelerikButton Rounded="@Telerik.Blazor.ThemeConstants.Button.Rounded.Small" OnClick="@CancelHandler">Cancel</TelerikButton>
+        </FormButtons>
+    </TelerikForm>
+}
 
-<TelerikGrid Data="@(CurrentVendor.BankList)"
+
+<TelerikGrid @ref="gridRef"
+             Data="@(CurrentVendor.BankList)"
              EditMode="@GridEditMode.None"
              Pageable="true"
              PageSize="20"
-             OnDelete=@DeleteBank>
+             OnDelete=@DeleteBank
+             SelectionMode="GridSelectionMode.Single"
+             SelectedItems="@selectedBankList"
+             SelectedItemsChanged="@((IEnumerable<Bank> bankList) => SelectedBankListChanged(bankList))"
+             OnRowClick="@OnRowClick">
     <GridColumns>
-        <GridCommandColumn Width="90px">
-            <GridCommandButton Command="Edit" Icon="edit" ShowInEdit="false" />
-            <GridCommandButton Command="Delete" Icon="delete" ShowInEdit="false" />
-            <GridCommandButton Command="Save" Icon="save" ShowInEdit="true" />
-            <GridCommandButton Command="Cancel" Icon="cancel" ShowInEdit="true" />
+        <GridCommandColumn Width="50px">
+            <GridCommandButton Command="Delete" Icon="delete" ShowInEdit="false" Enabled="!showAddPanel" />
         </GridCommandColumn>
         <GridColumn Field=@nameof(Bank.BankAccountNumber) />
         <GridColumn Field=@nameof(Bank.CurrencyCode) />
         <GridColumn Field=@nameof(Bank.BeneficiaryFullName) />
-        <GridColumn Field=@nameof(Bank.BeneficiaryAddress) Width="0" />
-        <GridColumn Field=@nameof(Bank.BeneficiaryAddress1) Width="0" />
-        <GridColumn Field=@nameof(Bank.BeneficiaryBankName) Width="0" />
-        <GridColumn Field=@nameof(Bank.BeneficiaryBankAddress) Width="0" />
-        <GridColumn Field=@nameof(Bank.BeneficiaryBankAddress1) Width="0" />
-        <GridColumn Field=@nameof(Bank.BeneficiaryBankCode) Width="0" />
-        <GridColumn Field=@nameof(Bank.IntermediaryBankCodeNumber) Width="0" />
-        <GridColumn Field=@nameof(Bank.IntermediaryBankCodeType) Width="0" />
     </GridColumns>
 </TelerikGrid>
 
@@ -151,17 +150,17 @@
     [Parameter] public Vendor? CurrentVendor { get; set; }
     [Parameter] public EventCallback<Vendor> CurrentVendorChanged { get; set; }
 
-    EditContext? bankContext = new(new Bank());
     Bank? selectedBank = new();
+    IEnumerable<Bank>? selectedBankList = new List<Bank>();
     IEnumerable<Currency>? currencyList = new List<Currency>();
+    TelerikGrid<Bank>? gridRef;
 
     FluentValidationValidator? bankValidator;
 
-    bool showEditDialog = false;
+    bool showAddPanel = false;
 
     protected override async Task OnInitializedAsync()
     {
-        bankContext = new(selectedBank);
         await LoadData();
     }
 
@@ -170,37 +169,75 @@
         currencyList = await CurrencyService.GetAll();
     }
 
-    async Task CurrentBankChangedHandler(Bank bank)
+    public void AddBank()
     {
-        selectedBank = bank;
-        if (bank.IsNewItem)
+        if (!showAddPanel)
         {
-            if (CurrentVendor.BankList == null) { CurrentVendor.BankList = new(); }
-            bank.IsNewItem = false;
-            CurrentVendor.BankList.Add(bank);
+            selectedBank = new() { IsNewItem = true, CurrencyCode="AZN" };
+            showAddPanel = true;
+            AppState.Refresh();
+        }
+    }
+
+    void OnRowClick(GridRowClickEventArgs args)
+    {
+        if (!showAddPanel)
+        {
+            var argsItem = args.Item as Bank;
+            argsItem.RowIndex = CurrentVendor.BankList.IndexOf(argsItem);
+            selectedBank = new Bank().GetInstanceClone(argsItem);
+            showAddPanel = true;
+        }
+    }
+
+    void SelectedBankListChanged(IEnumerable<Bank> bankList)
+    {
+        if (!showAddPanel)
+        {
+            selectedBankList = bankList;
+        }
+    }
+
+    async Task SaveHandler()
+    {
+        var isValid = ValidateBank();
+        if (isValid)
+        {
+            if (selectedBank.IsNewItem)
+            {
+                if (CurrentVendor != null && CurrentVendor.BankList == null) { CurrentVendor.BankList = new(); }
+                selectedBank.IsNewItem = false;
+                CurrentVendor.BankList.Add(selectedBank);
+            }
+            else
+            {
+                CurrentVendor.BankList[selectedBank.RowIndex] = selectedBank;
+            }
+            showAddPanel = false;
+            selectedBank = new();
+            selectedBankList = new List<Bank>();
+            gridRef.Rebind();
+            AppState.ShowAlert("Bank details successfully saved", Severity.Success);
+            await CurrentVendorChanged.InvokeAsync(CurrentVendor);
         }
         else
         {
-            //update item in list
+            AppState.ShowAlert("Validation error", Severity.Error);
         }
-        await CurrentVendorChanged.InvokeAsync(CurrentVendor);
     }
 
-    public void AddBank()
+    void CancelHandler()
     {
-        AppState.ShowAlert("Add Bank", Severity.Success);
+        showAddPanel = false;
+        selectedBank = new();
+        selectedBankList = new List<Bank>();
     }
 
-    void DeleteBank(GridCommandEventArgs args)
+    async Task DeleteBank(GridCommandEventArgs args)
     {
         selectedBank = args.Item as Bank;
         CurrentVendor.BankList.Remove(selectedBank);
-    }
-
-    void EditBank(GridCommandEventArgs args)
-    {
-        selectedBank = args.Item as Bank;
-        showEditDialog = true;
+        await CurrentVendorChanged.InvokeAsync(CurrentVendor);
     }
 
     bool ValidateBank()
@@ -211,23 +248,29 @@
 
     public async Task<bool> NextClickValid()
     {
-        var isValid = ValidateBank();
-        if (!isValid)
+        var isBankListValid = CurrentVendor != null && CurrentVendor.BankList != null && CurrentVendor.BankList.Any() ? true : false;
+        var isCurrencyValid = ValidateCurrencyCodes();
+        if (!isBankListValid)
         {
-            AppState.ShowAlert("Validation error", Severity.Error);
+            AppState.ShowAlert("Add bank details", Severity.Error);
+        }
+        if (!isCurrencyValid)
+        {
+            AppState.ShowAlert("Currency code for Azerbaijan must be AZN. Delete and Re-create", Severity.Error);
         }
         await CurrentVendorChanged.InvokeAsync(CurrentVendor);
-        return isValid;
+        return isBankListValid && isCurrencyValid;
     }
 
-    void SaveHandler()
+    bool ValidateCurrencyCodes()
     {
-
-    }
-
-    void CancelHandler()
-    {
-        
+        var isAzerbaijan = CurrentVendor != null && CurrentVendor.CountryCode != null ? CurrentVendor.CountryCode == "AZ" : false;
+        var isAzn = CurrentVendor != null && CurrentVendor.BankList != null && CurrentVendor.BankList.Any(e => e.CurrencyCode == "AZN") ? true : false;
+        if (isAzerbaijan && !isAzn)
+        {
+            return false;
+        }
+        return true;
     }
 }
 

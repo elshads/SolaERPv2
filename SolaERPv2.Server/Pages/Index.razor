@@ -1,12 +1,13 @@
 ﻿@page "/"
 @implements IDisposable
 @using Model = BaseModel
+@inject VendorService VendorService
 
 <PageTitle>Index</PageTitle>
 
 @if (showSupplierRegistration)
 {
-    <RegisterSupplier @ref="@registerSupplier" @bind-CurrentPerson="@currentPerson" @bind-CurrentVendor="@currentVendor" CurrentPageNumber="@currentPageNumber" />
+    <RegisterSupplier @ref="@registerSupplier" @bind-CurrentPerson="@currentPerson" @bind-CurrentVendor="@currentVendor" CurrentPageIndex="@currentPageIndex" CurrentPageIndexChanged="@CurrentPageIndexChangeHandler" />
 }
 else
 {
@@ -21,7 +22,7 @@ else
 
     RegisterSupplier? registerSupplier;
     bool showSupplierRegistration = false;
-    int currentPageNumber = 1; // total 3 pages
+    int currentPageIndex = 0; // total 3 pages
 
     protected override void OnInitialized()
     {
@@ -49,7 +50,7 @@ else
     void OnAppStateInitialized()
     {
         AppState.SetDefaults();
-        SetBackNextButtonsAbility();
+        SetButtonsAbility();
         AppState.OnBackClick += BackClickHandler;
         AppState.OnNextClick += NextClickHandler;
         AppState.OnAddClick += AddClickHandler;
@@ -66,8 +67,8 @@ else
 
     void BackClickHandler()
     {
-        currentPageNumber -= 1;
-        SetBackNextButtonsAbility();
+        currentPageIndex -= 1;
+        SetButtonsAbility();
     }
 
     async void NextClickHandler()
@@ -75,28 +76,28 @@ else
         var isVendorValid = await registerSupplier.NextClickValid();
         if (isVendorValid)
         {
-            currentPageNumber += 1;
+            currentPageIndex += 1;
         }
-        SetBackNextButtonsAbility();
+        SetButtonsAbility();
     }
 
-    void SetBackNextButtonsAbility()
+    void SetButtonsAbility()
     {
-        if (currentPageNumber == 1)
+        if (currentPageIndex == 0)
         {
             AppState.BackButtonEnabled = false;
             AppState.NextButtonEnabled = true;
             AppState.AddButtonVisible = false;
             AppState.SaveButtonVisible = false;
         }
-        else if (currentPageNumber == 2)
+        else if (currentPageIndex == 1)
         {
             AppState.BackButtonEnabled = true;
             AppState.NextButtonEnabled = true;
             AppState.AddButtonVisible = true;
             AppState.SaveButtonVisible = false;
         }
-        else if (currentPageNumber == 3)
+        else if (currentPageIndex == 2)
         {
             AppState.BackButtonEnabled = true;
             AppState.NextButtonEnabled = false;
@@ -115,12 +116,20 @@ else
 
     async void SaveClickHandler()
     {
-    //
+        //if valid
+        var sqlResult = await VendorService.RegisterSupplier(currentVendor);
+        AppState.ShowAlert(sqlResult.QueryResultMessage, Severity.Success);
     }
 
     void AddClickHandler()
     {
-        registerSupplier.AddClickHandler();
+        registerSupplier?.AddClickHandler();
+    }
+
+    void CurrentPageIndexChangeHandler(int pageIndex)
+    {
+        currentPageIndex = pageIndex;
+        SetButtonsAbility();
     }
 
     //async Task SendEmail(MouseEventArgs args)

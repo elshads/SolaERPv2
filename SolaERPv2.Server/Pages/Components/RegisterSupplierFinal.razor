@@ -1,16 +1,173 @@
-﻿<TelerikGridLayout RowSpacing="8px" ColumnSpacing="16px" VerticalAlign="GridLayoutVerticalAlign.Top">
-    <GridLayoutItems>
-        <GridLayoutItem Row="1" Column="1">
-            <div>In development</div>
-        </GridLayoutItem>
-        <GridLayoutItem Row="1" Column="2">
-            <div>In development</div>
-        </GridLayoutItem>
-    </GridLayoutItems>
-</TelerikGridLayout>
-
+﻿
+<MudCard Class="k-p-8" Style="max-width:1280px; margin:auto">
+    <TelerikForm Model="@currentEvaluationForm" Orientation="@(AppState.MobileView ? FormOrientation.Vertical : FormOrientation.Horizontal)">
+        <FormValidation>
+            <FluentValidationValidator @ref="evaluationFormValidator" DisableAssemblyScanning="true" />
+        </FormValidation>
+        <FormItems>
+            <FormGroup LabelText="CONTEXT OF THE ORGANIZATION">
+                <FormItem Field="@nameof(EvaluationForm.ContextOfTheOrganization1)">
+                    <Template>
+                        <label for="context1" class="k-label k-form-label k-mr-10">Is your company ISO 9001:2015 certified? (If "Yes", please attach copy of certificate)</label>
+                        <div class="k-form-field-wrap">
+                            <TelerikRadioGroup Id="context1"
+                                               Layout="RadioGroupLayout.Horizontal"
+                                               Data="@selectOptions"
+                                               @bind-Value="@currentEvaluationForm.ContextOfTheOrganization1"
+                                               ValueField="@nameof(EvaluationOptions.Selection)"
+                                               TextField="@nameof(EvaluationOptions.Name)">
+                            </TelerikRadioGroup>
+                            <TelerikValidationMessage For="@(() => currentEvaluationForm.ContextOfTheOrganization1)" />
+                        </div>
+                    </Template>
+                </FormItem>
+                <FormItem Field="@nameof(EvaluationForm.ContextOfTheOrganization2)">
+                    <Template>
+                        <label for="context2" class="k-label k-form-label k-mr-10">Has your company determined external and internal issues that are relevant to its purpose and its strategic direction and that affect its ability to achieve the intended results of its QMS?</label>
+                        <div class="k-form-field-wrap">
+                            <TelerikRadioGroup Id="context2"
+                                               Layout="RadioGroupLayout.Horizontal"
+                                               Data="@selectOptions"
+                                               @bind-Value="@currentEvaluationForm.ContextOfTheOrganization2"
+                                               ValueField="@nameof(EvaluationOptions.Selection)"
+                                               TextField="@nameof(EvaluationOptions.Name)">
+                            </TelerikRadioGroup>
+                            <TelerikValidationMessage For="@(() => currentEvaluationForm.ContextOfTheOrganization2)" />
+                        </div>
+                    </Template>
+                </FormItem>
+                <FormItem Field="@nameof(EvaluationForm.ContextOfTheOrganization3)">
+                    <Template>
+                        <label for="context3" class="k-label k-form-label k-mr-10">Does your company monitor and review information about all interested parties and their relevant requirements?</label>
+                        <div class="k-form-field-wrap">
+                            <TelerikRadioGroup Id="context3"
+                                               Layout="RadioGroupLayout.Horizontal"
+                                               Data="@selectOptions"
+                                               @bind-Value="@currentEvaluationForm.ContextOfTheOrganization3"
+                                               ValueField="@nameof(EvaluationOptions.Selection)"
+                                               TextField="@nameof(EvaluationOptions.Name)">
+                            </TelerikRadioGroup>
+                            <TelerikValidationMessage For="@(() => currentEvaluationForm.ContextOfTheOrganization3)" />
+                        </div>
+                    </Template>
+                </FormItem>
+            </FormGroup>
+            <FormGroup LabelText="LEADERSHIP">
+                <FormItem Field="@nameof(EvaluationForm.Leadership1)">
+                    <Template>
+                        <label for="leadership1" class="k-label k-form-label k-mr-10">Has your company established, implemented and maintains Quality Policy?</label>
+                        <div class="k-form-field-wrap">
+                            <TelerikRadioGroup Id="leadership1"
+                                               Layout="RadioGroupLayout.Horizontal"
+                                               Data="@selectOptions"
+                                               @bind-Value="@currentEvaluationForm.Leadership1"
+                                               ValueField="@nameof(EvaluationOptions.Selection)"
+                                               TextField="@nameof(EvaluationOptions.Name)">
+                            </TelerikRadioGroup>
+                            <TelerikValidationMessage For="@(() => currentEvaluationForm.Leadership1)" />
+                        </div>
+                    </Template>
+                </FormItem>
+                <FormItem Field="@nameof(EvaluationForm.Leadership2)">
+                    <Template>
+                        <label for="leadership2" class="k-label k-form-label k-mr-10">Do responsibilities and authorities for relevant roles are assigned, communicated and understood within your company?</label>
+                        <div class="k-form-field-wrap">
+                            <TelerikRadioGroup Id="leadership2"
+                                               Layout="RadioGroupLayout.Horizontal"
+                                               Data="@selectOptions"
+                                               @bind-Value="@currentEvaluationForm.Leadership2"
+                                               ValueField="@nameof(EvaluationOptions.Selection)"
+                                               TextField="@nameof(EvaluationOptions.Name)">
+                            </TelerikRadioGroup>
+                            <TelerikValidationMessage For="@(() => currentEvaluationForm.Leadership2)" />
+                        </div>
+                    </Template>
+                </FormItem>
+            </FormGroup>
+            <FormGroup LabelText="CONTEXT OF THE ORGANIZATION">
+                <FormItem Field="@nameof(EvaluationForm.Planning1)">
+                    <Template>
+                        <label for="planning1" class="k-label k-form-label k-mr-10">Does your company have "Risk Assessment and Management" process?</label>
+                        <div class="k-form-field-wrap">
+                            <TelerikRadioGroup Id="planning1"
+                                               Layout="RadioGroupLayout.Horizontal"
+                                               Data="@selectOptions"
+                                               @bind-Value="@currentEvaluationForm.Planning1"
+                                               ValueField="@nameof(EvaluationOptions.Selection)"
+                                               TextField="@nameof(EvaluationOptions.Name)">
+                            </TelerikRadioGroup>
+                            <TelerikValidationMessage For="@(() => currentEvaluationForm.Planning1)" />
+                        </div>
+                    </Template>
+                </FormItem>
+                <FormItem Field="@nameof(EvaluationForm.Planning2)">
+                    <Template>
+                        <label for="planning2" class="k-label k-form-label k-mr-10">Has your company established, monitored and reviews the Quality Objectives?</label>
+                        <div class="k-form-field-wrap">
+                            <TelerikRadioGroup Id="planning2"
+                                               Layout="RadioGroupLayout.Horizontal"
+                                               Data="@selectOptions"
+                                               @bind-Value="@currentEvaluationForm.Planning2"
+                                               ValueField="@nameof(EvaluationOptions.Selection)"
+                                               TextField="@nameof(EvaluationOptions.Name)">
+                            </TelerikRadioGroup>
+                            <TelerikValidationMessage For="@(() => currentEvaluationForm.Planning2)" />
+                        </div>
+                    </Template>
+                </FormItem>
+                <FormItem Field="@nameof(EvaluationForm.Planning3)">
+                    <Template>
+                        <label for="planning3" class="k-label k-form-label k-mr-10">Does your company control the changes?</label>
+                        <div class="k-form-field-wrap">
+                            <TelerikRadioGroup Id="planning3"
+                                               Layout="RadioGroupLayout.Horizontal"
+                                               Data="@selectOptions"
+                                               @bind-Value="@currentEvaluationForm.Planning3"
+                                               ValueField="@nameof(EvaluationOptions.Selection)"
+                                               TextField="@nameof(EvaluationOptions.Name)">
+                            </TelerikRadioGroup>
+                            <TelerikValidationMessage For="@(() => currentEvaluationForm.Planning3)" />
+                        </div>
+                    </Template>
+                </FormItem>
+            </FormGroup>
+            <TelerikValidationSummary />
+        </FormItems>
+        <FormButtons />
+    </TelerikForm>
+</MudCard>
 
 
 @code {
+    [CascadingParameter] public AppState AppState { get; set; }
 
+    EvaluationForm? currentEvaluationForm = new();
+    FluentValidationValidator? evaluationFormValidator;
+    List<EvaluationOptions>? selectOptions = new()
+    {
+        new EvaluationOptions { Selection=0, Name="Not applicable to the industry" },
+        new EvaluationOptions { Selection=1, Name="No" },
+        new EvaluationOptions { Selection=3, Name="Yes, but not documented" },
+        new EvaluationOptions { Selection=5, Name="Yes, documented" }
+    };
+
+    public class EvaluationOptions
+    {
+        public int Selection { get; set; }
+        public string? Name { get; set; }
+    }
 }
+
+<style>
+    .k-form-horizontal .k-form-field > .k-form-label {
+        width: 30%;
+    }
+
+    .k-form-horizontal .k-form-field-wrap {
+        max-width: calc(70% - 10px);
+    }
+
+    .k-radio-list-horizontal, .k-radio-list.k-list-horizontal {
+        gap: 24px;
+    }
+</style>

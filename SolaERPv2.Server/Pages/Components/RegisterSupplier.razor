@@ -1,4 +1,14 @@
-﻿@if (CurrentPageNumber == 1)
+﻿<MudCard Class="k-p-2 k-mb-8">
+    <TelerikStepper Value="@CurrentPageIndex" ValueChanged="CurrentPageIndexChangeHandler">
+        <StepperSteps>
+            <StepperStep Icon="home" Label="Company Info"></StepperStep>
+            <StepperStep Icon="dollar" Label="Bank Details"></StepperStep>
+            <StepperStep Icon="paste-plain-text" Label="Evaluation"></StepperStep>
+        </StepperSteps>
+    </TelerikStepper>
+</MudCard>
+
+@if (CurrentPageIndex == 0)
 {
     <RegisterSupplierInitial @ref="@registerSupplierInitial"
                          CurrentPerson="@CurrentPerson"
@@ -6,13 +16,13 @@
                          CurrentVendor="@CurrentVendor"
                          CurrentVendorChanged="@CurrentVendorChangedHandler" />
 }
-else if (CurrentPageNumber == 2)
+else if (CurrentPageIndex == 1)
 {
     <RegisterSupplierBank @ref="@registerSupplierBank"
                       CurrentVendor="@CurrentVendor"
                       CurrentVendorChanged="@CurrentVendorChangedHandler" />
 }
-else if (CurrentPageNumber == 3)
+else if (CurrentPageIndex == 2)
 {
     <RegisterSupplierFinal />
 }
@@ -22,12 +32,14 @@ else
 }
 
 @code {
+    [CascadingParameter] public AppState AppState { get; set; }
+
     [Parameter] public AppUser? CurrentPerson { get; set; }
     [Parameter] public Vendor? CurrentVendor { get; set; }
-    [Parameter] public int CurrentPageNumber { get; set; } = 1;
+    [Parameter] public int CurrentPageIndex { get; set; } = 0;
     [Parameter] public EventCallback<AppUser> CurrentPersonChanged { get; set; }
     [Parameter] public EventCallback<Vendor> CurrentVendorChanged { get; set; }
-    [Parameter] public EventCallback<int> CurrentPageNumberChanged { get; set; }
+    [Parameter] public EventCallback<int> CurrentPageIndexChanged { get; set; }
 
 
     RegisterSupplierInitial? registerSupplierInitial;
@@ -35,11 +47,11 @@ else
 
     public async Task<bool> NextClickValid()
     {
-        if (CurrentPageNumber == 1)
+        if (CurrentPageIndex == 0)
         {
             return await registerSupplierInitial.NextClickValid();
         }
-        else if (CurrentPageNumber == 2)
+        else if (CurrentPageIndex == 1)
         {
             return await registerSupplierBank.NextClickValid();
         }
@@ -48,7 +60,7 @@ else
 
     public void AddClickHandler()
     {
-        registerSupplierBank.AddBank();
+        registerSupplierBank?.AddBank();
     }
 
     async Task CurrentPersonChangedHandler(AppUser currentPerson)
@@ -63,9 +75,31 @@ else
         await CurrentVendorChanged.InvokeAsync(CurrentVendor);
     }
 
-    async Task CurrentPageNumberChangedHandler(int currentPageNumber)
+    async Task CurrentPageIndexChangeHandler(int currentPageIndex)
     {
-        CurrentPageNumber = currentPageNumber;
-        await CurrentPageNumberChanged.InvokeAsync(CurrentPageNumber);
+        if (currentPageIndex == 2 && CurrentPageIndex == 0)
+        {
+            var page0Valid = registerSupplierInitial != null ? await registerSupplierInitial.NextClickValid() : false;
+            var page1Valid = registerSupplierBank != null ? await registerSupplierBank.NextClickValid() : false;
+            if (page0Valid && page1Valid)
+            {
+                CurrentPageIndex = currentPageIndex;
+                await CurrentPageIndexChanged.InvokeAsync(CurrentPageIndex);
+            }
+        }
+        else if (currentPageIndex > CurrentPageIndex)
+        {
+            var isValid = await NextClickValid();
+            if (isValid)
+            {
+                CurrentPageIndex = currentPageIndex;
+                await CurrentPageIndexChanged.InvokeAsync(CurrentPageIndex);
+            }
+        }
+        else
+        {
+            CurrentPageIndex = currentPageIndex;
+            await CurrentPageIndexChanged.InvokeAsync(CurrentPageIndex);
+        }
     }
 }
