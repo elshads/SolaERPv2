@@ -94,7 +94,7 @@
                         <Template>
                             <label for="companylogo" class="k-label k-form-label">Company logo: </label>
                             <div class="k-form-field-wrap">
-                                <FileSelect HideList="true" Multiple="false" AllowedExtensions="@(new List<string> { ".png", ".jpg", ".jpeg" })" OnSelect="@OnLogoSelect" />
+                                <FileSelect HideList="true" Multiple="false" AllowedExtensions="@(new List<string> { ".png", ".jpg", ".jpeg" })" OnSelect="@OnLogoSelect" OnSingleRemove="@OnLogoRemove" />
                                 <TelerikValidationMessage For="@(() => CurrentVendor.CompanyLogo)" />
                             </div>
                         </Template>
@@ -241,6 +241,11 @@
         {
             AppState?.ShowAlert("List is NULL", Severity.Warning);
         }
+    }
+
+    void OnLogoRemove()
+    {
+        CurrentVendor.CompanyLogo = null;
     }
 
     public async Task<bool> NextClickValid()

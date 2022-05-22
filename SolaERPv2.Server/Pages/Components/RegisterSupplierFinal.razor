@@ -2,7 +2,7 @@
 <MudCard Class="k-p-8" Style="max-width:1280px; margin:auto">
     <h3 class="k-mb-4">SUPPLIER EVALUATION FORM</h3>
 
-    <div>Score @supplierScore.ToString("P")</div>
+    <div class="k-mb-2">Score: <strong class="@scoreClass k-p-2" style="border: 1px solid #424242">@supplierScore.ToString("P")</strong></div>
     <div>Formula: sumOfAll / (5 * countOfNonZeros)</div>
     <div>Sum of all @sumOfAll.ToString()</div>
     <div class="k-mb-4">Count of non-zeros @countOfNonZeros.ToString()</div>
@@ -17,9 +17,12 @@
                     <Template>
                         <label for="context1" class="k-label k-form-label k-mr-10">
                             <span>Is your company ISO 9001:2015 certified? (If "Yes", please attach copy of certificate) </span>
-                            <div>
-                                <label for="expirationdate">Expiration Date: </label>
-                                <TelerikDatePicker Class="expiration-date-picker" Id="expirationdate" Min="@(new DateTime(2022, 1, 1))" Max="@(new DateTime(2050, 12, 31))" @bind-Value="@(CurrentVendor.EvaluationForm.ExpirationDate)" />
+                            <div class="flex-align-top">
+                                <div class="k-mr-4 k-mt-1">
+                                    <label for="expirationdate">Expiration Date: </label>
+                                    <TelerikDatePicker Class="expiration-date-picker" Id="expirationdate" Min="@(new DateTime(2022, 1, 1))" Max="@(new DateTime(2050, 12, 31))" @bind-Value="@(CurrentVendor.EvaluationForm.ExpirationDate)" />
+                                </div>
+                                <FileSelect HideList="true" Multiple="false" OnSelect="@OnCertificateSelect" OnSingleRemove="@OnCertificateRemove" />
                             </div>
                         </label>
                         <div class="k-form-field-wrap">
@@ -143,6 +146,15 @@
                         </div>
                     </Template>
                 </FormItem>
+                <FormItem Field="@nameof(EvaluationForm.OtherAttachments)">
+                    <Template>
+                        <label for="planning3" class="k-label k-form-label k-mr-10">Other Attachments</label>
+                        <div class="k-form-field-wrap">
+                            <FileSelect OnSelect="@OnOtherAttachmentsSelect" OnRemove="@OnOtherAttachmentsRemove" />
+                            <TelerikValidationMessage For="@(() => CurrentVendor.EvaluationForm.OtherAttachments)" />
+                        </div>
+                    </Template>
+                </FormItem>
             </FormGroup>
             <TelerikValidationSummary />
         </FormItems>
@@ -166,9 +178,15 @@
     int ev7 => CurrentVendor != null && CurrentVendor.EvaluationForm != null ? CurrentVendor.EvaluationForm.Planning2 : 0;
     int ev8 => CurrentVendor != null && CurrentVendor.EvaluationForm != null ? CurrentVendor.EvaluationForm.Planning3 : 0;
     int sumOfAll => ev1 + ev2 + ev3 + ev4 + ev5 + ev6 + ev7 + ev8;
-    List<int> listOfValues => new() {ev1, ev2, ev3, ev4, ev5, ev6, ev7, ev8};
+    List<int> listOfValues => new() { ev1, ev2, ev3, ev4, ev5, ev6, ev7, ev8 };
     int countOfNonZeros => listOfValues.Count(e => e != 0);
     decimal supplierScore => CurrentVendor != null && CurrentVendor.EvaluationForm != null ? countOfNonZeros != 0 ? ((decimal)sumOfAll / (5 * (decimal)countOfNonZeros)) : 0 : 0;
+    string? scoreClass =>
+    supplierScore < 0.5m ? "unsatisfactory" :
+    supplierScore >= 0.5m && supplierScore < 0.6m ? "adequate" :
+    supplierScore >= 0.6m && supplierScore < 0.75m ? "satisfactory" :
+    supplierScore >= 0.75m && supplierScore < 0.95m ? "good" :
+    supplierScore >= 0.95m ? "excellent" : "";
 
     FluentValidationValidator? evaluationFormValidator;
     List<EvaluationOptions>? selectOptions = new()
@@ -195,6 +213,37 @@
         return true;
     }
 
+    async Task OnCertificateSelect(List<Attachment> files)
+    {
+        if (CurrentVendor != null && CurrentVendor.EvaluationForm != null)
+        {
+            CurrentVendor.EvaluationForm.CertificateAttachment = files.FirstOrDefault();
+        }
+        await CurrentVendorChanged.InvokeAsync(CurrentVendor);
+    }
+
+    async Task OnCertificateRemove()
+    {
+        if (CurrentVendor != null && CurrentVendor.EvaluationForm != null)
+        {
+            CurrentVendor.EvaluationForm.CertificateAttachment = new();
+        }
+        await CurrentVendorChanged.InvokeAsync(CurrentVendor);
+    }
+
+    async Task OnOtherAttachmentsSelect(List<Attachment> files)
+    {
+        CurrentVendor.EvaluationForm.OtherAttachments = files;
+        await CurrentVendorChanged.InvokeAsync(CurrentVendor);
+    }
+
+    async Task OnOtherAttachmentsRemove(FileSelectEventArgs args)
+    {
+        var deletedFilesInfo = args.Files;
+        //
+        await CurrentVendorChanged.InvokeAsync(CurrentVendor);
+    }
+
     public class EvaluationOptions
     {
         public int Selection { get; set; }
@@ -217,5 +266,30 @@
 
     .expiration-date-picker {
         max-width: 120px;
+    }
+
+    .unsatisfactory {
+        color: #5f071c;
+        background-color: #fbd0da;
+    }
+
+    .adequate {
+        color: #4b1d17;
+        background-color: #f1dbd8;
+    }
+
+    .satisfactory {
+        color: #363312;
+        background-color: #e7e6d5;
+    }
+
+    .good {
+        color: #22490c;
+        background-color: #dcf0d3;
+    }
+
+    .excellent {
+        color: #0d5f07;
+        background-color: #d2fbd0;
     }
 </style>

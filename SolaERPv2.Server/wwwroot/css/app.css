@@ -57,6 +57,11 @@ html, body {
     align-items: center;
 }
 
+.flex-align-top {
+    display: flex;
+    align-items: start;
+}
+
 .flex-center-x {
     display: flex;
     justify-content: center;

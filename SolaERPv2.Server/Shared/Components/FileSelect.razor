@@ -16,6 +16,10 @@
                 . &nbsp Do not close this window while loading
             </div>
         }
+        else if (files != null && files.Any() && HideList && !Multiple)
+        {
+            <MudChip Color="Color.Primary" Size="Size.Small" OnClose="@OnSingleFileRemove">@(files?.FirstOrDefault()?.FileName)</MudChip>
+        }
         else
         {
             <div>Allowed files: @(AllowedExtensions != null ? String.Join(", ", AllowedExtensions) : "") up to @(MaxFileSize / 1024 / 1024)MB</div>
@@ -28,6 +32,7 @@
 
     [Parameter] public EventCallback<List<Attachment>> OnSelect { get; set; }
     [Parameter] public EventCallback<FileSelectEventArgs> OnRemove { get; set; }
+    [Parameter] public EventCallback OnSingleRemove { get; set; }
     [Parameter] public List<string>? AllowedExtensions { get; set; }
     [Parameter] public int MaxFileSize { get; set; } = 1024 * 1024 * 10;
     [Parameter] public string? Class { get; set; }
@@ -92,10 +97,20 @@
     {
         await OnRemove.InvokeAsync(args);
     }
+
+    async Task OnSingleFileRemove()
+    {
+        files = new();
+        await OnSingleRemove.InvokeAsync();
+    }
 }
 
 <style>
     .hidden-list .k-upload .k-upload-files {
         display: none;
+    }
+
+    [aria-label="Select files..."] {
+        
     }
 </style>
