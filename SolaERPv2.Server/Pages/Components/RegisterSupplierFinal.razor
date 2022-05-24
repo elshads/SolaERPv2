@@ -2,10 +2,10 @@
 <MudCard Class="k-p-8" Style="max-width:1280px; margin:auto">
     <h3 class="k-mb-4">SUPPLIER EVALUATION FORM</h3>
 
-    <div class="k-mb-2">Score: <strong class="@scoreClass k-p-2" style="border: 1px solid #424242">@supplierScore.ToString("P")</strong></div>
-    <div>Formula: sumOfAll / (5 * countOfNonZeros)</div>
-    <div>Sum of all @sumOfAll.ToString()</div>
-    <div class="k-mb-4">Count of non-zeros @countOfNonZeros.ToString()</div>
+    <div class="k-mb-2 flex-content-right flex-center-y">
+        <div class="k-mr-2">Total score: </div>
+        <strong class="@scoreClass k-p-1 text-right" style="border: 1px solid #424242; min-width:68px;">@supplierScore.ToString("P")</strong>
+    </div>
 
     <TelerikForm Model="@CurrentVendor.EvaluationForm" Orientation="@(AppState != null && AppState.MobileView ? FormOrientation.Vertical : FormOrientation.Horizontal)">
         <FormValidation>
@@ -13,16 +13,22 @@
         </FormValidation>
         <FormItems>
             <FormGroup LabelText="CONTEXT OF THE ORGANIZATION">
-                <FormItem Field="@nameof(EvaluationForm.ContextOfTheOrganization1)">
+                <FormItem Field="@nameof(EvaluationForm.ContextOfTheOrganization1)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
                     <Template>
                         <label for="context1" class="k-label k-form-label k-mr-10">
                             <span>Is your company ISO 9001:2015 certified? (If "Yes", please attach copy of certificate) </span>
                             <div class="flex-align-top">
                                 <div class="k-mr-4 k-mt-1">
                                     <label for="expirationdate">Expiration Date: </label>
-                                    <TelerikDatePicker Class="expiration-date-picker" Id="expirationdate" Min="@(new DateTime(2022, 1, 1))" Max="@(new DateTime(2050, 12, 31))" @bind-Value="@(CurrentVendor.EvaluationForm.ExpirationDate)" />
+                                    <TelerikDatePicker Class="expiration-date-picker"
+                                                       Id="expirationdate"
+                                                       Min="@(new DateTime(2022, 1, 1))"
+                                                       Max="@(new DateTime(2050, 12, 31))" @bind-Value="@(CurrentVendor.EvaluationForm.ExpirationDate)"/>
                                 </div>
-                                <FileSelect HideList="true" Multiple="false" OnSelect="@OnCertificateSelect" OnSingleRemove="@OnCertificateRemove" />
+                                <FileSelect HideList="true"
+                                            Multiple="false"
+                                            AttachmentList="@certificateList"
+                                            AttachmentListChanged="@CertificateListChanged" />
                             </div>
                         </label>
                         <div class="k-form-field-wrap">
@@ -37,7 +43,7 @@
                         </div>
                     </Template>
                 </FormItem>
-                <FormItem Field="@nameof(EvaluationForm.ContextOfTheOrganization2)">
+                <FormItem Field="@nameof(EvaluationForm.ContextOfTheOrganization2)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
                     <Template>
                         <label for="context2" class="k-label k-form-label k-mr-10">Has your company determined external and internal issues that are relevant to its purpose and its strategic direction and that affect its ability to achieve the intended results of its QMS?</label>
                         <div class="k-form-field-wrap">
@@ -52,7 +58,7 @@
                         </div>
                     </Template>
                 </FormItem>
-                <FormItem Field="@nameof(EvaluationForm.ContextOfTheOrganization3)">
+                <FormItem Field="@nameof(EvaluationForm.ContextOfTheOrganization3)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
                     <Template>
                         <label for="context3" class="k-label k-form-label k-mr-10">Does your company monitor and review information about all interested parties and their relevant requirements?</label>
                         <div class="k-form-field-wrap">
@@ -69,7 +75,7 @@
                 </FormItem>
             </FormGroup>
             <FormGroup LabelText="LEADERSHIP">
-                <FormItem Field="@nameof(EvaluationForm.Leadership1)">
+                <FormItem Field="@nameof(EvaluationForm.Leadership1)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
                     <Template>
                         <label for="leadership1" class="k-label k-form-label k-mr-10">Has your company established, implemented and maintains Quality Policy?</label>
                         <div class="k-form-field-wrap">
@@ -84,7 +90,7 @@
                         </div>
                     </Template>
                 </FormItem>
-                <FormItem Field="@nameof(EvaluationForm.Leadership2)">
+                <FormItem Field="@nameof(EvaluationForm.Leadership2)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
                     <Template>
                         <label for="leadership2" class="k-label k-form-label k-mr-10">Do responsibilities and authorities for relevant roles are assigned, communicated and understood within your company?</label>
                         <div class="k-form-field-wrap">
@@ -101,7 +107,7 @@
                 </FormItem>
             </FormGroup>
             <FormGroup LabelText="CONTEXT OF THE ORGANIZATION">
-                <FormItem Field="@nameof(EvaluationForm.Planning1)">
+                <FormItem Field="@nameof(EvaluationForm.Planning1)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
                     <Template>
                         <label for="planning1" class="k-label k-form-label k-mr-10">Does your company have "Risk Assessment and Management" process?</label>
                         <div class="k-form-field-wrap">
@@ -116,7 +122,7 @@
                         </div>
                     </Template>
                 </FormItem>
-                <FormItem Field="@nameof(EvaluationForm.Planning2)">
+                <FormItem Field="@nameof(EvaluationForm.Planning2)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
                     <Template>
                         <label for="planning2" class="k-label k-form-label k-mr-10">Has your company established, monitored and reviews the Quality Objectives?</label>
                         <div class="k-form-field-wrap">
@@ -131,7 +137,7 @@
                         </div>
                     </Template>
                 </FormItem>
-                <FormItem Field="@nameof(EvaluationForm.Planning3)">
+                <FormItem Field="@nameof(EvaluationForm.Planning3)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
                     <Template>
                         <label for="planning3" class="k-label k-form-label k-mr-10">Does your company control the changes?</label>
                         <div class="k-form-field-wrap">
@@ -146,11 +152,12 @@
                         </div>
                     </Template>
                 </FormItem>
-                <FormItem Field="@nameof(EvaluationForm.OtherAttachments)">
+                <FormItem Field="@nameof(EvaluationForm.OtherAttachments)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
                     <Template>
                         <label for="planning3" class="k-label k-form-label k-mr-10">Other Attachments</label>
                         <div class="k-form-field-wrap">
-                            <FileSelect OnSelect="@OnOtherAttachmentsSelect" OnRemove="@OnOtherAttachmentsRemove" />
+                            <FileSelect AttachmentList="@CurrentVendor.EvaluationForm.OtherAttachments"
+                                        AttachmentListChanged="@OtherAttachmentsChanged" />
                             <TelerikValidationMessage For="@(() => CurrentVendor.EvaluationForm.OtherAttachments)" />
                         </div>
                     </Template>
@@ -188,6 +195,8 @@
     supplierScore >= 0.75m && supplierScore < 0.95m ? "good" :
     supplierScore >= 0.95m ? "excellent" : "";
 
+    List<Attachment>? certificateList = new();
+
     FluentValidationValidator? evaluationFormValidator;
     List<EvaluationOptions>? selectOptions = new()
     {
@@ -196,6 +205,14 @@
         new EvaluationOptions { Selection=1, Name="No" },
         new EvaluationOptions { Selection=0, Name="Not applicable to the industry" },
     };
+
+    protected override void OnInitialized()
+    {
+        if (CurrentVendor != null && CurrentVendor.EvaluationForm != null && CurrentVendor.EvaluationForm.CertificateAttachment != null)
+        {
+            certificateList = new() { CurrentVendor.EvaluationForm.CertificateAttachment };
+        }
+    }
 
     public async Task<bool> SaveValid()
     {
@@ -213,34 +230,26 @@
         return true;
     }
 
-    async Task OnCertificateSelect(List<Attachment> files)
+    async Task CertificateListChanged(List<Attachment> files)
     {
-        if (CurrentVendor != null && CurrentVendor.EvaluationForm != null)
+        certificateList = files;
+        if (CurrentVendor != null && CurrentVendor.EvaluationForm != null && files != null && files.Any())
         {
-            CurrentVendor.EvaluationForm.CertificateAttachment = files.FirstOrDefault();
+            CurrentVendor.EvaluationForm.CertificateAttachment = files?.FirstOrDefault();
+        }
+        else if (CurrentVendor != null && CurrentVendor.EvaluationForm != null)
+        {
+            CurrentVendor.EvaluationForm.CertificateAttachment = null;
         }
         await CurrentVendorChanged.InvokeAsync(CurrentVendor);
     }
 
-    async Task OnCertificateRemove()
+    async Task OtherAttachmentsChanged(List<Attachment> files)
     {
         if (CurrentVendor != null && CurrentVendor.EvaluationForm != null)
         {
-            CurrentVendor.EvaluationForm.CertificateAttachment = new();
+            CurrentVendor.EvaluationForm.OtherAttachments = files;
         }
-        await CurrentVendorChanged.InvokeAsync(CurrentVendor);
-    }
-
-    async Task OnOtherAttachmentsSelect(List<Attachment> files)
-    {
-        CurrentVendor.EvaluationForm.OtherAttachments = files;
-        await CurrentVendorChanged.InvokeAsync(CurrentVendor);
-    }
-
-    async Task OnOtherAttachmentsRemove(FileSelectEventArgs args)
-    {
-        var deletedFilesInfo = args.Files;
-        //
         await CurrentVendorChanged.InvokeAsync(CurrentVendor);
     }
 

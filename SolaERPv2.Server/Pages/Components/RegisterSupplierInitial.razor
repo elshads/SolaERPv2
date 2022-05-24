@@ -37,7 +37,7 @@
                             </div>
                         </Template>
                     </FormItem>
-                    <FormItem LabelText="Company Name: " Field="@nameof(Vendor.VendorName)" Enabled="@(!vendorExists)" />
+                    <FormItem LabelText="Company Name: " Field="@nameof(Vendor.VendorName)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)" />
                     <FormItem LabelText="Country: " Field="@nameof(Vendor.CountryCode)">
                         <Template>
                             <label for="countrylist" class="k-label k-form-label">Country: </label>
@@ -55,9 +55,9 @@
                             </div>
                         </Template>
                     </FormItem>
-                    <FormItem LabelText="Location: " Field="@nameof(Vendor.CompanyLocation)" Enabled="@(!vendorExists)" />
-                    <FormItem LabelText="Website: " Field="@nameof(Vendor.CompanyWebsite)" Enabled="@(!vendorExists)" />
-                    <FormItem LabelText="Products / Services provided: " Field="@nameof(Vendor.ProvidedProducts)" Enabled="@(!vendorExists)">
+                    <FormItem LabelText="Location: " Field="@nameof(Vendor.CompanyLocation)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)" />
+                    <FormItem LabelText="Website: " Field="@nameof(Vendor.CompanyWebsite)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)" />
+                    <FormItem LabelText="Products / Services provided: " Field="@nameof(Vendor.ProvidedProducts)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)">
                         <Template>
                             <label for="productlist" class="k-label k-form-label">Products / Services provided: </label>
                             <div class="k-form-field-wrap">
@@ -90,18 +90,22 @@
                             </Template>
                         </FormItem>
                     }
-                    <FormItem LabelText="Company logo: " Field="@nameof(Vendor.CompanyLogo)" Enabled="@(!vendorExists)">
+                    <FormItem LabelText="Company logo: " Field="@nameof(Vendor.CompanyLogo)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)">
                         <Template>
                             <label for="companylogo" class="k-label k-form-label">Company logo: </label>
                             <div class="k-form-field-wrap">
-                                <FileSelect HideList="true" Multiple="false" AllowedExtensions="@(new List<string> { ".png", ".jpg", ".jpeg" })" OnSelect="@OnLogoSelect" OnSingleRemove="@OnLogoRemove" />
+                                <FileSelect HideList="true"
+                                            Multiple="false"
+                                            AllowedExtensions="@(new List<string> { ".png", ".jpg", ".jpeg" })"
+                                            AttachmentList="@logoAttachmentList"
+                                            AttachmentListChanged="@LogoListChanged" />
                                 <TelerikValidationMessage For="@(() => CurrentVendor.CompanyLogo)" />
                             </div>
                         </Template>
                     </FormItem>
-                    <FormItem LabelText="Represented Products: " Field="@nameof(Vendor.RepresentedProducts)" Enabled="@(!vendorExists)" />
-                    <FormItem LabelText="Represented Companies: " Field="@nameof(Vendor.RepresentedCompanies)" Enabled="@(!vendorExists)" />
-                    <FormItem LabelText="Payment Terms: " Field="@nameof(Vendor.PaymentTermsCode)" Enabled="@(!vendorExists)">
+                    <FormItem LabelText="Represented Products: " Field="@nameof(Vendor.RepresentedProducts)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)" />
+                    <FormItem LabelText="Represented Companies: " Field="@nameof(Vendor.RepresentedCompanies)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)" />
+                    <FormItem LabelText="Payment Terms: " Field="@nameof(Vendor.PaymentTermsCode)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)">
                         <Template>
                             <label for="paymentterms" class="k-label k-form-label">Payment Terms: </label>
                             <div class="k-form-field-wrap">
@@ -110,6 +114,7 @@
                                                   @bind-Value="@CurrentVendor.PaymentTermsCode"
                                                   TextField="@nameof(Analysis.AnalysisCode)"
                                                   ValueField="@nameof(Analysis.AnalysisCode)"
+                                                  OnChange="@((string paymentTermCode) => ValidateVendor())"
                                                   SearchFields="@(new List<string>() {"AnalysisCode", "AnalysisName"})"
                                                   HeaderNames="@(new List<string>() {"Code", "Name"})" />
                                 <label class="k-form-hint">@paymentTermsName</label>
@@ -117,7 +122,7 @@
                             </div>
                         </Template>
                     </FormItem>
-                    <FormItem LabelText="Credit Days: " Field="@nameof(Vendor.CreditDays)" Enabled="@(CurrentVendor != null && !vendorExists && !CurrentVendor.AgreeWithDefaultDays)">
+                    <FormItem LabelText="Credit Days: " Field="@nameof(Vendor.CreditDays)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists && !CurrentVendor.AgreeWithDefaultDays)">
                         <Template>
                             <label for="creditdays" class="k-label k-form-label">Credit Days: </label>
                             <div class="k-form-field-wrap">
@@ -126,7 +131,7 @@
                             </div>
                         </Template>
                     </FormItem>
-                    <FormItem LabelText="Please confirm that you agree with the 60-days payment" Field="@nameof(Vendor.AgreeWithDefaultDays)" Class="k-pb-4" Enabled="@(!vendorExists)">
+                    <FormItem LabelText="Please confirm that you agree with the 60-days payment" Field="@nameof(Vendor.AgreeWithDefaultDays)" Class="k-pb-4" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)">
                         <Template>
                             <label for="agreement" class="k-label k-form-label">Please confirm that you agree with the 60-days payment </label>
                             <div class="k-form-field-wrap">
@@ -164,10 +169,10 @@
     IEnumerable<Country>? countryList = new List<Country>();
     IEnumerable<Analysis>? paymentTermsList = new List<Analysis>();
 
-
-    bool vendorExists = false;
+    //bool vendorExists = false;
     bool otherProductsVisible = false;
     string? paymentTermsName => paymentTermsList?.FirstOrDefault(e => e.AnalysisCode == CurrentVendor?.PaymentTermsCode)?.AnalysisName;
+    List<Attachment>? logoAttachmentList = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -181,6 +186,8 @@
 
     async Task LoadData()
     {
+        logoAttachmentList = new();
+        if (CurrentVendor != null && CurrentVendor.CompanyLogo != null) { logoAttachmentList.Add(CurrentVendor.CompanyLogo); }
         productList = await ProductService.GetAll();
         countryList = await CountryService.GetAll();
         paymentTermsList = await AnalysisService.GetPaymentTerms();
@@ -223,29 +230,32 @@
         if (vendor != null && vendor.TaxId != null && vendor.TaxId.Length > 0)
         {
             CurrentVendor = vendor;
-            vendorExists = true;
+            CurrentVendor.Exists = true;
         }
         else
         {
-            vendorExists = false;
+            CurrentVendor.Exists = false;
         }
     }
 
-    void OnLogoSelect(List<Attachment> files)
+    async void LogoListChanged(List<Attachment> files)
     {
+        logoAttachmentList = files;
         if (CurrentVendor != null && files != null && files.Any())
         {
-            CurrentVendor.CompanyLogo = files?.FirstOrDefault()?.FileData;
+            CurrentVendor.CompanyLogo = files?.FirstOrDefault();
         }
-        else
+        else if (CurrentVendor != null)
         {
-            AppState?.ShowAlert("List is NULL", Severity.Warning);
+            CurrentVendor.CompanyLogo = null;
         }
+        await CurrentVendorChanged.InvokeAsync(CurrentVendor);
     }
 
-    void OnLogoRemove()
+    async Task OnLogoRemove()
     {
-        CurrentVendor.CompanyLogo = null;
+        if (CurrentVendor != null) { CurrentVendor.CompanyLogo = null; }
+        await CurrentVendorChanged.InvokeAsync(CurrentVendor);
     }
 
     public async Task<bool> NextClickValid()

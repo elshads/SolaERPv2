@@ -16,9 +16,9 @@
                 . &nbsp Do not close this window while loading
             </div>
         }
-        else if (files != null && files.Any() && HideList && !Multiple)
+        else if (AttachmentList != null && AttachmentList.Any() && HideList && !Multiple)
         {
-            <MudChip Color="Color.Primary" Size="Size.Small" OnClose="@OnSingleFileRemove">@(files?.FirstOrDefault()?.FileName)</MudChip>
+            <MudChip Color="Color.Primary" Size="Size.Small" OnClose="@OnSingleFileRemove">@(AttachmentList?.FirstOrDefault()?.FileName)</MudChip>
         }
         else
         {
@@ -30,9 +30,10 @@
 @code {
     [CascadingParameter] public AppState AppState { get; set; }
 
-    [Parameter] public EventCallback<List<Attachment>> OnSelect { get; set; }
+    [Parameter] public List<Attachment>? AttachmentList { get; set; }
+    [Parameter] public EventCallback<List<Attachment>> AttachmentListChanged { get; set; }
+    //[Parameter] public EventCallback<List<Attachment>> OnSelect { get; set; }
     [Parameter] public EventCallback<FileSelectEventArgs> OnRemove { get; set; }
-    [Parameter] public EventCallback OnSingleRemove { get; set; }
     [Parameter] public List<string>? AllowedExtensions { get; set; }
     [Parameter] public int MaxFileSize { get; set; } = 1024 * 1024 * 10;
     [Parameter] public string? Class { get; set; }
@@ -40,7 +41,7 @@
     [Parameter] public bool Multiple { get; set; } = true;
     [Parameter] public bool HideList { get; set; } = false;
 
-    List<Attachment>? files = new();
+    //List<Attachment>? files = new();
     Attachment? currentFile;
     bool fileLoading = false;
 
@@ -48,7 +49,7 @@
     {
         fileLoading = true;
 
-        files = new();
+        AttachmentList = new();
 
         foreach (var file in args.Files)
         {
@@ -72,7 +73,7 @@
                         //AttachmentSubTypeId = this.AttachmentSubTypeId,
                         //Reference = DocumentReference,
                     };
-                files?.Add(currentFile);
+                AttachmentList?.Add(currentFile);
             }
             else if (file.InvalidExtension && file.InvalidMaxFileSize)
             {
@@ -90,7 +91,8 @@
 
         fileLoading = false;
 
-        await OnSelect.InvokeAsync(files);
+        //await OnSelect.InvokeAsync(AttachmentList);
+        await AttachmentListChanged.InvokeAsync(AttachmentList);
     }
 
     async Task OnFileRemove(FileSelectEventArgs args)
@@ -100,8 +102,8 @@
 
     async Task OnSingleFileRemove()
     {
-        files = new();
-        await OnSingleRemove.InvokeAsync();
+        AttachmentList = new();
+        await AttachmentListChanged.InvokeAsync(AttachmentList);
     }
 }
 

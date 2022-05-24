@@ -10,7 +10,7 @@
                 <FluentValidationValidator @ref="bankValidator" DisableAssemblyScanning="true" />
             </FormValidation>
             <FormItems>
-                <FormItem LabelText="Bank Account Number: " Field="@nameof(Bank.BankAccountNumber)">
+                <FormItem LabelText="Bank Account Number: " Field="@nameof(Bank.BankAccountNumber)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
                     <Template>
                         <label for="accountnumber" class="k-label k-form-label">Bank Account Number: </label>
                         <div class="k-form-field-wrap">
@@ -19,7 +19,7 @@
                         </div>
                     </Template>
                 </FormItem>
-                <FormItem LabelText="Currency Code: " Field="@nameof(Bank.CurrencyCode)" Enabled="@(CurrentVendor.CountryCode != "AZ")">
+                <FormItem LabelText="Currency Code: " Field="@nameof(Bank.CurrencyCode)" Enabled="@(CurrentVendor != null && CurrentVendor.CountryCode != "AZ" && !CurrentVendor.Exists)">
                     <Template>
                         <label for="currencycode" class="k-label k-form-label">Currency Code: </label>
                         <div class="k-form-field-wrap">
@@ -34,7 +34,7 @@
                         </div>
                     </Template>
                 </FormItem>
-                <FormItem LabelText="Beneficiary Full Name: " Field="@nameof(Bank.BeneficiaryFullName)">
+                <FormItem LabelText="Beneficiary Full Name: " Field="@nameof(Bank.BeneficiaryFullName)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
                     <Template>
                         <label for="fullname" class="k-label k-form-label">Beneficiary Full Name: </label>
                         <div class="k-form-field-wrap">
@@ -43,7 +43,7 @@
                         </div>
                     </Template>
                 </FormItem>
-                <FormItem LabelText="Beneficiary Address: " Field="@nameof(Bank.BeneficiaryAddress)">
+                <FormItem LabelText="Beneficiary Address: " Field="@nameof(Bank.BeneficiaryAddress)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
                     <Template>
                         <label for="beneficiaryaddress" class="k-label k-form-label">Beneficiary Address: </label>
                         <div class="k-form-field-wrap">
@@ -52,7 +52,7 @@
                         </div>
                     </Template>
                 </FormItem>
-                <FormItem LabelText="Beneficiary Address 1: " Field="@nameof(Bank.BeneficiaryAddress1)">
+                <FormItem LabelText="Beneficiary Address 1: " Field="@nameof(Bank.BeneficiaryAddress1)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
                     <Template>
                         <label for="beneficiaryaddress1" class="k-label k-form-label">Beneficiary Address 1: </label>
                         <div class="k-form-field-wrap">
@@ -61,7 +61,7 @@
                         </div>
                     </Template>
                 </FormItem>
-                <FormItem LabelText="Beneficiary Bank Name: " Field="@nameof(Bank.BeneficiaryBankName)">
+                <FormItem LabelText="Beneficiary Bank Name: " Field="@nameof(Bank.BeneficiaryBankName)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
                     <Template>
                         <label for="beneficiarybankname" class="k-label k-form-label">Beneficiary Bank Name: </label>
                         <div class="k-form-field-wrap">
@@ -70,7 +70,7 @@
                         </div>
                     </Template>
                 </FormItem>
-                <FormItem LabelText="Beneficiary Bank Address: " Field="@nameof(Bank.BeneficiaryBankAddress)">
+                <FormItem LabelText="Beneficiary Bank Address: " Field="@nameof(Bank.BeneficiaryBankAddress)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
                     <Template>
                         <label for="beneficiarybankaddress" class="k-label k-form-label">Beneficiary Bank Address: </label>
                         <div class="k-form-field-wrap">
@@ -79,7 +79,7 @@
                         </div>
                     </Template>
                 </FormItem>
-                <FormItem LabelText="Beneficiary Bank Address 1: " Field="@nameof(Bank.BeneficiaryBankAddress1)">
+                <FormItem LabelText="Beneficiary Bank Address 1: " Field="@nameof(Bank.BeneficiaryBankAddress1)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
                     <Template>
                         <label for="beneficiarybankaddress1" class="k-label k-form-label">Beneficiary Bank Address 1: </label>
                         <div class="k-form-field-wrap">
@@ -88,7 +88,7 @@
                         </div>
                     </Template>
                 </FormItem>
-                <FormItem LabelText="Beneficiary Bank Code: " Field="@nameof(Bank.BeneficiaryBankCode)">
+                <FormItem LabelText="Beneficiary Bank Code: " Field="@nameof(Bank.BeneficiaryBankCode)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
                     <Template>
                         <label for="beneficiarybankcode" class="k-label k-form-label">Beneficiary Bank Code: </label>
                         <div class="k-form-field-wrap">
@@ -97,7 +97,7 @@
                         </div>
                     </Template>
                 </FormItem>
-                <FormItem LabelText="Intermediary Bank Code Number: " Field="@nameof(Bank.IntermediaryBankCodeNumber)">
+                <FormItem LabelText="Intermediary Bank Code Number: " Field="@nameof(Bank.IntermediaryBankCodeNumber)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
                     <Template>
                         <label for="intermediarybankcodenumber" class="k-label k-form-label">Intermediary Bank Code Number: </label>
                         <div class="k-form-field-wrap">
@@ -106,7 +106,7 @@
                         </div>
                     </Template>
                 </FormItem>
-                <FormItem LabelText="Intermediary Bank Code Type: " Field="@nameof(Bank.IntermediaryBankCodeType)">
+                <FormItem LabelText="Intermediary Bank Code Type: " Field="@nameof(Bank.IntermediaryBankCodeType)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
                     <Template>
                         <label for="intermediarybankcodetype" class="k-label k-form-label">Intermediary Bank Code Type: </label>
                         <div class="k-form-field-wrap">
@@ -118,8 +118,8 @@
                 <TelerikValidationSummary Class="k-my-4" />
             </FormItems>
             <FormButtons>
-                <TelerikButton Rounded="@Telerik.Blazor.ThemeConstants.Button.Rounded.Small" OnClick="@SaveHandler" ThemeColor="primary">Save</TelerikButton>
-                <TelerikButton Rounded="@Telerik.Blazor.ThemeConstants.Button.Rounded.Small" OnClick="@CancelHandler">Cancel</TelerikButton>
+                <TelerikButton Rounded="@Telerik.Blazor.ThemeConstants.Button.Rounded.Small" OnClick="@SaveHandler" ThemeColor="primary" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">Save</TelerikButton>
+                <TelerikButton Rounded="@Telerik.Blazor.ThemeConstants.Button.Rounded.Small" OnClick="@CancelHandler" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">Cancel</TelerikButton>
             </FormButtons>
         </TelerikForm>
     }
@@ -137,7 +137,7 @@
                  OnRowClick="@OnRowClick">
         <GridColumns>
             <GridCommandColumn Width="50px">
-                <GridCommandButton Command="Delete" Icon="delete" ShowInEdit="false" Enabled="!showAddPanel" />
+                <GridCommandButton Command="Delete" Icon="delete" ShowInEdit="false" Enabled="!showAddPanel && !CurrentVendor.Exists" />
             </GridCommandColumn>
             <GridColumn Field=@nameof(Bank.BankAccountNumber) />
             <GridColumn Field=@nameof(Bank.CurrencyCode) />

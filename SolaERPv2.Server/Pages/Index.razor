@@ -7,7 +7,12 @@
 
 @if (showSupplierRegistration)
 {
-    <RegisterSupplier @ref="@registerSupplier" @bind-CurrentPerson="@currentPerson" @bind-CurrentVendor="@currentVendor" CurrentPageIndex="@currentPageIndex" CurrentPageIndexChanged="@CurrentPageIndexChangeHandler" />
+    <RegisterSupplier @ref="@registerSupplier"
+                  @bind-CurrentPerson="@currentPerson"
+                  CurrentVendor="@currentVendor"
+                  CurrentVendorChanged="@CurrentVendorChanged"
+                  CurrentPageIndex="@currentPageIndex"
+                  CurrentPageIndexChanged="@CurrentPageIndexChangeHandler" />
 }
 else if (showWaitForConfirmation)
 {
@@ -182,26 +187,18 @@ else
         SetButtonsAbility();
     }
 
-    //async Task SendEmail(MouseEventArgs args)
-    //{
-    //    if (emailAddress?.Length > 0)
-    //    {
-    //        AppState.Loading = true;
-    //        var addresses = emailAddress.Replace(";", ",").Split(",");
-    //        var mailSent = await MailService.SendApprovalMail(addresses, emailSubject, SessionData.CurrentUser.FullName, SessionData.CurrentUser.UserName, destination, documentNumber);
-    //        AppState.Loading = false;
-    //        if (mailSent)
-    //        {
-    //            AppState.ShowAlert($"Email successfully sent to {emailAddress}", Severity.Success);
-    //        }
-    //        else
-    //        {
-    //            AppState.ShowAlert("Could not send an email", Severity.Error);
-    //        }
-    //    }
-    //    else
-    //    {
-    //        AppState.ShowAlert("email is mandatory", Severity.Error);
-    //    }
-    //}
+    void CurrentVendorChanged(Vendor vendor)
+    {
+        currentVendor = vendor;
+        if (AppState != null && currentVendor.Exists)
+        {
+            AppState.AddButtonEnabled = false;
+        }
+        else if (AppState != null)
+        {
+            AppState.AddButtonEnabled = true;
+        }
+        AppState?.Refresh();
+    }
+
 }

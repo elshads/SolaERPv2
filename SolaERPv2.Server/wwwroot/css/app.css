@@ -52,14 +52,19 @@ html, body {
     width: 100%;
 }
 
-.flex-center-y {
+.flex-content-right {
     display: flex;
-    align-items: center;
+    justify-content: right;
 }
 
 .flex-align-top {
     display: flex;
     align-items: start;
+}
+
+.flex-center-y {
+    display: flex;
+    align-items: center;
 }
 
 .flex-center-x {

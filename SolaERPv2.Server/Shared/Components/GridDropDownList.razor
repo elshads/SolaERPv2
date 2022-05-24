@@ -3,9 +3,10 @@
 
 
 <TelerikDropDownList Data="@Data"
-                     @ref="@Ref"
+                     @ref="@dropDownRef"
                      ValueField="@ValueField"
                      TextField="@TextField"
+                     DefaultText="Select..."
                      Value="@Value"
                      ValueChanged="@ValueChangedHandler"
                      ValueExpression="@( () => Value )"
@@ -56,39 +57,43 @@
 
 
 @code {
-    [Parameter] public IEnumerable<TItem> Data { get; set; } = new List<TItem>();
-    [Parameter] public IEnumerable<string> SearchFields { get; set; } = new List<string> { "RowIndex" };
-    [Parameter] public IEnumerable<string> ColumnNames { get; set; }
-    [Parameter] public string ValueField { get; set; }
-    [Parameter] public string TextField { get; set; }
+    [Parameter] public IEnumerable<TItem>? Data { get; set; } = new List<TItem>();
+    [Parameter] public IEnumerable<string>? SearchFields { get; set; } = new List<string> { "RowIndex" };
+    [Parameter] public IEnumerable<string>? ColumnNames { get; set; }
+    [Parameter] public string? ValueField { get; set; }
+    [Parameter] public string? TextField { get; set; }
 
-    [Parameter] public TelerikDropDownList<TItem, TValue> Ref { get; set; } = new();
-
-    [Parameter] public TValue Value { get; set; }
+    [Parameter] public TValue? Value { get; set; }
     [Parameter] public EventCallback<TValue> ValueChanged { get; set; }
 
     [Parameter] public EventCallback<TValue> OnChange { get; set; }
 
-    [Parameter] public IEnumerable<string> HeaderNames { get; set; }
-    [Parameter] public string Width { get; set; } = "100%";
-    [Parameter] public string PopupWidth { get; set; }
-    [Parameter] public string PopupMinWidth { get; set; }
-    [Parameter] public string PopupMaxWidth { get; set; }
-    [Parameter] public string PopupHeight { get; set; } = "auto";
-    [Parameter] public string PopupMinHeight { get; set; } = "150px";
-    [Parameter] public string PopupMaxHeight { get; set; } = "400px";
+    [Parameter] public IEnumerable<string>? HeaderNames { get; set; }
+    [Parameter] public string? Width { get; set; } = "100%";
+    [Parameter] public string? PopupWidth { get; set; }
+    [Parameter] public string? PopupMinWidth { get; set; }
+    [Parameter] public string? PopupMaxWidth { get; set; }
+    [Parameter] public string? PopupHeight { get; set; } = "auto";
+    [Parameter] public string? PopupMinHeight { get; set; } = "150px";
+    [Parameter] public string? PopupMaxHeight { get; set; } = "400px";
     [Parameter] public bool Enabled { get; set; } = true;
-    [Parameter] public string Id { get; set; } = "";
-    [Parameter] public string Class { get; set; } = "";
+    [Parameter] public string? Id { get; set; } = "";
+    [Parameter] public string? Class { get; set; } = "";
     [Parameter] public bool ShowHeader { get; set; } = true;
     [Parameter] public bool ShowFooter { get; set; } = true;
     [Parameter] public DropDownScrollMode ScrollMode { get; set; } = DropDownScrollMode.Scrollable;
     [Parameter] public int PageSize { get; set; } = 50;
 
+    TelerikDropDownList<TItem, TValue>? dropDownRef;
 
     protected override void OnParametersSet()
     {
-        Ref.Rebind();
+        dropDownRef?.Rebind();
+    }
+
+    public void Rebind()
+    {
+        dropDownRef?.Rebind();
     }
 
     async Task ValueChangedHandler(TValue value)

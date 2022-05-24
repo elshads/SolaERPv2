@@ -21,7 +21,8 @@ public class VendorService : BaseModelService<Vendor>
     {
         var p = new DynamicParameters();
         p.Add("@TaxId", taxId, DbType.String, ParameterDirection.Input);
-        return await _sqlDataAccess.QuerySingle<Vendor>("dbo.SP_VendorsTaxCheck", p);
+        var result = await _sqlDataAccess.QuerySingle<Vendor>("dbo.SP_VendorsTaxCheck", p);
+        return result;
     }
 
     public async Task<bool> IsVendorUniqueAsync(string taxId)
@@ -80,6 +81,7 @@ public class VendorService : BaseModelService<Vendor>
                         bp.Add("@IntermediaryBankCode", item.IntermediaryBankCodeNumber, DbType.String, ParameterDirection.Input);
                         bp.Add("@IntermediaryBankCodeType", item.IntermediaryBankCodeType, DbType.String, ParameterDirection.Input);
                         var bankResult = await _sqlDataAccess.ExecuteSql("dbo.SP_VendorBankDetails_IUD", bp);
+                        if (bankResult != null) { supplierResult.QueryResultMessage = bankResult.QueryResultMessage; }
                     }
                 }
 
@@ -98,6 +100,58 @@ public class VendorService : BaseModelService<Vendor>
                     ep.Add("@Planning2", vendor.EvaluationForm.Planning2, DbType.Int32, ParameterDirection.Input);
                     ep.Add("@Planning3", vendor.EvaluationForm.Planning3, DbType.Int32, ParameterDirection.Input);
                     var evaluationResult = await _sqlDataAccess.ExecuteSql("dbo.SP_VendorEvaluationForm_IUD", ep);
+                    if (evaluationResult != null) { supplierResult.QueryResultMessage = evaluationResult.QueryResultMessage; }
+                }
+
+                if (vendor.CompanyLogo != null)
+                {
+                    var lp = new DynamicParameters();
+                    lp.Add("@AttachmentId", vendor.CompanyLogo.AttachmentId, DbType.Int32, ParameterDirection.Input);
+                    lp.Add("@FileName", vendor.CompanyLogo.FileName, DbType.String, ParameterDirection.Input);
+                    lp.Add("@FileData", vendor.CompanyLogo.FileData, DbType.Binary, ParameterDirection.Input);
+                    lp.Add("@SourceId", vendor.VendorId, DbType.Int32, ParameterDirection.Input);
+                    lp.Add("@SourceType", "VEN_LOGO", DbType.String, ParameterDirection.Input);
+                    lp.Add("@Reference", vendor.CompanyLogo.Reference, DbType.String, ParameterDirection.Input);
+                    lp.Add("@ExtensionType", vendor.CompanyLogo.ExtensionType, DbType.String, ParameterDirection.Input);
+                    lp.Add("@AttachmentTypeId", vendor.CompanyLogo.AttachmentTypeId, DbType.Int32, ParameterDirection.Input);
+                    lp.Add("@AttachmentSubTypeId", vendor.CompanyLogo.AttachmentSubTypeId, DbType.Int32, ParameterDirection.Input);
+                    var logoResult = await _sqlDataAccess.ExecuteSql("dbo.SP_Attachments_IUD", lp);
+                    if (logoResult != null) { supplierResult.QueryResultMessage = logoResult.QueryResultMessage; }
+                }
+
+                if (vendor.EvaluationForm != null && vendor.EvaluationForm.CertificateAttachment != null)
+                {
+                    var cp = new DynamicParameters();
+                    cp.Add("@AttachmentId", vendor.EvaluationForm.CertificateAttachment.AttachmentId, DbType.Int32, ParameterDirection.Input);
+                    cp.Add("@FileName", vendor.EvaluationForm.CertificateAttachment.FileName, DbType.String, ParameterDirection.Input);
+                    cp.Add("@FileData", vendor.EvaluationForm.CertificateAttachment.FileData, DbType.Binary, ParameterDirection.Input);
+                    cp.Add("@SourceId", vendor.VendorId, DbType.Int32, ParameterDirection.Input);
+                    cp.Add("@SourceType", "VEN_ISO", DbType.String, ParameterDirection.Input);
+                    cp.Add("@Reference", vendor.EvaluationForm.CertificateAttachment.Reference, DbType.String, ParameterDirection.Input);
+                    cp.Add("@ExtensionType", vendor.EvaluationForm.CertificateAttachment.ExtensionType, DbType.String, ParameterDirection.Input);
+                    cp.Add("@AttachmentTypeId", vendor.EvaluationForm.CertificateAttachment.AttachmentTypeId, DbType.Int32, ParameterDirection.Input);
+                    cp.Add("@AttachmentSubTypeId", vendor.EvaluationForm.CertificateAttachment.AttachmentSubTypeId, DbType.Int32, ParameterDirection.Input);
+                    var certResult = await _sqlDataAccess.ExecuteSql("dbo.SP_Attachments_IUD", cp);
+                    if (certResult != null) { supplierResult.QueryResultMessage = certResult.QueryResultMessage; }
+                }
+
+                if (vendor.EvaluationForm != null && vendor.EvaluationForm.OtherAttachments != null && vendor.EvaluationForm.OtherAttachments.Any())
+                {
+                    foreach (var item in vendor.EvaluationForm.OtherAttachments)
+                    {
+                        var op = new DynamicParameters();
+                        op.Add("@AttachmentId", item.AttachmentId, DbType.Int32, ParameterDirection.Input);
+                        op.Add("@FileName", item.FileName, DbType.String, ParameterDirection.Input);
+                        op.Add("@FileData", item.FileData, DbType.Binary, ParameterDirection.Input);
+                        op.Add("@SourceId", vendor.VendorId, DbType.Int32, ParameterDirection.Input);
+                        op.Add("@SourceType", "VEN_OTH", DbType.String, ParameterDirection.Input);
+                        op.Add("@Reference", item.Reference, DbType.String, ParameterDirection.Input);
+                        op.Add("@ExtensionType", item.ExtensionType, DbType.String, ParameterDirection.Input);
+                        op.Add("@AttachmentTypeId", item.AttachmentTypeId, DbType.Int32, ParameterDirection.Input);
+                        op.Add("@AttachmentSubTypeId", item.AttachmentSubTypeId, DbType.Int32, ParameterDirection.Input);
+                        var otherResult = await _sqlDataAccess.ExecuteSql("dbo.SP_Attachments_IUD", op);
+                        if (otherResult != null) { supplierResult.QueryResultMessage = otherResult.QueryResultMessage; }
+                    }
                 }
             }
         }

@@ -122,6 +122,7 @@ namespace SolaERPv2.Server.Areas.Identity.Pages.Account
             {
                 var user = CreateUser();
                 user.UserTypeId = 0;
+                user.StatusId = 0;
                 user.FullName = Input.FullName;
 
                 await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
