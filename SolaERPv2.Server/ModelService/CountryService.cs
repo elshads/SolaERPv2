@@ -13,6 +13,6 @@ public class CountryService : BaseModelService<Country>
     public async Task<IEnumerable<Country>?> GetAll()
     {
         var sql = "SELECT * FROM dbo.VW_Country_List";
-        return await _sqlDataAccess.QueryAll<Country>(sql, null, CommandType.Text);
+        return await _sqlDataAccess.QueryAll<Country>(sql, null, "Country-GetAll", CommandType.Text);
     }
 }

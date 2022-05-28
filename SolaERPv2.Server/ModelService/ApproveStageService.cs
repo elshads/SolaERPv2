@@ -15,11 +15,11 @@ public class ApproveStageService : BaseModelService<ApproveStage>
         var sql = "dbo.SP_PaymentDocumentApprovals";
         var p = new DynamicParameters();
         p.Add("@PaymentDocumentMainId", paymentDocumentMainId, DbType.Int32, ParameterDirection.Input);
-        return await _sqlDataAccess.QueryAll<ApproveStage>(sql, p);
+        return await _sqlDataAccess.QueryAll<ApproveStage>(sql, p, "GetAllApproveStages");
     }
 
     public async Task<IEnumerable<ApproveRole>?> GetAllRolesAsync()
     {
-        return await _sqlDataAccess.QueryAll<ApproveRole>("SELECT * FROM dbo.VW_ApproveRoles_List", null, CommandType.Text);
+        return await _sqlDataAccess.QueryAll<ApproveRole>("SELECT * FROM dbo.VW_ApproveRoles_List", null, "ApproveStage-GetAllRoles", CommandType.Text);
     }
 }

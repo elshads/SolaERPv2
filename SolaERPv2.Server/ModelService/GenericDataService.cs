@@ -13,6 +13,6 @@ public class GenericDataService
     public async Task<IEnumerable<string>?> GetSomething()
     {
         var sql = $"SELECT * FROM Table";
-        return await _sqlDataAccess.QueryAll<string>(sql, null, CommandType.Text);
+        return await _sqlDataAccess.QueryAll<string>(sql, null, "GenericData-GetSomething", CommandType.Text);
     }
 }

@@ -39,7 +39,7 @@ public class PaymentDocumentService : BaseModelService<PaymentDocumentMain>
         var p = new DynamicParameters();
         p.Add("@UserId", user.Id, DbType.Int32, ParameterDirection.Input);
         p.Add("@BusinessUnitId", businessUnitId, DbType.Int32, ParameterDirection.Input);
-        return await _sqlDataAccess.QueryAll<PaymentDocumentMain>(sql, p);
+        return await _sqlDataAccess.QueryAll<PaymentDocumentMain>(sql, p, "PD-GetAll");
     }
 
     public async Task<PaymentDocumentMain?> GetById(int modelId)
@@ -48,20 +48,20 @@ public class PaymentDocumentService : BaseModelService<PaymentDocumentMain>
 
         var p = new DynamicParameters();
         p.Add("@PaymentDocumentMainId", modelId, DbType.Int32, ParameterDirection.Input);
-        result = await _sqlDataAccess.QuerySingle<PaymentDocumentMain>("dbo.SP_PaymentDocumentMainLoad", p);
+        result = await _sqlDataAccess.QuerySingle<PaymentDocumentMain>("dbo.SP_PaymentDocumentMainLoad", p, "PD-GetById1");
 
         if (result?.PaymentDocumentMainId > 0)
         {
             var pd = new DynamicParameters();
             pd.Add("@PaymentDocumentMainId", modelId, DbType.Int32, ParameterDirection.Input);
-            var details = await _sqlDataAccess.QueryAll<PaymentDocumentDetail>("dbo.SP_PaymentDocumentDetailsLoad", pd);
+            var details = await _sqlDataAccess.QueryAll<PaymentDocumentDetail>("dbo.SP_PaymentDocumentDetailsLoad", pd, "PD-GetById2");
             result.PaymentDocumentDetailList = details?.ToList();
 
             var pa = new DynamicParameters();
             pa.Add("@SourceId", modelId, DbType.Int32, ParameterDirection.Input);
             pa.Add("@SourceType", "PYMDC", DbType.String, ParameterDirection.Input);
             pa.Add("@Reference", null, DbType.String, ParameterDirection.Input);
-            var attachments = await _sqlDataAccess.QueryAll<Attachment>("dbo.SP_AttachmentList_Load", pa);
+            var attachments = await _sqlDataAccess.QueryAll<Attachment>("dbo.SP_AttachmentList_Load", pa, "PD-GetById3");
             result.AttachmentList = attachments?.ToList();
         }
 
@@ -74,13 +74,13 @@ public class PaymentDocumentService : BaseModelService<PaymentDocumentMain>
 
         var p = new DynamicParameters();
         p.Add("@PaymentDocumentMainId", id, DbType.Int32, ParameterDirection.Input);
-        result = await _sqlDataAccess.QuerySingle<PaymentDocumentMain>("dbo.SP_PaymentDocumentMainLoad", p);
+        result = await _sqlDataAccess.QuerySingle<PaymentDocumentMain>("dbo.SP_PaymentDocumentMainLoad", p, "PD-GetPost1");
 
         if (result?.PaymentDocumentMainId > 0)
         {
             var pd = new DynamicParameters();
             pd.Add("@PaymentDocumentMainId", id, DbType.Int32, ParameterDirection.Input);
-            var details = await _sqlDataAccess.QueryAll<PaymentDocumentDetail>("dbo.SP_PaymentDocumentDetailsLoad", pd);
+            var details = await _sqlDataAccess.QueryAll<PaymentDocumentDetail>("dbo.SP_PaymentDocumentDetailsLoad", pd, "PD-GetPost2");
             result.PaymentDocumentDetailList = details?.ToList();
         }
 
@@ -117,7 +117,7 @@ public class PaymentDocumentService : BaseModelService<PaymentDocumentMain>
         }
         catch (Exception e)
         {
-            result.InsertedResultMessage = e.Message;
+            result.QueryResultMessage = e.Message;
         }
         return result;
     }
@@ -128,7 +128,7 @@ public class PaymentDocumentService : BaseModelService<PaymentDocumentMain>
         var p = new DynamicParameters();
         p.Add("@BusinessUnitId", businessUnitId, DbType.Int32, ParameterDirection.Input);
         p.Add("@VendorCode", vendorCode, DbType.String, ParameterDirection.Input);
-        return await _sqlDataAccess.QueryAll<PaymentDocumentDetail>("dbo.SP_PaymentDocumentVendorBalance", p);
+        return await _sqlDataAccess.QueryAll<PaymentDocumentDetail>("dbo.SP_PaymentDocumentVendorBalance", p, "PD-GetVendorBalance");
     }
 
     public async Task<IEnumerable<PaymentDocumentDetail>?> GetVendorDetails(int businessUnitId, string vendorCode, string currencyCode, int paymentType)
@@ -138,7 +138,7 @@ public class PaymentDocumentService : BaseModelService<PaymentDocumentMain>
         p.Add("@VendorCode", vendorCode, DbType.String, ParameterDirection.Input);
         p.Add("@CurrencyCode", currencyCode, DbType.String, ParameterDirection.Input);
         p.Add("@DocumentType", paymentType, DbType.Int32, ParameterDirection.Input);
-        return await _sqlDataAccess.QueryAll<PaymentDocumentDetail>("dbo.SP_PaymentDocumentVendorDetails", p);
+        return await _sqlDataAccess.QueryAll<PaymentDocumentDetail>("dbo.SP_PaymentDocumentVendorDetails", p, "PD-GetVendorDetails");
     }
 
     public async Task<SqlResult?> Save(PaymentDocumentMain paymentDocumentMain)
@@ -164,7 +164,7 @@ public class PaymentDocumentService : BaseModelService<PaymentDocumentMain>
             p.Add("@UserId", user.Id, DbType.Int32, ParameterDirection.Input);
             p.Add("@NewPaymentDocumentMainId", dbType: DbType.Int32, direction: ParameterDirection.Output);
 
-            result.InsertedResult = await cn.ExecuteAsync("dbo.SP_PaymentDocumentMain_IUD", p, commandType: CommandType.StoredProcedure);
+            result.QueryResult = await cn.ExecuteAsync("dbo.SP_PaymentDocumentMain_IUD", p, commandType: CommandType.StoredProcedure);
             result.ReturnId = p.Get<int>("@NewPaymentDocumentMainId");
         }
 
@@ -191,7 +191,7 @@ public class PaymentDocumentService : BaseModelService<PaymentDocumentMain>
                 pd.Add("@AdvanceAmount", item.AdvanceAmount, DbType.Decimal, ParameterDirection.Input);
                 pd.Add("@AdvanceVAT", item.AdvanceVAT, DbType.Decimal, ParameterDirection.Input);
 
-                await _sqlDataAccess.ExecuteSql("dbo.SP_PaymentDocumentDetails_IUD", pd);
+                await _sqlDataAccess.ExecuteSql("dbo.SP_PaymentDocumentDetails_IUD", pd, "PD-SaveDetails");
             }
         }
 
@@ -209,7 +209,7 @@ public class PaymentDocumentService : BaseModelService<PaymentDocumentMain>
                 pa.Add("@ExtensionType", item.ExtensionType, DbType.String, ParameterDirection.Input);
                 pa.Add("@AttachmentTypeId", item.AttachmentTypeId, DbType.Int32, ParameterDirection.Input);
                 pa.Add("@AttachmentSubTypeId", item.AttachmentSubTypeId, DbType.Int32, ParameterDirection.Input);
-                await _sqlDataAccess.ExecuteSql("dbo.SP_Attachments_IUD", pa);
+                await _sqlDataAccess.ExecuteSql("dbo.SP_Attachments_IUD", pa, "PD-SaveAttachments");
             }
         }
         return result;
@@ -227,7 +227,7 @@ public class PaymentDocumentService : BaseModelService<PaymentDocumentMain>
             p.Add("@Comment", item.Comment, DbType.String, ParameterDirection.Input);
             p.Add("@Sequence", item.Sequence, DbType.Int32, ParameterDirection.Input);
             p.Add("@UserId", user.Id, DbType.Int32, ParameterDirection.Input);
-            result = await _sqlDataAccess.ExecuteSql("dbo.SP_PaymentDocumentsApprove", p);
+            result = await _sqlDataAccess.ExecuteSql("dbo.SP_PaymentDocumentsApprove", p, "PD-Approve");
         }
         return result;
     }
@@ -242,7 +242,7 @@ public class PaymentDocumentService : BaseModelService<PaymentDocumentMain>
             p.Add("@PaymentDocumentMainId", item.ModelId, DbType.Int32, ParameterDirection.Input);
             p.Add("@Status", item.ApproveStatusId, DbType.Int32, ParameterDirection.Input);
             p.Add("@UserId", user.Id, DbType.Int32, ParameterDirection.Input);
-            result = await _sqlDataAccess.ExecuteSql("dbo.SP_PaymentDocumentsChangeStatus", p);
+            result = await _sqlDataAccess.ExecuteSql("dbo.SP_PaymentDocumentsChangeStatus", p, "PD-ChangeApproveStatus");
         }
         return result;
     }
@@ -258,7 +258,7 @@ public class PaymentDocumentService : BaseModelService<PaymentDocumentMain>
         var p = new DynamicParameters();
         p.Add("@PaymentDocumentMainId", paymentDocumentMainId, DbType.Int32, ParameterDirection.Input);
         p.Add("@AttachmentType", attachmentTypeId, DbType.Int32, ParameterDirection.Input);
-        return await _sqlDataAccess.QueryAll<Attachment>("dbo.SP_PaymentDocumentsOtherAttachments", p);
+        return await _sqlDataAccess.QueryAll<Attachment>("dbo.SP_PaymentDocumentsOtherAttachments", p, "PD-GetLinkedAttachments");
     }
 
     public async Task<SqlResult?> Delete(IEnumerable<int> paymentDocumentMainIdList)
@@ -269,7 +269,7 @@ public class PaymentDocumentService : BaseModelService<PaymentDocumentMain>
             var p = new DynamicParameters();
             p.Add("@PaymentDocumentMainId", item, DbType.Int32, ParameterDirection.Input);
             p.Add("@NewPaymentDocumentMainId", dbType: DbType.Int32, direction: ParameterDirection.Output);
-            sqlResult = await _sqlDataAccess.ExecuteSql("dbo.SP_PaymentDocumentMain_IUD", p);
+            sqlResult = await _sqlDataAccess.ExecuteSql("dbo.SP_PaymentDocumentMain_IUD", p, "PD-Delete");
             if (sqlResult.QueryResultMessage != null) { return sqlResult; }
         }
         return sqlResult;

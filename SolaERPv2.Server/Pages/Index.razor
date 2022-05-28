@@ -34,11 +34,24 @@ else
     bool showWaitForConfirmation = false;
     int currentPageIndex = 0; // total 3 pages
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         OnAppStateInitialized();
         ShowSupplierRegistrationPage();
         currentPerson = SessionData.CurrentUser;
+        await LoadData();
+    }
+
+    async Task LoadData()
+    {
+        if (SessionData.CurrentUser != null && SessionData.CurrentUser.StatusId == 1)
+        {
+            var _currentVendor = await VendorService.GetByUserIdAsync(SessionData.CurrentUser.Id);
+            if (_currentVendor != null) 
+            { 
+                currentVendor = _currentVendor; // validator won't pickup a new instance
+            }
+        }
     }
 
     void ShowSupplierRegistrationPage()
@@ -80,11 +93,14 @@ else
         if (AppState != null)
         {
             AppState.SetDefaults();
+            AppState.CustomButton04Icon = "check";
+            AppState.CustomButton04Title = "Submit";
             SetButtonsAbility();
             AppState.OnBackClick += BackClickHandler;
             AppState.OnNextClick += NextClickHandler;
             AppState.OnAddClick += AddClickHandler;
             AppState.OnSaveClick += SaveClickHandler;
+            AppState.OnCustomButton04Click += SubmitClickHandler;
         }
     }
 
@@ -96,6 +112,7 @@ else
             AppState.OnNextClick -= NextClickHandler;
             AppState.OnAddClick -= AddClickHandler;
             AppState.OnSaveClick -= SaveClickHandler;
+            AppState.OnCustomButton04Click -= SubmitClickHandler;
         }
     }
 
@@ -125,6 +142,7 @@ else
                 AppState.NextButtonEnabled = true;
                 AppState.AddButtonVisible = false;
                 AppState.SaveButtonVisible = false;
+                AppState.CustomButton04Visible = false;
             }
         }
         else if (currentPageIndex == 1)
@@ -135,6 +153,7 @@ else
                 AppState.NextButtonEnabled = true;
                 AppState.AddButtonVisible = true;
                 AppState.SaveButtonVisible = false;
+                AppState.CustomButton04Visible = false;
             }
         }
         else if (currentPageIndex == 2)
@@ -145,6 +164,7 @@ else
                 AppState.NextButtonEnabled = false;
                 AppState.AddButtonVisible = false;
                 AppState.SaveButtonVisible = true;
+                AppState.CustomButton04Visible = true;
             }
         }
         else
@@ -155,6 +175,7 @@ else
                 AppState.NextButtonEnabled = false;
                 AppState.AddButtonVisible = false;
                 AppState.SaveButtonVisible = false;
+                AppState.CustomButton04Visible = false;
             }
         }
         AppState?.Refresh();
@@ -162,17 +183,29 @@ else
 
     async void SaveClickHandler()
     {
+        await RegisterSupplier(true);
+    }
+
+    async void SubmitClickHandler()
+    {
+        await RegisterSupplier(false);
+    }
+
+    async Task RegisterSupplier(bool justSave)
+    {
         var isValid = registerSupplier != null ? await registerSupplier.SaveValid() : false;
-        var sqlResult = currentVendor != null ? await VendorService.RegisterSupplier(currentVendor) : null;
-        if (AppState != null && sqlResult != null && sqlResult.QueryResultMessage == null)
+        if (AppState != null && isValid)
         {
-            SessionData.CurrentUser = await AppUserService.GetCurrentUserAsync();
-            ShowSupplierRegistrationPage();
-            NavigationManager.NavigateTo("/", true);
-        }
-        else
-        {
-            AppState.ShowAlert(sqlResult.QueryResultMessage, Severity.Error);
+            var sqlResult = justSave ? await VendorService.SaveSupplier(currentVendor) : await VendorService.RegisterSupplier(currentVendor);
+            if (sqlResult != null && sqlResult.QueryResultMessage == null)
+            {
+                if(!justSave) { SessionData.CurrentUser = await AppUserService.GetCurrentUserAsync(); }
+                NavigationManager.NavigateTo("/", true);
+            }
+            else if (sqlResult != null && sqlResult.QueryResultMessage != null)
+            {
+                AppState.ShowAlert(sqlResult.QueryResultMessage, Severity.Error);
+            }
         }
     }
 

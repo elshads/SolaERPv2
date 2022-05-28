@@ -14,6 +14,6 @@ public class ThemeService
     {
         var user = await _appUserService.GetCurrentUserAsync();
         var sql = $"UPDATE Config.AppUser SET Theme = '{theme}' WHERE Id = {user.Id}";
-        return await _sqlDataAccess.ExecuteSql(sql, null, CommandType.Text);
+        return await _sqlDataAccess.ExecuteSql(sql, null, "Theme-Update", CommandType.Text);
     }
 }

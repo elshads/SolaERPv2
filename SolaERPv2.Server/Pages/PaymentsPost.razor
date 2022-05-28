@@ -316,13 +316,13 @@
         {
             // send to SyteLine
             var result = await PaymentDocumentService.PostDocument(currentModel);
-            if (result.InsertedResultMessage == null)
+            if (result.QueryResultMessage == null)
             {
                 AppState.ShowAlert("Posted", Severity.Success);
             }
             else
             {
-                AppState.ShowAlert(result.InsertedResultMessage, Severity.Error);
+                AppState.ShowAlert(result.QueryResultMessage, Severity.Error);
             }
         }
         else

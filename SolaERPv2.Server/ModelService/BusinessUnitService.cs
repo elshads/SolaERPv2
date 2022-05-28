@@ -13,7 +13,7 @@ public class BusinessUnitService : BaseModelService<BusinessUnit>
     public async Task<IEnumerable<BusinessUnit>?> GetAllAsync()
     {
         var sql = "SELECT * FROM dbo.VW_BusinessUnits_List";
-        return await _sqlDataAccess.QueryAll<BusinessUnit>(sql, null, CommandType.Text);
+        return await _sqlDataAccess.QueryAll<BusinessUnit>(sql, null, "BU-GetAll", CommandType.Text);
     }
 
     public async Task<IEnumerable<BusinessUnit>?> GetByUserIdAsync(int userId)
@@ -21,6 +21,6 @@ public class BusinessUnitService : BaseModelService<BusinessUnit>
         var sql = "dbo.SP_UserBusinessUnitsList";
         var p = new DynamicParameters();
         p.Add("@UserId", userId, DbType.Int32, ParameterDirection.Input);
-        return await _sqlDataAccess.QueryAll<BusinessUnit>(sql, p);
+        return await _sqlDataAccess.QueryAll<BusinessUnit>(sql, p, "BU-GetByUserId");
     }
 }

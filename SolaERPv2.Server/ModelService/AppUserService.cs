@@ -47,7 +47,7 @@ public class AppUserService : BaseModelService<AppUser>
         {
             var p = new DynamicParameters();
             p.Add("@UserId", appUser.Id, DbType.Int32, ParameterDirection.Input);
-            appUser.UserMenuList = await _sqlDataAccess.QueryAll<Menu>("dbo.SP_UserMenuAccess", p);
+            appUser.UserMenuList = await _sqlDataAccess.QueryAll<Menu>("dbo.SP_UserMenuAccess", p, "AppUser-GetCurrentUser");
         }
         return appUser;
     }
@@ -55,13 +55,13 @@ public class AppUserService : BaseModelService<AppUser>
     public async Task<IEnumerable<AppUser>?> GetAllAsync()
     {
         var sql = $"SELECT * FROM Config.AppUser";
-        return await _sqlDataAccess.QueryAll<AppUser>(sql, null, CommandType.Text);
+        return await _sqlDataAccess.QueryAll<AppUser>(sql, null, "AppUser-GetAll", CommandType.Text);
     }
 
     public async Task<AppUser?> GetByIdAsync(int id)
     {
         var sql = $"SELECT * FROM Config.AppUser WHERE Id = {id}";
-        return await _sqlDataAccess.QuerySingle<AppUser>(sql, null, CommandType.Text);
+        return await _sqlDataAccess.QuerySingle<AppUser>(sql, null, "AppUser-GetById", CommandType.Text);
     }
 
     public async Task<IEnumerable<string>?> GetAllEmailsAsync()
@@ -106,6 +106,6 @@ public class AppUserService : BaseModelService<AppUser>
         p.Add("@PhoneNumber", appUser.PhoneNumber, DbType.String, ParameterDirection.Input);
         p.Add("@Photo", appUser.Photo, DbType.Binary, ParameterDirection.Input);
         var sql = $"UPDATE Config.AppUser SET FullName = @FullName, Position = @Position, PhoneNumber = @PhoneNumber, Photo = @Photo WHERE Id = @Id";
-        return await _sqlDataAccess.ExecuteSql(sql, p, CommandType.Text);
+        return await _sqlDataAccess.ExecuteSql(sql, p, "AppUser-Update", CommandType.Text);
     }
 }

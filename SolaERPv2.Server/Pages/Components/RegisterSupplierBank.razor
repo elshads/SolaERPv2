@@ -34,6 +34,18 @@
                         </div>
                     </Template>
                 </FormItem>
+                <FormItem LabelText="Add bank letter head: " Field="@nameof(Bank.BankLetter)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)">
+                        <Template>
+                            <label for="bankletter" class="k-label k-form-label">Add bank letter head: </label>
+                            <div class="k-form-field-wrap">
+                                <FileSelect HideList="true"
+                                            Multiple="false"
+                                            AttachmentList="@bankLetterList"
+                                            AttachmentListChanged="@BankLetterChanged" />
+                                <TelerikValidationMessage For="@(() => selectedBank.BankLetter)" />
+                            </div>
+                        </Template>
+                    </FormItem>
                 <FormItem LabelText="Beneficiary Full Name: " Field="@nameof(Bank.BeneficiaryFullName)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
                     <Template>
                         <label for="fullname" class="k-label k-form-label">Beneficiary Full Name: </label>
@@ -161,6 +173,7 @@
     FluentValidationValidator? bankValidator;
 
     bool showAddPanel = false;
+    List<Attachment>? bankLetterList = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -189,6 +202,8 @@
             var argsItem = args.Item as Bank;
             argsItem.RowIndex = CurrentVendor.BankList.IndexOf(argsItem);
             selectedBank = new Bank().GetInstanceClone(argsItem);
+            bankLetterList = new();
+            if (selectedBank != null && selectedBank.BankLetter != null) { bankLetterList.Add(selectedBank.BankLetter); }
             showAddPanel = true;
         }
     }
@@ -263,6 +278,20 @@
         }
         await CurrentVendorChanged.InvokeAsync(CurrentVendor);
         return isBankListValid && isCurrencyValid;
+    }
+
+    async void BankLetterChanged(List<Attachment> files)
+    {
+        bankLetterList = files;
+        if (CurrentVendor != null && files != null && files.Any())
+        {
+            selectedBank.BankLetter = files?.FirstOrDefault();
+        }
+        else if (CurrentVendor != null)
+        {
+            selectedBank.BankLetter = null;
+        }
+        await CurrentVendorChanged.InvokeAsync(CurrentVendor);
     }
 
     bool ValidateCurrencyCodes()

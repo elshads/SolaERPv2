@@ -13,6 +13,6 @@ public class CurrencyService : BaseModelService<Currency>
     public async Task<IEnumerable<Currency>?> GetAll()
     {
         var sql = "SELECT * FROM dbo.VW_Currency_List";
-        return await _sqlDataAccess.QueryAll<Currency>(sql, null, CommandType.Text);
+        return await _sqlDataAccess.QueryAll<Currency>(sql, null, "Currency-GetAll", CommandType.Text);
     }
 }

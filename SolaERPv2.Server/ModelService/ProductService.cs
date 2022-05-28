@@ -13,6 +13,6 @@ public class ProductService : BaseModelService<Product>
     public async Task<IEnumerable<Product>?> GetAll()
     {
         var sql = "SELECT * FROM dbo.VW_ProductService_List";
-        return await _sqlDataAccess.QueryAll<Product>(sql, null, CommandType.Text);
+        return await _sqlDataAccess.QueryAll<Product>(sql, null, "Product-GetAll", CommandType.Text);
     }
 }

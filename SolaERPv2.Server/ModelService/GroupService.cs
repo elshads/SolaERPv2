@@ -12,7 +12,7 @@ public class GroupService : BaseModelService<Group>
 
     public async Task<IEnumerable<Group>?> GetAllAsync()
     {
-        return await _sqlDataAccess.QueryAll<Group>("dbo.SP_GroupMain_Load", null);
+        return await _sqlDataAccess.QueryAll<Group>("dbo.SP_GroupMain_Load", null, "Group-GetAll");
     }
 
     public async Task<Group?> GetByIdAsync(int id)
@@ -20,17 +20,17 @@ public class GroupService : BaseModelService<Group>
         Group group = new();
         var p = new DynamicParameters();
         p.Add("@GroupId", id, DbType.Int32, ParameterDirection.Input);
-        var _group = await _sqlDataAccess.QuerySingle<Group>("dbo.SP_GroupHeader_Load", p);
+        var _group = await _sqlDataAccess.QuerySingle<Group>("dbo.SP_GroupHeader_Load", p, "Group-GetById");
         if (_group != null) 
         { 
             group = _group;
-            var groupUsers = await _sqlDataAccess.QueryAll<AppUser>("dbo.SP_GroupUsers_Load", p);
+            var groupUsers = await _sqlDataAccess.QueryAll<AppUser>("dbo.SP_GroupUsers_Load", p, "Group-UsersLoad");
             group.Users = groupUsers.ToList();
-            var groupBusinessUnits = await _sqlDataAccess.QueryAll<BusinessUnit>("dbo.SP_GroupBusinessUnit_Load", p);
+            var groupBusinessUnits = await _sqlDataAccess.QueryAll<BusinessUnit>("dbo.SP_GroupBusinessUnit_Load", p, "Group-BULoad");
             group.BusinessUnits = groupBusinessUnits.ToList();
-            var groupApproveRoles = await _sqlDataAccess.QueryAll<ApproveRole>("dbo.SP_GroupApproveRoles_Load", p);
+            var groupApproveRoles = await _sqlDataAccess.QueryAll<ApproveRole>("dbo.SP_GroupApproveRoles_Load", p, "Group-RolesLoad");
             group.ApproveRoles = groupApproveRoles.ToList();
-            var groupMenus = await _sqlDataAccess.QueryAll<Menu>("dbo.SP_GroupMenus_Load", p);
+            var groupMenus = await _sqlDataAccess.QueryAll<Menu>("dbo.SP_GroupMenus_Load", p, "Group-MenusLoad");
             group.Menus = groupMenus.ToList();
         }
         
@@ -63,7 +63,7 @@ public class GroupService : BaseModelService<Group>
 
         var up = new DynamicParameters();
         up.Add("@GroupId", groupId, DbType.Int32, ParameterDirection.Input);
-        await _sqlDataAccess.ExecuteSql("dbo.SP_GroupUsers_ID", up);
+        await _sqlDataAccess.ExecuteSql("dbo.SP_GroupUsers_ID", up, "Group-SaveUsers1");
         if (group.Users.Any())
         {
             foreach (var item in group.Users)
@@ -71,14 +71,14 @@ public class GroupService : BaseModelService<Group>
                 var dp = new DynamicParameters();
                 dp.Add("@GroupId", groupId, DbType.Int32, ParameterDirection.Input);
                 dp.Add("@UserId", item.Id, DbType.Int32, ParameterDirection.Input);
-                sqlResult = await _sqlDataAccess.ExecuteSql("dbo.SP_GroupUsers_ID", dp);
+                sqlResult = await _sqlDataAccess.ExecuteSql("dbo.SP_GroupUsers_ID", dp, "Group-SaveUsers2");
                 if (sqlResult?.QueryResultMessage != null) { return sqlResult; } // return if failed
             }
         }
 
         var bp = new DynamicParameters();
         bp.Add("@GroupId", groupId, DbType.Int32, ParameterDirection.Input);
-        await _sqlDataAccess.ExecuteSql("dbo.SP_GroupBusinessUnits_ID", bp);
+        await _sqlDataAccess.ExecuteSql("dbo.SP_GroupBusinessUnits_ID", bp, "Group-SaveBU1");
         if (group.BusinessUnits.Any())
         {
             foreach (var item in group.BusinessUnits)
@@ -86,30 +86,14 @@ public class GroupService : BaseModelService<Group>
                 var dp = new DynamicParameters();
                 dp.Add("@GroupId", groupId, DbType.Int32, ParameterDirection.Input);
                 dp.Add("@BusinessUnitId", item.BusinessUnitId, DbType.Int32, ParameterDirection.Input);
-                sqlResult = await _sqlDataAccess.ExecuteSql("dbo.SP_GroupBusinessUnits_ID", dp);
+                sqlResult = await _sqlDataAccess.ExecuteSql("dbo.SP_GroupBusinessUnits_ID", dp, "Group-SaveBU2");
                 if (sqlResult?.QueryResultMessage != null) { return sqlResult; } // return if failed
             }
         }
 
-        //var np = new DynamicParameters();
-        //np.Add("@GroupId", groupId, DbType.Int32, ParameterDirection.Input);
-        //await _sqlDataAccess.ExecuteSql("dbo.SP_GroupUnits_ID", np);
-        //if (group.Units.Any())
-        //{
-        //    foreach (var item in group.Units)
-        //    {
-        //        var dp = new DynamicParameters();
-        //        dp.Add("@GroupId", groupId, DbType.Int32, ParameterDirection.Input);
-        //        dp.Add("@UnitId", item.UnitId, DbType.Int32, ParameterDirection.Input);
-        //        dp.Add("@BusinessUnitId", item.BusinessUnitId, DbType.Int32, ParameterDirection.Input);
-        //        sqlResult = await _sqlDataAccess.ExecuteSql("dbo.SP_GroupUnits_ID", dp);
-        //        if (sqlResult?.QueryResultMessage != null) { return sqlResult; } // return if failed
-        //    }
-        //}
-
         var rp = new DynamicParameters();
         rp.Add("@GroupId", groupId, DbType.Int32, ParameterDirection.Input);
-        var xxx = await _sqlDataAccess.ExecuteSql("dbo.SP_GroupApproveRoles_ID", rp);
+        var xxx = await _sqlDataAccess.ExecuteSql("dbo.SP_GroupApproveRoles_ID", rp, "Group-SaveRoles1");
         if (group.ApproveRoles.Any())
         {
             foreach (var item in group.ApproveRoles)
@@ -117,14 +101,14 @@ public class GroupService : BaseModelService<Group>
                 var dp = new DynamicParameters();
                 dp.Add("@GroupId", groupId, DbType.Int32, ParameterDirection.Input);
                 dp.Add("@ApproveRoleId", item.ApproveRoleId, DbType.Int32, ParameterDirection.Input);
-                sqlResult = await _sqlDataAccess.ExecuteSql("dbo.SP_GroupApproveRoles_ID", dp);
+                sqlResult = await _sqlDataAccess.ExecuteSql("dbo.SP_GroupApproveRoles_ID", dp, "Group-SaveRoles2");
                 if (sqlResult?.QueryResultMessage != null) { return sqlResult; } // return if failed
             }
         }
 
         var mp = new DynamicParameters();
         mp.Add("@GroupId", groupId, DbType.Int32, ParameterDirection.Input);
-        await _sqlDataAccess.ExecuteSql("dbo.SP_GroupMenus_ID", mp);
+        await _sqlDataAccess.ExecuteSql("dbo.SP_GroupMenus_ID", mp, "Group-SaveMenus1");
         if (group.Menus.Any())
         {
             foreach (var item in group.Menus)
@@ -136,7 +120,7 @@ public class GroupService : BaseModelService<Group>
                 dp.Add("@Edit", item.EditAccess, DbType.Boolean, ParameterDirection.Input);
                 dp.Add("@Delete", item.DeleteAccess, DbType.Boolean, ParameterDirection.Input);
                 dp.Add("@Export", item.ExportAccess, DbType.Boolean, ParameterDirection.Input);
-                sqlResult = await _sqlDataAccess.ExecuteSql("dbo.SP_GroupMenus_ID", dp);
+                sqlResult = await _sqlDataAccess.ExecuteSql("dbo.SP_GroupMenus_ID", dp, "Group-SaveMenus2");
                 if (sqlResult?.QueryResultMessage != null) { return sqlResult; } // return if failed
             }
         }

@@ -105,6 +105,18 @@
                     </FormItem>
                     <FormItem LabelText="Represented Products: " Field="@nameof(Vendor.RepresentedProducts)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)" />
                     <FormItem LabelText="Represented Companies: " Field="@nameof(Vendor.RepresentedCompanies)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)" />
+                    <FormItem LabelText="Attach Official Letter: " Field="@nameof(Vendor.OfficialLetter)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)">
+                        <Template>
+                            <label for="officialletter" class="k-label k-form-label">Attach Official Letter: </label>
+                            <div class="k-form-field-wrap">
+                                <FileSelect HideList="true"
+                                            Multiple="false"
+                                            AttachmentList="@officialLetterList"
+                                            AttachmentListChanged="@OfficialLetterChanged" />
+                                <TelerikValidationMessage For="@(() => CurrentVendor.OfficialLetter)" />
+                            </div>
+                        </Template>
+                    </FormItem>
                     <FormItem LabelText="Payment Terms: " Field="@nameof(Vendor.PaymentTermsCode)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)">
                         <Template>
                             <label for="paymentterms" class="k-label k-form-label">Payment Terms: </label>
@@ -173,6 +185,7 @@
     bool otherProductsVisible = false;
     string? paymentTermsName => paymentTermsList?.FirstOrDefault(e => e.AnalysisCode == CurrentVendor?.PaymentTermsCode)?.AnalysisName;
     List<Attachment>? logoAttachmentList = new();
+    List<Attachment>? officialLetterList = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -187,7 +200,9 @@
     async Task LoadData()
     {
         logoAttachmentList = new();
+        officialLetterList = new();
         if (CurrentVendor != null && CurrentVendor.CompanyLogo != null) { logoAttachmentList.Add(CurrentVendor.CompanyLogo); }
+        if (CurrentVendor != null && CurrentVendor.OfficialLetter != null) { officialLetterList.Add(CurrentVendor.OfficialLetter); }
         productList = await ProductService.GetAll();
         countryList = await CountryService.GetAll();
         paymentTermsList = await AnalysisService.GetPaymentTerms();
@@ -230,7 +245,14 @@
         if (vendor != null && vendor.TaxId != null && vendor.TaxId.Length > 0)
         {
             CurrentVendor = vendor;
-            CurrentVendor.Exists = true;
+            if (CurrentVendor.StatusId > 0)
+            {
+                CurrentVendor.Exists = true;
+            }
+            else
+            {
+                CurrentVendor.Exists = false;
+            }
         }
         else
         {
@@ -252,6 +274,20 @@
         await CurrentVendorChanged.InvokeAsync(CurrentVendor);
     }
 
+    async void OfficialLetterChanged(List<Attachment> files)
+    {
+        officialLetterList = files;
+        if (CurrentVendor != null && files != null && files.Any())
+        {
+            CurrentVendor.OfficialLetter = files?.FirstOrDefault();
+        }
+        else if (CurrentVendor != null)
+        {
+            CurrentVendor.OfficialLetter = null;
+        }
+        await CurrentVendorChanged.InvokeAsync(CurrentVendor);
+    }
+
     async Task OnLogoRemove()
     {
         if (CurrentVendor != null) { CurrentVendor.CompanyLogo = null; }
@@ -260,7 +296,9 @@
 
     public async Task<bool> NextClickValid()
     {
-        var valid = ValidatePerson() && ValidateVendor();
+        var personValid = ValidatePerson();
+        var vendorValid = ValidateVendor();
+        var valid = personValid && vendorValid;
         if (!valid)
         {
             AppState?.ShowAlert("Validation error", Severity.Error);

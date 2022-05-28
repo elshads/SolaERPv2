@@ -13,6 +13,6 @@ public class BankService : BaseModelService<Bank>
     public async Task<IEnumerable<Bank>?> GetAll()
     {
         var sql = "SELECT * FROM dbo.BankCodesList";
-        return await _sqlDataAccess.QueryAll<Bank>(sql, null, CommandType.Text);
+        return await _sqlDataAccess.QueryAll<Bank>(sql, null, "Bank-GetAll", CommandType.Text);
     }
 }

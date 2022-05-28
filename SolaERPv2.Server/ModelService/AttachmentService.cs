@@ -15,6 +15,6 @@ public class AttachmentService : BaseModelService<Attachment>
         var sql = "dbo.SP_Attachment_Load";
         var p = new DynamicParameters();
         p.Add("@AttachmentId", id, DbType.Int32, ParameterDirection.Input);
-        return await _sqlDataAccess.QuerySingle<Attachment>(sql, p);
+        return await _sqlDataAccess.QuerySingle<Attachment>(sql, p, "Attachment-GetById");
     }
 }

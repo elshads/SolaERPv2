@@ -10,6 +10,7 @@ public class Vendor : BaseModel
     public string? CompanyLocation { get; set; }
     public string? CompanyWebsite { get; set; }
     public Attachment? CompanyLogo { get; set; }
+    public Attachment? OfficialLetter { get; set; }
     public int CreditDays { get; set; } = 60;
     public string? PaymentTermsCode { get; set; }
     public string? CountryCode { get; set; }
@@ -22,4 +23,5 @@ public class Vendor : BaseModel
     public string? RepresentedCompanies { get; set; }
     public bool AgreeWithDefaultDays { get; set; } = true;
     public bool Exists { get; set; }
+    public int StatusId { get; set; }
 }

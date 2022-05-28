@@ -542,7 +542,7 @@
         if (validated)
         {
             var result = await PaymentDocumentService.Save(paymentDocumentMain);
-            if (result.InsertedResultMessage == null)
+            if (result.QueryResultMessage == null)
             {
                 var id = result.ReturnId > 0 ? result.ReturnId : modelId;
                 NavigationManager.NavigateTo($"/payments/card?id={id}");
@@ -551,7 +551,7 @@
             }
             else
             {
-                AppState.ShowAlert(result.InsertedResultMessage, Severity.Error);
+                AppState.ShowAlert(result.QueryResultMessage, Severity.Error);
             }
         }
         AppState.Loading = false;

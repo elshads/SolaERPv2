@@ -65,13 +65,13 @@
     {
         SessionData.CurrentUser.Theme = SessionData.CurrentUser?.Theme == "light" ? "dark" : "light";
         var result = await ThemeService.UpdateUserTheme(SessionData.CurrentUser.Theme);
-        if (result.UpdatedResultMessage == null)
+        if (result.QueryResultMessage == null)
         {
             AppState.ShowAlert($"{SessionData.CurrentUser.Theme} theme is on", Severity.Success);
         }
         else
         {
-            AppState.ShowAlert(result.UpdatedResultMessage, Severity.Error);
+            AppState.ShowAlert(result.QueryResultMessage, Severity.Error);
         }
         AppState.Refresh();
     }

@@ -503,14 +503,14 @@
             approveDataList.Add(newItem);
         }
         var result = await PaymentDocumentService.Approve(approveDataList);
-        if (result.InsertedResultMessage == null)
+        if (result.QueryResultMessage == null)
         {
             await GetPaymentDocumentList();
             AppState.ShowAlert("Successfully updated", Severity.Success);
         }
         else
         {
-            AppState.ShowAlert(result.InsertedResultMessage, Severity.Error);
+            AppState.ShowAlert(result.QueryResultMessage, Severity.Error);
         }
         ApproveDialogClosed();
     }
@@ -556,14 +556,14 @@
                     statusDataList.Add(newItem);
                 }
                 var result = await PaymentDocumentService.ChangeApproveStatus(statusDataList);
-                if (result.InsertedResultMessage == null)
+                if (result.QueryResultMessage == null)
                 {
                     await GetPaymentDocumentList();
                     AppState.ShowAlert("Successfully updated", Severity.Success);
                 }
                 else
                 {
-                    AppState.ShowAlert(result.InsertedResultMessage, Severity.Error);
+                    AppState.ShowAlert(result.QueryResultMessage, Severity.Error);
                 }
                 AppState.Loading = false;
             }

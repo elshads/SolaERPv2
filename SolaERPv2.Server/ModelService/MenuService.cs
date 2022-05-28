@@ -13,17 +13,14 @@ public class MenuService : BaseModelService<Menu>
     public async Task<IEnumerable<Menu>?> GetAllAsync(bool hierarchyData)
     {
         var sql = "SELECT * FROM dbo.VW_Menus_List";
-        var result = await _sqlDataAccess.QueryAll<Menu>(sql, null, CommandType.Text);
+        var result = await _sqlDataAccess.QueryAll<Menu>(sql, null, "Menu-GetAll", CommandType.Text);
         if (hierarchyData) { return GetHierarchy(result); }
         return result;
     }
 
     public async Task<IEnumerable<Menu>?> GetUserItemsAsync()
     {
-        //var user = await _appUserService.GetCurrentUserAsync();
-        //var p = new DynamicParameters();
-        //p.Add("@UserId", user.Id, DbType.Int32, ParameterDirection.Input);
-        var result = await _sqlDataAccess.QueryAll<Menu>("SELECT * FROM dbo.VW_Menus_List", null, CommandType.Text);
+        var result = await _sqlDataAccess.QueryAll<Menu>("SELECT * FROM dbo.VW_Menus_List", null, "Menu-GetUserItems", CommandType.Text);
         return GetHierarchy(result);
     }
 
@@ -31,7 +28,7 @@ public class MenuService : BaseModelService<Menu>
     {
         var p = new DynamicParameters();
         p.Add("@GroupId", groupId, DbType.Int32, ParameterDirection.Input);
-        var result = await _sqlDataAccess.QueryAll<Menu>("dbo.SP_GroupMenus_Load", p);
+        var result = await _sqlDataAccess.QueryAll<Menu>("dbo.SP_GroupMenus_Load", p, "Menu-GetGroupItems");
         return GetHierarchy(result);
     }
 
