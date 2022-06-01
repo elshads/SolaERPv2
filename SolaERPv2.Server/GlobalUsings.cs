@@ -7,6 +7,7 @@ global using SolaERPv2.Server.Models;
 global using SolaERPv2.Server.ModelService;
 global using SolaERPv2.Server.ModelValidators;
 
+global using System.Diagnostics;
 global using Microsoft.Data.SqlClient;
 global using System.Data;
 global using System.Text;

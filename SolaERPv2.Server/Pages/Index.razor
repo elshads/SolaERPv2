@@ -219,6 +219,7 @@ else
         var isValid = registerSupplier != null ? await registerSupplier.SaveValid() : false;
         if (AppState != null && isValid)
         {
+            AppState.Loading = true;
             var sqlResult = justSave ? await VendorService.SaveSupplier(currentVendor) : await VendorService.RegisterSupplier(currentVendor);
             if (sqlResult != null && sqlResult.QueryResultMessage == null)
             {
@@ -229,6 +230,7 @@ else
             {
                 AppState.ShowAlert(sqlResult.QueryResultMessage, Severity.Error);
             }
+            AppState.Loading = false;
         }
     }
 
