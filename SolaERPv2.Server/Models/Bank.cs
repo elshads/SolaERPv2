@@ -3,6 +3,7 @@
 public class Bank : BaseModel
 {
     public int BankId { get; set; }
+    public int VendorId { get; set; }
     public string? BankCode { get; set; }
     public string? BankName { get; set; }
     public decimal Balance { get; set; }

@@ -47,11 +47,34 @@ else
         if (SessionData.CurrentUser != null && SessionData.CurrentUser.StatusId == 1)
         {
             var _currentVendor = await VendorService.GetByUserIdAsync(SessionData.CurrentUser.Id);
-            if (_currentVendor != null) 
-            { 
-                currentVendor = _currentVendor; // validator won't pickup a new instance
-            }
+            if (_currentVendor != null) { SetModelNewInstance(_currentVendor); }
         }
+    }
+
+    void SetModelNewInstance(Vendor vendor)
+    {
+        currentVendor.VendorId = vendor.VendorId;
+        currentVendor.BusinessUnitId = vendor.BusinessUnitId;
+        currentVendor.VendorCode = vendor.VendorCode;
+        currentVendor.VendorName = vendor.VendorName;
+        currentVendor.TaxId = vendor.TaxId;
+        currentVendor.CompanyLocation = vendor.CompanyLocation;
+        currentVendor.CompanyWebsite = vendor.CompanyWebsite;
+        currentVendor.CompanyLogo = vendor.CompanyLogo;
+        currentVendor.OfficialLetter = vendor.OfficialLetter;
+        currentVendor.CreditDays = vendor.CreditDays;
+        currentVendor.PaymentTermsCode = vendor.PaymentTermsCode;
+        currentVendor.CountryCode = vendor.CountryCode;
+        currentVendor.PaymentTerms = vendor.PaymentTerms;
+        currentVendor.ProvidedProducts = vendor.ProvidedProducts;
+        currentVendor.BankList = vendor.BankList;
+        currentVendor.EvaluationForm = vendor.EvaluationForm;
+        currentVendor.OtherProducts = vendor.OtherProducts;
+        currentVendor.RepresentedProducts = vendor.RepresentedProducts;
+        currentVendor.RepresentedCompanies = vendor.RepresentedCompanies;
+        currentVendor.AgreeWithDefaultDays = vendor.AgreeWithDefaultDays;
+        currentVendor.Exists = vendor.Exists;
+        currentVendor.StatusId = vendor.StatusId;
     }
 
     void ShowSupplierRegistrationPage()
@@ -199,7 +222,7 @@ else
             var sqlResult = justSave ? await VendorService.SaveSupplier(currentVendor) : await VendorService.RegisterSupplier(currentVendor);
             if (sqlResult != null && sqlResult.QueryResultMessage == null)
             {
-                if(!justSave) { SessionData.CurrentUser = await AppUserService.GetCurrentUserAsync(); }
+                if (!justSave) { SessionData.CurrentUser = await AppUserService.GetCurrentUserAsync(); }
                 NavigationManager.NavigateTo("/", true);
             }
             else if (sqlResult != null && sqlResult.QueryResultMessage != null)

@@ -22,7 +22,7 @@
             <FormButtons />
         </TelerikForm>
 
-        <TelerikForm Model="@CurrentVendor" Orientation="FormOrientation.Horizontal">
+        <TelerikForm @ref="vendorEditForm" Model="@CurrentVendor" Orientation="FormOrientation.Horizontal">
             <FormValidation>
                 <FluentValidationValidator @ref="vendorValidator" DisableAssemblyScanning="true" />
             </FormValidation>
@@ -176,6 +176,7 @@
 
     FluentValidationValidator? personValidator;
     FluentValidationValidator? vendorValidator;
+    TelerikForm? vendorEditForm;
 
     IEnumerable<Product>? productList = new List<Product>();
     IEnumerable<Country>? countryList = new List<Country>();
@@ -190,11 +191,7 @@
     protected override async Task OnInitializedAsync()
     {
         await LoadData();
-    }
-
-    protected override void OnParametersSet()
-    {
-        SetOtherProductsVisibility();
+        await Task.Run(() => SetOtherProductsVisibility());
     }
 
     async Task LoadData()
@@ -219,7 +216,7 @@
 
     void SetOtherProductsVisibility()
     {
-        if (CurrentVendor != null && CurrentVendor.ProvidedProducts != null && productList != null)
+        if (CurrentVendor != null && CurrentVendor.ProvidedProducts != null)
         {
             var otherId = 0;
             var otherProduct = productList.FirstOrDefault(e => e.Other == 1);
