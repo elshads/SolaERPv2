@@ -26,6 +26,9 @@ public class AppUser : IdentityUser<int>, IBaseModel
     public string? Theme { get; set; }
     public string? SyteLineUserCode { get; set; }
     public int CompanyId { get; set; }
+
+    [NotMapped]
+    public string CompanyName { get; set; }
     public string? Position { get; set; }
     public DateTime ExpirationDate { get; set; }
     public int Sessions { get; set; }

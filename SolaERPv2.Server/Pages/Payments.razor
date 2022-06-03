@@ -29,7 +29,7 @@
             <DataGrid Data="@modelList"
                       CanExport="true"
                       Height="calc(100vh - 285px)"
-                      ShowSearchBar="false"
+                      ShowSearchBar="true"
                       OnRowDoubleClick="@OnRowDoubleClickHandler"
                       SearchFields="@(new List<string> { "VendorCode", "VendorName", "Reference", "StatusName", "CurrencyCode", "Comment" })"
                       @bind-SelectedItems="@selectedItems">
@@ -63,7 +63,7 @@
                       CanDelete="true"
                       CanExport="true"
                       Height="calc(100vh - 285px)"
-                      ShowSearchBar="false"
+                      ShowSearchBar="true"
                       OnRowDoubleClick="@OnRowDoubleClickHandler"
                       SearchFields="@(new List<string> { "VendorCode", "VendorName", "Reference", "StatusName", "CurrencyCode", "Comment" })"
                       OnDelete="@((IEnumerable<Model> items) => DeleteHandler(items))"
@@ -96,7 +96,7 @@
             <DataGrid Data="@modelList"
                       CanExport="true"
                       Height="calc(100vh - 285px)"
-                      ShowSearchBar="false"
+                      ShowSearchBar="true"
                       OnRowDoubleClick="@OnRowDoubleClickHandler"
                       SearchFields="@(new List<string> { "VendorCode", "VendorName", "Reference", "StatusName", "CurrencyCode","Comment" })"
                       @bind-SelectedItems="@selectedItems">
@@ -129,7 +129,7 @@
             <DataGrid Data="@modelList"
                       CanExport="true"
                       Height="calc(100vh - 285px)"
-                      ShowSearchBar="false"
+                      ShowSearchBar="true"
                       OnRowDoubleClick="@OnRowDoubleClickHandler"
                       SearchFields="@(new List<string> { "VendorCode", "VendorName", "Reference", "StatusName", "CurrencyCode","Comment" })"
                       @bind-SelectedItems="@selectedItems">
@@ -161,7 +161,7 @@
             <DataGrid Data="@modelList"
                       CanExport="true"
                       Height="calc(100vh - 285px)"
-                      ShowSearchBar="false"
+                      ShowSearchBar="true"
                       OnRowDoubleClick="@OnRowDoubleClickHandler"
                       ShowCheckBoxColumn="false"
                       SearchFields="@(new List<string> { "VendorCode", "VendorName", "Reference", "StatusName", "CurrencyCode","Comment" })"
@@ -429,7 +429,6 @@
 
     void AddClick()
     {
-        AppState.Loading = true;
         NavigationManager.NavigateTo($"/payments/generate?bu={selectedBusinessUnit.BusinessUnitId}");
     }
 

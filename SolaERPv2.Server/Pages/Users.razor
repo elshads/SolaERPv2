@@ -1,0 +1,156 @@
+﻿@page "/users"
+@implements IDisposable
+
+
+<PageTitle>Users</PageTitle>
+
+
+<TelerikTabStrip ActiveTabIndex="@activeTabIndex" ActiveTabIndexChanged="@ActiveTabIndexChanged">
+    <TabStripTab Title="Waiting for Approval">
+        <Content>
+            <DataGrid Data="@modelList"
+                      CanExport="true"
+                      Height="calc(100vh - 285px)"
+                      ShowSearchBar="true"
+                      OnRowDoubleClick="@OnRowDoubleClickHandler"
+                      SearchFields="@(new List<string> { "UserName", "FullName", "CompanyName" })"
+                      @bind-SelectedItems="@selectedItems">
+                <GridColumn Field="@(nameof(AppUser.Id))" Title="Id" Width="70px" Editable="false" TextAlign="ColumnTextAlign.Right" Visible="false" />
+                <GridColumn Field="@(nameof(AppUser.UserName))" Title="UserName" Width="130px" />
+                <GridColumn Field="@(nameof(AppUser.FullName))" Title="Name" Width="130px" />
+                <GridColumn Field="@(nameof(AppUser.CompanyName))" Title="Company" Width="300px" />
+                <GridColumn Field="@(nameof(AppUser.Position))" Title="Position" Width="240px" />
+                <GridColumn Field="@(nameof(AppUser.Sessions))" Title="Sessions" Width="240px" />
+                <GridColumn Field="@(nameof(AppUser.LastActivity))" Title="Last Activity" Width="240px" />
+                <GridColumn Field="@(nameof(AppUser.CreatedOn))" Title="Created" Width="240px" />
+                <GridColumn Field="@(nameof(AppUser.StatusId))" Title="Status" Width="108px">
+                    <Template>
+                        @{
+                            var priority = (context as AppUser).StatusId;
+                            <div class="input-height item-width flex-center-y">
+                                <MudIcon Icon="@(priority == 1 ? Icons.Filled.North : priority == 2 || priority == 0 ? Icons.Filled.East : Icons.Filled.South)" Color="@(priority == 1 ? Color.Success : priority == 2 || priority == 0 ? Color.Warning : Color.Error)" />
+                                <span class="k-px-1">@(priority == 1 ? "High" : priority == 2 ? "Normal" : priority == 3 ? "Low" : "")</span>
+                            </div>
+                        }
+                    </Template>
+                </GridColumn>
+            </DataGrid>
+        </Content>
+    </TabStripTab>
+
+    <TabStripTab Title="All">
+        <Content>
+            
+        </Content>
+    </TabStripTab>
+</TelerikTabStrip>
+
+
+@*<TelerikDialog Visible="@showApproveDialog"
+               @ref="approveDialogRef"
+               VisibleChanged="@ShowApproveDialogChanged"
+               Title="@(approveSelected ? "Approve?" : "Reject?")"
+               Width="440px"
+               CloseOnOverlayClick="false"
+               ShowCloseButton="true">
+    <DialogContent>
+        <div class="fixed-width k-form">
+            <div class="k-form-field">
+                <div class="k-form-field-wrap">
+                    <label for="approve-comment" class="k-label k-form-label">Comment:</label>
+                    <div class="k-form-field-wrap">
+                        <TelerikTextArea Id="approve-comment"
+                                         AutoSize="true"
+                                         PlaceHolder="Enter your text here"
+                                         @bind-Value="@approveComment">
+                        </TelerikTextArea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </DialogContent>
+    <DialogButtons>
+        <TelerikButton OnClick="@(() => ApproveRejectConfirmed())" ThemeColor="@(approveSelected ? ThemeConstants.Button.ThemeColor.Primary : ThemeConstants.Button.ThemeColor.Error)">@(approveSelected ? "Approve" : "Reject")</TelerikButton>
+        <TelerikButton OnClick="@(() => ApproveDialogClosed())">Close</TelerikButton>
+    </DialogButtons>
+</TelerikDialog>*@
+
+
+@code {
+    [CascadingParameter] AppState AppState { get; set; }
+    [CascadingParameter] DialogFactory DialogFactory { get; set; }
+
+    Guid gridKey;
+    TelerikGrid<AppUser> gridRef;
+    List<AppUser> modelList = new();
+    IEnumerable<AppUser> selectedModelList = new List<AppUser>();
+    AppUser selectedModel;
+
+    bool showApproveDialog = false;
+    string approveComment = "";
+    bool approveSelected = false;
+    TelerikDialog approveDialogRef;
+    // Page specific variables - end
+
+    int activeTabIndex = 0;
+
+    List<AppUser> deletedItems = new List<AppUser>();
+    IEnumerable<AppUser> selectedItems = new List<AppUser>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        OnAppStateInitialized();
+        await LoadData();
+    }
+
+    void OnAppStateInitialized()
+    {
+        AppState.SetDefaults();
+        AppState.BackButtonVisible = true;
+
+        AppState.OnBackClick += BackClick;
+    }
+
+    void IDisposable.Dispose()
+    {
+        AppState.OnBackClick -= BackClick;
+    }
+
+    async Task LoadData()
+    {
+        AppState.Loading = true;
+        //
+        AppState.Loading = false;
+    }
+
+    void GoToDetails(int id)
+    {
+        NavigationManager.NavigateTo($"/users/card?id={id}");
+    }
+
+    void OnRowClickHandler(GridRowClickEventArgs args)
+    {
+        //
+    }
+
+    void OnRowDoubleClickHandler(GridRowClickEventArgs args)
+    {
+        var argsItem = args.Item as AppUser;
+        GoToDetails(argsItem.Id);
+    }
+
+    void BackClick()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+
+    async Task ActiveTabIndexChanged(int tabIndex)
+    {
+        AppState.Loading = true;
+        activeTabIndex = tabIndex;
+        selectedItems = new List<AppUser>();
+        //SetMenuButtonsVisibility();
+        AppState.Loading = false;
+    }
+    
+}

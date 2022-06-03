@@ -151,32 +151,32 @@
 
 @code {
     // parameters - start
-    [CascadingParameter] public AppState AppState { get; set; }
-    [CascadingParameter] public DialogFactory Dialogs { get; set; }
+    [CascadingParameter] public AppState? AppState { get; set; }
+    [CascadingParameter] public DialogFactory? Dialogs { get; set; }
 
-    [Parameter] public RenderFragment ChildContent { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
 
     [Parameter] public Guid Key { get; set; }
 
     [Parameter] public Guid DestinationGridKey { get; set; }
     [Parameter] public EventCallback<Guid> DestinationGridKeyChanged { get; set; }
 
-    [Parameter] public List<TItem> Data { get; set; } = new();
+    [Parameter] public List<TItem>? Data { get; set; } = new();
     [Parameter] public EventCallback<List<TItem>> DataChanged { get; set; }
-    [Parameter] public List<TItem> DestinationGridData { get; set; } = new();
+    [Parameter] public List<TItem>? DestinationGridData { get; set; } = new();
     [Parameter] public EventCallback<List<TItem>> DestinationGridDataChanged { get; set; }
-    [Parameter] public IEnumerable<TItem> SelectedItems { get; set; } = new List<TItem>();
+    [Parameter] public IEnumerable<TItem>? SelectedItems { get; set; } = new List<TItem>();
     [Parameter] public EventCallback<IEnumerable<TItem>> SelectedItemsChanged { get; set; }
-    [Parameter] public TItem SelectedItem { get; set; }
+    [Parameter] public TItem? SelectedItem { get; set; }
     [Parameter] public EventCallback<TItem> SelectedItemChanged { get; set; }
 
     [Parameter] public GridEditMode GridEditMode { get; set; } = GridEditMode.Inline;
 
-    [Parameter] public string Height { get; set; } = "calc(100vh - 160px)";
-    [Parameter] public string Width { get; set; }
-    [Parameter] public string Media { get; set; } = "(max-width: 768px)";
-    [Parameter] public IEnumerable<string> SearchFields { get; set; } = new List<string> { "RowIndex" };
-    [Parameter] public IEnumerable<string> AggregateFields { get; set; } = new List<string>();
+    [Parameter] public string? Height { get; set; } = "calc(100vh - 160px)";
+    [Parameter] public string? Width { get; set; }
+    [Parameter] public string? Media { get; set; } = "(max-width: 768px)";
+    [Parameter] public IEnumerable<string>? SearchFields { get; set; } = new List<string> { "RowIndex" };
+    [Parameter] public IEnumerable<string>? AggregateFields { get; set; } = new List<string>();
 
     [Parameter] public EventCallback<GridRowClickEventArgs> OnRowClick { get; set; }
     [Parameter] public EventCallback<GridRowClickEventArgs> OnRowDoubleClick { get; set; }
@@ -200,7 +200,7 @@
     [Parameter] public EventCallback<GridCommandEventArgs> OnMoveUp { get; set; }
     [Parameter] public EventCallback<GridCommandEventArgs> OnMoveDown { get; set; }
 
-    [Parameter] public string Title { get; set; }
+    [Parameter] public string? Title { get; set; }
     [Parameter] public bool CheckBoxOnlySelection { get; set; } = false;
     [Parameter] public bool RowDraggable { get; set; } = false;
     [Parameter] public bool ShowToolbar { get; set; } = true;
@@ -234,10 +234,10 @@
 
     // local variables - start
     TelerikGrid<TItem>? gridRef;
-    TelerikContextMenu<ContextMenuItem> contextMenuRef;
-    List<ContextMenuItem> contextMenuItemList;
-    IEnumerable<TItem> originalData = new List<TItem>();
-    List<TItem> deletedItems = new();
+    TelerikContextMenu<ContextMenuItem>? contextMenuRef;
+    List<ContextMenuItem>? contextMenuItemList;
+    IEnumerable<TItem>? originalData = new List<TItem>();
+    List<TItem>? deletedItems = new();
 
     bool showCheckBox = true;
     bool showRowButtons = true;
@@ -752,11 +752,15 @@
 
     void OnSearchInput(ChangeEventArgs args)
     {
-        searchString = args.Value.ToString();
+        searchString = args?.Value?.ToString();
 
-        if (!string.IsNullOrEmpty(searchString))
+        if (!string.IsNullOrEmpty(searchString) && SearchFields != null)
         {
-            Data = originalData.Where(e => SearchFields.Any(p => e.GetType().GetProperty(p).GetValue(e).ToString().ToLower().Contains(searchString.ToLower()))).ToList();
+            var tempData = originalData?.Where(e => SearchFields.Any(p => e.GetType().GetProperty(p) != null && e.GetType().GetProperty(p).GetValue(e) != null && e.GetType().GetProperty(p).GetValue(e).ToString().ToLower().Contains(searchString.ToLower()))).ToList();
+            if (tempData != null)
+            {
+                Data = tempData;
+            }
         }
         else
         {
@@ -803,12 +807,12 @@
 
     public class ContextMenuItem
     {
-        public string Text { get; set; }
-        public string Icon { get; set; }
-        public Action Action { get; set; }
-        public string CommandName { get; set; }
+        public string? Text { get; set; }
+        public string? Icon { get; set; }
+        public Action? Action { get; set; }
+        public string? CommandName { get; set; }
         public bool Disabled { get; set; }
-        public IEnumerable<ContextMenuItem> Items { get; set; }
+        public IEnumerable<ContextMenuItem>? Items { get; set; }
     }
 }
 
