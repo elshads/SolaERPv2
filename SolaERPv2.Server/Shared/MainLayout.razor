@@ -1,13 +1,13 @@
 ﻿@layout TelerikLayout
 @inherits LayoutComponentBase
-@implements IDisposable
+@implements IAsyncDisposable
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
 
 <HeadContent>
     <link rel="stylesheet" href="@(SessionData != null ? $"/css/kendo/{SessionData?.CurrentUser?.Theme}.css" : "/css/kendo/light.css")">
 </HeadContent>
-<MudThemeProvider IsDarkMode="@(SessionData != null && SessionData.CurrentUser?.Theme == "dark")" />
+<MudThemeProvider IsDarkMode="@(SessionData is {CurrentUser.Theme: "dark" })" />
 
 
 <MudSnackbarProvider />
@@ -20,12 +20,12 @@
 
 
 
-<CascadingValue Value="appState">
+<CascadingValue Value="_appState">
     <AuthorizeView>
         <Authorized>
             <div>
-                <AppBar @bind-Open="@appState.OpenDrawer" />
-                <NavMenu @bind-Open="@appState.OpenDrawer" />
+                <AppBar @bind-Open="@_appState.OpenDrawer" />
+                <NavMenu @bind-Open="@_appState.OpenDrawer" />
                 <ReadAccess>
                     <MenuBar />
                     <div class="body-content">
@@ -38,25 +38,25 @@
             <div>Loading...</div>
         </NotAuthorized>
     </AuthorizeView>
-    <TelerikLoaderContainer Visible="@(appState.Loading)" LoaderType="LoaderType.InfiniteSpinner" />
-    <TelerikMediaQuery Media="(max-width: 768px)" OnChange="@( (bool mobileView) => OnMobileViewChanged(mobileView) )" />
+    <TelerikLoaderContainer Visible="@(_appState.Loading)" LoaderType="LoaderType.InfiniteSpinner" />
+    <TelerikMediaQuery Media="(max-width: 768px)" OnChange="@OnMobileViewChanged" />
 </CascadingValue>
 
 
 @code {
-    AppState? appState = new();
+    AppState? _appState = new();
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        appState = new AppState(Snackbar);
-        appState.OnRefreshClick += Refresh;
-        appState.Loading = true;
-        appState.Loading = false;
+        _appState = new AppState(Snackbar);
+        _appState.OnRefreshClick += Refresh;
+        await AppUserService.UserLoggedIn();
     }
 
-    void IDisposable.Dispose()
+    async ValueTask IAsyncDisposable.DisposeAsync()
     {
-        appState.OnRefreshClick -= Refresh;
+        if(_appState != null) { _appState.OnRefreshClick -= Refresh; }
+        await AppUserService.UserLoggedOut();
     }
 
     async void Refresh()
@@ -66,8 +66,8 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var isAuthenticated = authenticationState.User.Identity.IsAuthenticated;
+        var authenticationState = await AuthenticationStateProvider?.GetAuthenticationStateAsync();
+        var isAuthenticated = authenticationState?.User.Identity is {IsAuthenticated: true };
         if (firstRender && !isAuthenticated)
         {
             NavigationManager.NavigateTo("Identity/Account/Login", true);
@@ -76,7 +76,7 @@
 
     void OnMobileViewChanged(bool mobileView)
     {
-        appState.MobileView = mobileView;
+        if(_appState != null) { _appState.MobileView = mobileView; }
     }
 }
 

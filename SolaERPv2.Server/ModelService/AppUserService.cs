@@ -108,4 +108,24 @@ public class AppUserService : BaseModelService<AppUser>
         var sql = $"UPDATE Config.AppUser SET FullName = @FullName, Position = @Position, PhoneNumber = @PhoneNumber, Photo = @Photo WHERE Id = @Id";
         return await _sqlDataAccess.ExecuteSql(sql, p, "AppUser-Update", CommandType.Text);
     }
+
+    public async Task<SqlResult?> UserLoggedIn()
+    {
+        var currentUser = await GetCurrentUserAsync();
+        var p = new DynamicParameters();
+        p.Add("@currentUserId", currentUser.Id, DbType.Int32, ParameterDirection.Input);
+        p.Add("@lastActivity", DateTime.Now, DbType.DateTime, ParameterDirection.Input);
+        var sql = $"UPDATE Config.AppUser SET Sessions = Sessions + 1, LastActivity = @lastActivity WHERE Id = @currentUserId SELECT @@ROWCOUNT";
+        return await _sqlDataAccess.QueryReturnInteger(sql, p, "AppUser-LoggedIn", CommandType.Text);
+    }
+
+    public async Task<SqlResult?> UserLoggedOut()
+    {
+        var currentUser = await GetCurrentUserAsync();
+        var p = new DynamicParameters();
+        p.Add("@currentUserId", currentUser.Id, DbType.Int32, ParameterDirection.Input);
+        p.Add("@lastActivity", DateTime.Now, DbType.DateTime, ParameterDirection.Input);
+        var sql = $"UPDATE Config.AppUser SET Sessions = Sessions - 1, LastActivity = @lastActivity WHERE Id = @currentUserId SELECT @@ROWCOUNT";
+        return await _sqlDataAccess.QueryReturnInteger(sql, p, "AppUser-LoggedOut", CommandType.Text);
+    }
 }

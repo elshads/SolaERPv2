@@ -125,7 +125,7 @@ public class GroupService : BaseModelService<Group>
             }
         }
 
-        sqlResult.ReturnId = groupId;
+        sqlResult.QueryResult = groupId;
         return sqlResult;
     }
 }

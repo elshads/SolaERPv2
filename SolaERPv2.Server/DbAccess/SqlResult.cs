@@ -11,7 +11,7 @@ public class SqlResult
     //public string? InsertedResultMessage { get; set; }
     //public string? UpdatedResultMessage { get; set; }
     //public string? DeletedResultMessage { get; set; }
-    public int ReturnId { get; set; }
+    //public int ReturnId { get; set; }
     public string? ReturnCode { get; set; }
     //public IBaseModel? ReturnModel { get; set; }
 }

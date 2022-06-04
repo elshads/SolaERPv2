@@ -165,17 +165,17 @@ public class PaymentDocumentService : BaseModelService<PaymentDocumentMain>
             p.Add("@NewPaymentDocumentMainId", dbType: DbType.Int32, direction: ParameterDirection.Output);
 
             result.QueryResult = await cn.ExecuteAsync("dbo.SP_PaymentDocumentMain_IUD", p, commandType: CommandType.StoredProcedure);
-            result.ReturnId = p.Get<int>("@NewPaymentDocumentMainId");
+            result.QueryResult = p.Get<int>("@NewPaymentDocumentMainId");
         }
 
 
-        if (result.ReturnId > 0 && paymentDocumentMain.PaymentDocumentDetailList.Any())
+        if (result.QueryResult > 0 && paymentDocumentMain.PaymentDocumentDetailList.Any())
         {
             foreach (var item in paymentDocumentMain.PaymentDocumentDetailList)
             {
                 var pd = new DynamicParameters();
                 pd.Add("@PaymentDocumentDetailId", item.PaymentDocumentDetailId, DbType.Int32, ParameterDirection.Input);
-                pd.Add("@PaymentDocumentMainId", (paymentDocumentMain.PaymentDocumentMainId > 0 ? paymentDocumentMain.PaymentDocumentMainId : result.ReturnId), DbType.Int32, ParameterDirection.Input);
+                pd.Add("@PaymentDocumentMainId", (paymentDocumentMain.PaymentDocumentMainId > 0 ? paymentDocumentMain.PaymentDocumentMainId : result.QueryResult), DbType.Int32, ParameterDirection.Input);
                 pd.Add("@OrderNumber", item.PONum, DbType.String, ParameterDirection.Input);
                 pd.Add("@Voucher", item.Voucher, DbType.Int32, ParameterDirection.Input);
                 pd.Add("@Amount", item.AmountToPay, DbType.Decimal, ParameterDirection.Input);
@@ -195,7 +195,7 @@ public class PaymentDocumentService : BaseModelService<PaymentDocumentMain>
             }
         }
 
-        if (result.ReturnId > 0 && paymentDocumentMain.AttachmentList.Any())
+        if (result.QueryResult > 0 && paymentDocumentMain.AttachmentList.Any())
         {
             foreach (var item in paymentDocumentMain.AttachmentList)
             {
@@ -203,7 +203,7 @@ public class PaymentDocumentService : BaseModelService<PaymentDocumentMain>
                 pa.Add("@AttachmentId", item.AttachmentId, DbType.Int32, ParameterDirection.Input);
                 pa.Add("@FileName", item.FileName, DbType.String, ParameterDirection.Input);
                 pa.Add("@FileData", item.FileData, DbType.Binary, ParameterDirection.Input);
-                pa.Add("@SourceId", (paymentDocumentMain.PaymentDocumentMainId > 0 ? paymentDocumentMain.PaymentDocumentMainId : result.ReturnId), DbType.Int32, ParameterDirection.Input);
+                pa.Add("@SourceId", (paymentDocumentMain.PaymentDocumentMainId > 0 ? paymentDocumentMain.PaymentDocumentMainId : result.QueryResult), DbType.Int32, ParameterDirection.Input);
                 pa.Add("@SourceType", "PYMDC", DbType.String, ParameterDirection.Input);
                 pa.Add("@Reference", item.Reference, DbType.String, ParameterDirection.Input);
                 pa.Add("@ExtensionType", item.ExtensionType, DbType.String, ParameterDirection.Input);

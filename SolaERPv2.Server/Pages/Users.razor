@@ -5,42 +5,73 @@
 <PageTitle>Users</PageTitle>
 
 
-<TelerikTabStrip ActiveTabIndex="@activeTabIndex" ActiveTabIndexChanged="@ActiveTabIndexChanged">
+<TelerikTabStrip ActiveTabIndex="@_activeTabIndex" ActiveTabIndexChanged="@ActiveTabIndexChanged">
     <TabStripTab Title="Waiting for Approval">
         <Content>
-            <DataGrid Data="@modelList"
+            <DataGrid Data="@_userList"
                       CanExport="true"
-                      Height="calc(100vh - 285px)"
+                      Height="calc(100vh - 240px)"
                       ShowSearchBar="true"
                       OnRowDoubleClick="@OnRowDoubleClickHandler"
-                      SearchFields="@(new List<string> { "UserName", "FullName", "CompanyName" })"
-                      @bind-SelectedItems="@selectedItems">
+                      SearchFields="@(new List<string> { "UserName", "FullName", "CompanyName", "Position" })"
+                      @bind-SelectedItems="@_selectedUserList">
                 <GridColumn Field="@(nameof(AppUser.Id))" Title="Id" Width="70px" Editable="false" TextAlign="ColumnTextAlign.Right" Visible="false" />
-                <GridColumn Field="@(nameof(AppUser.UserName))" Title="UserName" Width="130px" />
-                <GridColumn Field="@(nameof(AppUser.FullName))" Title="Name" Width="130px" />
+                <GridColumn Field="@(nameof(AppUser.UserName))" Title="UserName" Width="260px" />
+                <GridColumn Field="@(nameof(AppUser.FullName))" Title="Name" Width="180px" />
                 <GridColumn Field="@(nameof(AppUser.CompanyName))" Title="Company" Width="300px" />
-                <GridColumn Field="@(nameof(AppUser.Position))" Title="Position" Width="240px" />
-                <GridColumn Field="@(nameof(AppUser.Sessions))" Title="Sessions" Width="240px" />
-                <GridColumn Field="@(nameof(AppUser.LastActivity))" Title="Last Activity" Width="240px" />
-                <GridColumn Field="@(nameof(AppUser.CreatedOn))" Title="Created" Width="240px" />
-                <GridColumn Field="@(nameof(AppUser.StatusId))" Title="Status" Width="108px">
+                <GridColumn Field="@(nameof(AppUser.Position))" Title="Position" Width="180px" />
+                <GridColumn Field="@(nameof(AppUser.Sessions))" Title="Sessions" Width="110px">
+                    <Template>
+                        <div class="flex-center-y flex-center-x">
+                            @{
+                                var user = context as AppUser;
+                                if (user != null && user.Sessions > 0)
+                                {
+                                    <MudIcon Icon="@Icons.Filled.Person" Color="Color.Success" Size="Size.Small" />
+                                    <span class="k-px-2">@(user.Sessions)</span>
+                                }
+                                else if (user != null && user.Sessions < 1)
+                                {
+                                    <MudIcon Icon="@Icons.Filled.PersonOff" Color="Color.Default" Size="Size.Small" />
+                                    <span class="k-px-2">@(user.Sessions)</span>
+                                }
+                                else
+                                {
+                                    <MudIcon Icon="@Icons.Filled.PersonOff" Color="Color.Default" Size="Size.Small" />
+                                    <span class="k-px-2">0</span>
+                                }
+                            }
+                        </div>
+                    </Template>
+                </GridColumn>
+                <GridColumn Field="@(nameof(AppUser.LastActivity))" Title="Last Activity" Width="150px">
                     <Template>
                         @{
-                            var priority = (context as AppUser).StatusId;
-                            <div class="input-height item-width flex-center-y">
-                                <MudIcon Icon="@(priority == 1 ? Icons.Filled.North : priority == 2 || priority == 0 ? Icons.Filled.East : Icons.Filled.South)" Color="@(priority == 1 ? Color.Success : priority == 2 || priority == 0 ? Color.Warning : Color.Error)" />
-                                <span class="k-px-1">@(priority == 1 ? "High" : priority == 2 ? "Normal" : priority == 3 ? "Low" : "")</span>
-                            </div>
+                            if (context is AppUser user && user.LastActivity > new DateTime(1, 1, 1))
+                            {
+                                <div>@(user.LastActivity.ToString("yyyy-MM-dd HH:mm"))</div>
+                            }
                         }
                     </Template>
                 </GridColumn>
+                <GridColumn Field="@(nameof(AppUser.CreatedOn))" Title="Created" Width="150px">
+                    <Template>
+                        @{
+                            if (context is AppUser user && user.CreatedOn > new DateTime(1, 1, 1))
+                            {
+                                <div>@(user.CreatedOn.ToString("yyyy-MM-dd HH:mm"))</div>
+                            }
+                        }
+                    </Template>
+                </GridColumn>
+                <GridColumn Field="@(nameof(AppUser.StatusId))" Title="Status" Width="100px" />
             </DataGrid>
         </Content>
     </TabStripTab>
 
     <TabStripTab Title="All">
         <Content>
-            
+
         </Content>
     </TabStripTab>
 </TelerikTabStrip>
@@ -77,25 +108,18 @@
 
 
 @code {
-    [CascadingParameter] AppState AppState { get; set; }
-    [CascadingParameter] DialogFactory DialogFactory { get; set; }
+    [CascadingParameter] AppState? AppState { get; set; }
+    [CascadingParameter] DialogFactory? DialogFactory { get; set; }
 
-    Guid gridKey;
-    TelerikGrid<AppUser> gridRef;
-    List<AppUser> modelList = new();
-    IEnumerable<AppUser> selectedModelList = new List<AppUser>();
-    AppUser selectedModel;
+    List<AppUser>? _userList = new();
+    IEnumerable<AppUser>? _selectedUserList = new List<AppUser>();
 
-    bool showApproveDialog = false;
-    string approveComment = "";
-    bool approveSelected = false;
-    TelerikDialog approveDialogRef;
-    // Page specific variables - end
+    //bool _showApproveDialog = false;
+    //string? _approveComment = "";
+    //bool _approveSelected = false;
+    //TelerikDialog? _approveDialogRef;
 
-    int activeTabIndex = 0;
-
-    List<AppUser> deletedItems = new List<AppUser>();
-    IEnumerable<AppUser> selectedItems = new List<AppUser>();
+    int _activeTabIndex = 0;
 
     protected override async Task OnInitializedAsync()
     {
@@ -105,21 +129,25 @@
 
     void OnAppStateInitialized()
     {
+        if (AppState == null) return;
         AppState.SetDefaults();
         AppState.BackButtonVisible = true;
-
         AppState.OnBackClick += BackClick;
     }
 
     void IDisposable.Dispose()
     {
+        if (AppState == null) return;
         AppState.OnBackClick -= BackClick;
     }
 
     async Task LoadData()
     {
+        if (AppState == null) return;
+
         AppState.Loading = true;
-        //
+        var userList = await AppUserService.GetAllAsync();
+        if (userList != null) { _userList = userList.ToList(); }
         AppState.Loading = false;
     }
 
@@ -130,13 +158,12 @@
 
     void OnRowClickHandler(GridRowClickEventArgs args)
     {
-        //
+        if (args.Item is AppUser argsItem) { }
     }
 
     void OnRowDoubleClickHandler(GridRowClickEventArgs args)
     {
-        var argsItem = args.Item as AppUser;
-        GoToDetails(argsItem.Id);
+        if (args.Item is AppUser argsItem) { GoToDetails(argsItem.Id); }
     }
 
     void BackClick()
@@ -144,13 +171,15 @@
         NavigationManager.NavigateTo("/");
     }
 
-    async Task ActiveTabIndexChanged(int tabIndex)
+    void ActiveTabIndexChanged(int tabIndex)
     {
+        if (AppState == null) return;
+
         AppState.Loading = true;
-        activeTabIndex = tabIndex;
-        selectedItems = new List<AppUser>();
+        _activeTabIndex = tabIndex;
+        _selectedUserList = new List<AppUser>();
         //SetMenuButtonsVisibility();
         AppState.Loading = false;
     }
-    
+
 }

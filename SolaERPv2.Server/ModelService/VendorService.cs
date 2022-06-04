@@ -142,7 +142,7 @@ public class VendorService : BaseModelService<Vendor>
         if (saveResult != null && saveResult.QueryResultMessage == null)
         {
             var p = new DynamicParameters();
-            p.Add("@VendorId", saveResult.ReturnId, DbType.Int32, ParameterDirection.Input);
+            p.Add("@VendorId", saveResult.QueryResult, DbType.Int32, ParameterDirection.Input);
             p.Add("@UserId", user.Id, DbType.Int32, ParameterDirection.Input);
             p.Add("@Status", 1, DbType.Int32, ParameterDirection.Input);
             var registerResult = await _sqlDataAccess.ExecuteSql("dbo.SP_VendorsChangeStatus", p, "Vendor-ChangeStatus");
@@ -184,7 +184,7 @@ public class VendorService : BaseModelService<Vendor>
         if (supplierResult != null && supplierResult.QueryResultMessage == null)
         {
             vendor.VendorId = p.Get<int>("@NewVendorId");
-            supplierResult.ReturnId = vendor.VendorId;
+            supplierResult.QueryResult = vendor.VendorId;
 
             if (vendor.ProvidedProducts != null && vendor.ProvidedProducts.Any())
             {
@@ -220,16 +220,16 @@ public class VendorService : BaseModelService<Vendor>
                     bp.Add("@BeneficiarBankCode", item.BeneficiaryBankCode, DbType.String, ParameterDirection.Input);
                     bp.Add("@IntermediaryBankCode", item.IntermediaryBankCodeNumber, DbType.String, ParameterDirection.Input);
                     bp.Add("@IntermediaryBankCodeType", item.IntermediaryBankCodeType, DbType.String, ParameterDirection.Input);
-                    var bankResult = await _sqlDataAccess.QueryReturnId("dbo.SP_VendorBankDetails_IUD", bp, "Vendor-SaveBank");
+                    var bankResult = await _sqlDataAccess.QueryReturnInteger("dbo.SP_VendorBankDetails_IUD", bp, "Vendor-SaveBank");
                     if (bankResult != null && bankResult.QueryResultMessage != null) { supplierResult.QueryResultMessage = bankResult.QueryResultMessage; return supplierResult; }
 
-                    if (item.BankLetter != null && bankResult != null && bankResult.ReturnId > 0)
+                    if (item.BankLetter != null && bankResult != null && bankResult.QueryResult > 0)
                     {
                         var blp = new DynamicParameters();
                         blp.Add("@AttachmentId", item.BankLetter.AttachmentId, DbType.Int32, ParameterDirection.Input);
                         blp.Add("@FileName", item.BankLetter.FileName, DbType.String, ParameterDirection.Input);
                         blp.Add("@FileData", item.BankLetter.FileData, DbType.Binary, ParameterDirection.Input);
-                        blp.Add("@SourceId", bankResult.ReturnId, DbType.Int32, ParameterDirection.Input);
+                        blp.Add("@SourceId", bankResult.QueryResult, DbType.Int32, ParameterDirection.Input);
                         blp.Add("@SourceType", "VEN_BNK", DbType.String, ParameterDirection.Input);
                         blp.Add("@Reference", item.BankLetter.Reference, DbType.String, ParameterDirection.Input);
                         blp.Add("@ExtensionType", item.BankLetter.ExtensionType, DbType.String, ParameterDirection.Input);
