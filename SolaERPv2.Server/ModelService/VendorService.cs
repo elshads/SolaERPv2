@@ -329,4 +329,14 @@ public class VendorService : BaseModelService<Vendor>
         }
         return supplierResult;
     }
+
+    public IEnumerable<VendorStatus> GetStatusList()
+    {
+        return new List<VendorStatus>() {
+            new VendorStatus() { StatusId = 0, StatusName = "Open" },
+            new VendorStatus() { StatusId = 1, StatusName = "Draft" },
+            new VendorStatus() { StatusId = 2, StatusName = "Approval" },
+            new VendorStatus() { StatusId = 9, StatusName = "Closed" },
+        };
+    }
 }

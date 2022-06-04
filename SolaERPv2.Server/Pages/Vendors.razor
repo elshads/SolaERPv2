@@ -1,0 +1,140 @@
+﻿@page "/vendors"
+@implements IDisposable
+@inject VendorService VendorService
+
+
+<PageTitle>Vendors</PageTitle>
+
+
+<TelerikTabStrip ActiveTabIndex="@activeTabIndex" ActiveTabIndexChanged="@ActiveTabIndexChanged">
+    <TabStripTab Title="Waiting for Approval">
+        <Content>
+            <DataGrid Data="@vendorList"
+                      CanExport="true"
+                      Height="calc(100vh - 240px)"
+                      ShowSearchBar="true"
+                      OnRowDoubleClick="@OnRowDoubleClickHandler"
+                      SearchFields="@(new List<string> { "VendorName" })"
+                      @bind-SelectedItems="@selectedVendorList">
+                <GridColumn Field="@(nameof(Vendor.VendorId))" Title="Id" Width="70px" Editable="false" TextAlign="ColumnTextAlign.Right" Visible="false" />
+                <GridColumn Field="@(nameof(Vendor.VendorName))" Title="Name" Width="260px" />
+            </DataGrid>
+        </Content>
+    </TabStripTab>
+
+    <TabStripTab Title="All">
+        <Content>
+
+        </Content>
+    </TabStripTab>
+</TelerikTabStrip>
+
+
+@*<TelerikDialog Visible="@showApproveDialog"
+               @ref="approveDialogRef"
+               VisibleChanged="@ShowApproveDialogChanged"
+               Title="@(approveSelected ? "Approve?" : "Reject?")"
+               Width="440px"
+               CloseOnOverlayClick="false"
+               ShowCloseButton="true">
+    <DialogContent>
+        <div class="fixed-width k-form">
+            <div class="k-form-field">
+                <div class="k-form-field-wrap">
+                    <label for="approve-comment" class="k-label k-form-label">Comment:</label>
+                    <div class="k-form-field-wrap">
+                        <TelerikTextArea Id="approve-comment"
+                                         AutoSize="true"
+                                         PlaceHolder="Enter your text here"
+                                         @bind-Value="@approveComment">
+                        </TelerikTextArea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </DialogContent>
+    <DialogButtons>
+        <TelerikButton OnClick="@(() => ApproveRejectConfirmed())" ThemeColor="@(approveSelected ? ThemeConstants.Button.ThemeColor.Primary : ThemeConstants.Button.ThemeColor.Error)">@(approveSelected ? "Approve" : "Reject")</TelerikButton>
+        <TelerikButton OnClick="@(() => ApproveDialogClosed())">Close</TelerikButton>
+    </DialogButtons>
+</TelerikDialog>*@
+
+
+@code {
+    [CascadingParameter] AppState? AppState { get; set; }
+    [CascadingParameter] DialogFactory? DialogFactory { get; set; }
+
+    List<Vendor>? vendorList = new();
+    IEnumerable<Vendor>? selectedVendorList = new List<Vendor>();
+    IEnumerable<VendorStatus>? vendorStatusList = new List<VendorStatus>();
+
+    //bool _showApproveDialog = false;
+    //string? _approveComment = "";
+    //bool _approveSelected = false;
+    //TelerikDialog? _approveDialogRef;
+
+    int activeTabIndex = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        OnAppStateInitialized();
+        await LoadData();
+    }
+
+    void OnAppStateInitialized()
+    {
+        if (AppState == null) return;
+        AppState.SetDefaults();
+        AppState.BackButtonVisible = true;
+        AppState.OnBackClick += BackClick;
+    }
+
+    void IDisposable.Dispose()
+    {
+        if (AppState == null) return;
+        AppState.OnBackClick -= BackClick;
+    }
+
+    async Task LoadData()
+    {
+        if (AppState == null) return;
+
+        AppState.Loading = true;
+        vendorStatusList = VendorService.GetStatusList();
+        var _vendorList = await VendorService.GetAllAsync(0);
+        if (vendorList != null) { vendorList = _vendorList.ToList(); }
+        AppState.Loading = false;
+    }
+
+    void GoToDetails(int id)
+    {
+        NavigationManager.NavigateTo($"/vendors/card?id={id}");
+    }
+
+    void OnRowClickHandler(GridRowClickEventArgs args)
+    {
+        if (args.Item is AppUser argsItem) { }
+    }
+
+    void OnRowDoubleClickHandler(GridRowClickEventArgs args)
+    {
+        if (args.Item is AppUser argsItem) { GoToDetails(argsItem.Id); }
+    }
+
+    void BackClick()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+
+    void ActiveTabIndexChanged(int tabIndex)
+    {
+        if (AppState == null) return;
+
+        AppState.Loading = true;
+        activeTabIndex = tabIndex;
+        selectedVendorList = new List<Vendor>();
+        //SetMenuButtonsVisibility();
+        AppState.Loading = false;
+    }
+
+}
