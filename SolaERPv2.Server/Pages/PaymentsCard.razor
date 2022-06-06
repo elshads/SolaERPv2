@@ -165,26 +165,28 @@
                           CheckBoxOnlySelection="false"
                           Width="@(AppState.MobileView ? "calc(100vw - 40px)" : AppState.OpenDrawer ? "calc(100vw - 280px)" : "calc(100vw - 104px)")"
                           Height="@(!AppState.MobileView ? "calc((100vh - 462px) / 2)" : "auto")"
-                          SearchFields="@(new List<string> { "PONum", "Voucher"})">
-                    <GridColumn Field="@(nameof(Model.VendorCode))" Title="Vendor Code" Width="130px" Visible="false" Editable="false" />
-                    <GridColumn Field="@(nameof(Model.VendorName))" Title="Vendor Name" Width="135px" Visible="false" Editable="false" />
-                    <GridColumn Field="@(nameof(Model.PaymentDocumentTypeName))" Title="Document Type" Width="150px" Visible="false" Editable="false" />
-                    <GridColumn Field="@(nameof(Model.PONum))" Title="PO Num" Width="110px" Locked="true" Editable="false" />
-                    <GridColumn Field="@(nameof(Model.Voucher))" Title="Voucher" Width="100px" Locked="true" Editable="false" />
-                    <GridColumn Field="@(nameof(Model.POAmount))" Title="PO Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="120px" Editable="false" />
-                    <GridColumn Field="@(nameof(Model.PO_VAT))" Title="PO VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="100px" Editable="false" />
-                    <GridColumn Field="@(nameof(Model.VoucherAmount))" Title="Voucher Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="154px" Editable="false" />
-                    <GridColumn Field="@(nameof(Model.VoucherVAT))" Title="Voucher VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="130px" Editable="false" />
-                    <GridColumn Field="@(nameof(Model.AdvanceAmount))" Title="Advance Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="157px" Editable="false" />
-                    <GridColumn Field="@(nameof(Model.AdvanceVAT))" Title="Advance VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="133px" Editable="false" />
-                    <GridColumn Field="@(nameof(Model.PaidAmount))" Title="Paid Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="130px" Editable="false" />
-                    <GridColumn Field="@(nameof(Model.PaidVAT))" Title="Paid VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="110px" Editable="false" />
-                    <GridColumn Field="@(nameof(Model.PaymentDocumentAmount))" Title="Paym. Doc. Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="177px" Editable="false" />
-                    <GridColumn Field="@(nameof(Model.PaymentDocumentVAT))" Title="Paym. Doc. VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="155px" Editable="false" />
-                    <GridColumn Field="@(nameof(Model.AmountToPay))" Title="Amount To Pay" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="145px" Editable="true" />
-                    <GridColumn Field="@(nameof(Model.VATToPay))" Title="VAT To Pay" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="122px" Editable="true" />
-                    <GridColumn Field="@(nameof(Model.TotalToPay))" Title="Total To Pay" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="130px" Editable="false" />
-                    <GridColumn Field="@(nameof(Model.IsVAT))" Title="VAT" TextAlign="ColumnTextAlign.Right" Width="75px" />
+                          SearchFields="@(new List<string> { "PONum", "Voucher" })">
+                    <DataGridColumns>
+                        <GridColumn Field="@(nameof(Model.VendorCode))" Title="Vendor Code" Width="130px" Visible="false" Editable="false" />
+                        <GridColumn Field="@(nameof(Model.VendorName))" Title="Vendor Name" Width="135px" Visible="false" Editable="false" />
+                        <GridColumn Field="@(nameof(Model.PaymentDocumentTypeName))" Title="Document Type" Width="150px" Visible="false" Editable="false" />
+                        <GridColumn Field="@(nameof(Model.PONum))" Title="PO Num" Width="110px" Locked="true" Editable="false" />
+                        <GridColumn Field="@(nameof(Model.Voucher))" Title="Voucher" Width="100px" Locked="true" Editable="false" />
+                        <GridColumn Field="@(nameof(Model.POAmount))" Title="PO Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="120px" Editable="false" />
+                        <GridColumn Field="@(nameof(Model.PO_VAT))" Title="PO VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="100px" Editable="false" />
+                        <GridColumn Field="@(nameof(Model.VoucherAmount))" Title="Voucher Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="154px" Editable="false" />
+                        <GridColumn Field="@(nameof(Model.VoucherVAT))" Title="Voucher VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="130px" Editable="false" />
+                        <GridColumn Field="@(nameof(Model.AdvanceAmount))" Title="Advance Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="157px" Editable="false" />
+                        <GridColumn Field="@(nameof(Model.AdvanceVAT))" Title="Advance VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="133px" Editable="false" />
+                        <GridColumn Field="@(nameof(Model.PaidAmount))" Title="Paid Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="130px" Editable="false" />
+                        <GridColumn Field="@(nameof(Model.PaidVAT))" Title="Paid VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="110px" Editable="false" />
+                        <GridColumn Field="@(nameof(Model.PaymentDocumentAmount))" Title="Paym. Doc. Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="177px" Editable="false" />
+                        <GridColumn Field="@(nameof(Model.PaymentDocumentVAT))" Title="Paym. Doc. VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="155px" Editable="false" />
+                        <GridColumn Field="@(nameof(Model.AmountToPay))" Title="Amount To Pay" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="145px" Editable="true" />
+                        <GridColumn Field="@(nameof(Model.VATToPay))" Title="VAT To Pay" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="122px" Editable="true" />
+                        <GridColumn Field="@(nameof(Model.TotalToPay))" Title="Total To Pay" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="130px" Editable="false" />
+                        <GridColumn Field="@(nameof(Model.IsVAT))" Title="VAT" TextAlign="ColumnTextAlign.Right" Width="75px" />
+                    </DataGridColumns>
                 </DataGrid>
             </GridLayoutItem>
             <GridLayoutItem Row="2" Column="1">
@@ -199,61 +201,63 @@
                           Height="@(!AppState.MobileView ? "calc((100vh - 462px) / 2)" : "auto")"
                           SearchFields="@(new List<string> {"PONum"})"
                           AggregateFields="@(new List<string> {"POAmount", "PO_VAT", "AdvanceAmount", "AdvanceVAT", "PaidPaymentDocumentAmount", "PaidPaymentDocumentVAT", "AmountToPay", "VATToPay", "RemainingAmount", "RemainingVAT"})">
-                    <GridColumn Field="@(nameof(Model.PONum))" Title="PO Num" Locked="true" Width="110px">
-                        <FooterTemplate>
-                            <div>Total:</div>
-                        </FooterTemplate>
-                    </GridColumn>
-                    <GridColumn Field="@(nameof(Model.POAmount))" Title="PO Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="120px">
-                        <FooterTemplate>
-                            <div class="text-right">@(context.Sum != null ? context.Sum?.ToString("N3") : "")</div>
-                        </FooterTemplate>
-                    </GridColumn>
-                    <GridColumn Field="@(nameof(Model.PO_VAT))" Title="PO VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="100px">
-                        <FooterTemplate>
-                            <div class="text-right">@(context.Sum != null ? context.Sum?.ToString("N3") : "")</div>
-                        </FooterTemplate>
-                    </GridColumn>
-                    <GridColumn Field="@(nameof(Model.AdvanceAmount))" Title="Advance Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="157px">
-                        <FooterTemplate>
-                            <div class="text-right">@(context.Sum != null ? context.Sum?.ToString("N3") : "")</div>
-                        </FooterTemplate>
-                    </GridColumn>
-                    <GridColumn Field="@(nameof(Model.AdvanceVAT))" Title="Advance VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="133px">
-                        <FooterTemplate>
-                            <div class="text-right">@(context.Sum != null ? context.Sum?.ToString("N3") : "")</div>
-                        </FooterTemplate>
-                    </GridColumn>
-                    <GridColumn Field="@(nameof(Model.PaidPaymentDocumentAmount))" Title="Paid Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="130px">
-                        <FooterTemplate>
-                            <div class="text-right">@(context.Sum != null ? context.Sum?.ToString("N3") : "")</div>
-                        </FooterTemplate>
-                    </GridColumn>
-                    <GridColumn Field="@(nameof(Model.PaidPaymentDocumentVAT))" Title="Paid VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="110px">
-                        <FooterTemplate>
-                            <div class="text-right">@(context.Sum != null ? context.Sum?.ToString("N3") : "")</div>
-                        </FooterTemplate>
-                    </GridColumn>
-                    <GridColumn Field="@(nameof(Model.AmountToPay))" Title="Amount To Pay" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="145px">
-                        <FooterTemplate>
-                            <div class="text-right">@(context.Sum != null ? context.Sum?.ToString("N3") : "")</div>
-                        </FooterTemplate>
-                    </GridColumn>
-                    <GridColumn Field="@(nameof(Model.VATToPay))" Title="VAT To Pay" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="122px">
-                        <FooterTemplate>
-                            <div class="text-right">@(context.Sum != null ? context.Sum?.ToString("N3") : "")</div>
-                        </FooterTemplate>
-                    </GridColumn>
-                    <GridColumn Field="@(nameof(Model.RemainingAmount))" Title="Remaining Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="155px">
-                        <FooterTemplate>
-                            <div class="text-right">@(context.Sum != null ? context.Sum?.ToString("N3") : "")</div>
-                        </FooterTemplate>
-                    </GridColumn>
-                    <GridColumn Field="@(nameof(Model.RemainingVAT))" Title="Remaining VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="145px">
-                        <FooterTemplate>
-                            <div class="text-right">@(context.Sum != null ? context.Sum?.ToString("N3") : "")</div>
-                        </FooterTemplate>
-                    </GridColumn>
+                    <DataGridColumns>
+                        <GridColumn Field="@(nameof(Model.PONum))" Title="PO Num" Locked="true" Width="110px">
+                            <FooterTemplate>
+                                <div>Total:</div>
+                            </FooterTemplate>
+                        </GridColumn>
+                        <GridColumn Field="@(nameof(Model.POAmount))" Title="PO Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="120px">
+                            <FooterTemplate>
+                                <div class="text-right">@(context.Sum != null ? context.Sum?.ToString("N3") : "")</div>
+                            </FooterTemplate>
+                        </GridColumn>
+                        <GridColumn Field="@(nameof(Model.PO_VAT))" Title="PO VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="100px">
+                            <FooterTemplate>
+                                <div class="text-right">@(context.Sum != null ? context.Sum?.ToString("N3") : "")</div>
+                            </FooterTemplate>
+                        </GridColumn>
+                        <GridColumn Field="@(nameof(Model.AdvanceAmount))" Title="Advance Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="157px">
+                            <FooterTemplate>
+                                <div class="text-right">@(context.Sum != null ? context.Sum?.ToString("N3") : "")</div>
+                            </FooterTemplate>
+                        </GridColumn>
+                        <GridColumn Field="@(nameof(Model.AdvanceVAT))" Title="Advance VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="133px">
+                            <FooterTemplate>
+                                <div class="text-right">@(context.Sum != null ? context.Sum?.ToString("N3") : "")</div>
+                            </FooterTemplate>
+                        </GridColumn>
+                        <GridColumn Field="@(nameof(Model.PaidPaymentDocumentAmount))" Title="Paid Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="130px">
+                            <FooterTemplate>
+                                <div class="text-right">@(context.Sum != null ? context.Sum?.ToString("N3") : "")</div>
+                            </FooterTemplate>
+                        </GridColumn>
+                        <GridColumn Field="@(nameof(Model.PaidPaymentDocumentVAT))" Title="Paid VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="110px">
+                            <FooterTemplate>
+                                <div class="text-right">@(context.Sum != null ? context.Sum?.ToString("N3") : "")</div>
+                            </FooterTemplate>
+                        </GridColumn>
+                        <GridColumn Field="@(nameof(Model.AmountToPay))" Title="Amount To Pay" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="145px">
+                            <FooterTemplate>
+                                <div class="text-right">@(context.Sum != null ? context.Sum?.ToString("N3") : "")</div>
+                            </FooterTemplate>
+                        </GridColumn>
+                        <GridColumn Field="@(nameof(Model.VATToPay))" Title="VAT To Pay" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="122px">
+                            <FooterTemplate>
+                                <div class="text-right">@(context.Sum != null ? context.Sum?.ToString("N3") : "")</div>
+                            </FooterTemplate>
+                        </GridColumn>
+                        <GridColumn Field="@(nameof(Model.RemainingAmount))" Title="Remaining Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="155px">
+                            <FooterTemplate>
+                                <div class="text-right">@(context.Sum != null ? context.Sum?.ToString("N3") : "")</div>
+                            </FooterTemplate>
+                        </GridColumn>
+                        <GridColumn Field="@(nameof(Model.RemainingVAT))" Title="Remaining VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="145px">
+                            <FooterTemplate>
+                                <div class="text-right">@(context.Sum != null ? context.Sum?.ToString("N3") : "")</div>
+                            </FooterTemplate>
+                        </GridColumn>
+                    </DataGridColumns>
                 </DataGrid>
             </GridLayoutItem>
             <GridLayoutItem Row="@(!AppState.MobileView? 2 : 3)" Column="@(!AppState.MobileView? 2 : 1)">
@@ -266,20 +270,22 @@
                           CheckBoxOnlySelection="true"
                           Width="@(AppState.MobileView ? "calc(100vw - 40px)" : AppState.OpenDrawer ? "calc((100vw - 288px) / 2)" : "calc((100vw - 112px) / 2)")"
                           Height="@(!AppState.MobileView ? "calc((100vh - 462px) / 2)" : "auto")"
-                          SearchFields="@(new List<string> {"ApproveStageDetailsName", "FullName", "ApproveStatusName", "Comment"})">
-                    <GridColumn Field="@(nameof(ApproveStage.ApproveStageDetailsName))" Title="Stage Name" Width="140px" />
-                    <GridColumn Field="@(nameof(ApproveStage.Sequence))" Title="Sequence" Width="115px" />
-                    <GridColumn Field="@(nameof(ApproveStage.FullName))" Title="Approver" Width="140px" />
-                    <GridColumn Field="@(nameof(ApproveStage.ApproveStatusName))" Title="Approve Status" Width="145px" />
-                    <GridColumn Field="@(nameof(ApproveStage.ApproveDate))" Title="Approve Date" TextAlign="ColumnTextAlign.Right" Width="135px">
-                        <Template>
-                            @{
-                                var rowContext = context as ApproveStage;
-                                <text>@(rowContext.ApproveDate > new DateTime(1, 1, 1) ? rowContext.ApproveDate.ToString("dd.MM.yyyy") : "n.a.")</text>
-                            }
-                        </Template>
-                    </GridColumn>
-                    <GridColumn Field="@(nameof(ApproveStage.Comment))" Title="Comment" Width="500px" />
+                          SearchFields="@(new List<string> { "ApproveStageDetailsName", "FullName", "ApproveStatusName", "Comment" })">
+                    <DataGridColumns>
+                        <GridColumn Field="@(nameof(ApproveStage.ApproveStageDetailsName))" Title="Stage Name" Width="140px" />
+                        <GridColumn Field="@(nameof(ApproveStage.Sequence))" Title="Sequence" Width="115px" />
+                        <GridColumn Field="@(nameof(ApproveStage.FullName))" Title="Approver" Width="140px" />
+                        <GridColumn Field="@(nameof(ApproveStage.ApproveStatusName))" Title="Approve Status" Width="145px" />
+                        <GridColumn Field="@(nameof(ApproveStage.ApproveDate))" Title="Approve Date" TextAlign="ColumnTextAlign.Right" Width="135px">
+                            <Template>
+                                @{
+                                    var rowContext = context as ApproveStage;
+                                    <text>@(rowContext.ApproveDate > new DateTime(1, 1, 1) ? rowContext.ApproveDate.ToString("dd.MM.yyyy") : "n.a.")</text>
+                                }
+                            </Template>
+                        </GridColumn>
+                        <GridColumn Field="@(nameof(ApproveStage.Comment))" Title="Comment" Width="500px" />
+                    </DataGridColumns>
                 </DataGrid>
             </GridLayoutItem>
 

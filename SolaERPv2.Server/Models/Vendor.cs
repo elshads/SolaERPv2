@@ -17,6 +17,7 @@ public class Vendor : BaseModel
     public Analysis? PaymentTerms { get; set; }
     public List<int>? ProvidedProducts { get; set; }
     public List<Bank>? BankList { get; set; }
+    public List<AppUser>? CompanyUsers { get; set; }
     public EvaluationForm? EvaluationForm { get; set; }
     public string? OtherProducts { get; set; }
     public string? RepresentedProducts { get; set; }

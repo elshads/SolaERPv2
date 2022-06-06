@@ -10,92 +10,99 @@
         <Content>
             <DataGrid Data="@userList"
                       CanExport="true"
+                      CanDelete="true"
+                      CanReset="false"
+                      ResetButtonText="Reset Sessions"
+                      OnDelete="@((IEnumerable<AppUser> deletedUsers) => OnUserDelete(deletedUsers))"
+                      OnReset="@((IEnumerable<AppUser> resetUsers) => OnUserReset(resetUsers))"
                       Height="calc(100vh - 240px)"
                       ShowSearchBar="true"
                       OnRowDoubleClick="@OnRowDoubleClickHandler"
                       SearchFields="@(new List<string> { "UserName", "FullName", "CompanyName", "Position", "StatusName" })"
                       @bind-SelectedItems="@selectedUserList">
-                <GridColumn Field="@(nameof(AppUser.Id))" Title="Id" Width="70px" Editable="false" TextAlign="ColumnTextAlign.Right" Visible="false" />
-                <GridColumn Field="@(nameof(AppUser.UserName))" Title="UserName" Width="260px" />
-                <GridColumn Field="@(nameof(AppUser.FullName))" Title="Name" Width="180px" />
-                <GridColumn Field="@(nameof(AppUser.CompanyName))" Title="Company" Width="300px" />
-                <GridColumn Field="@(nameof(AppUser.Position))" Title="Position" Width="180px" />
-                <GridColumn Field="@(nameof(AppUser.Sessions))" Title="Sessions" Width="110px">
-                    <Template>
-                        <div class="flex-center-y flex-center-x">
+                <DataGridColumns>
+                    <GridColumn Field="@(nameof(AppUser.Id))" Title="Id" Width="70px" Editable="false" TextAlign="ColumnTextAlign.Right" Visible="false" />
+                    <GridColumn Field="@(nameof(AppUser.UserName))" Title="UserName" Width="260px" />
+                    <GridColumn Field="@(nameof(AppUser.FullName))" Title="Name" Width="180px" />
+                    <GridColumn Field="@(nameof(AppUser.CompanyName))" Title="Company" Width="300px" />
+                    <GridColumn Field="@(nameof(AppUser.Position))" Title="Position" Width="180px" />
+                    <GridColumn Field="@(nameof(AppUser.Sessions))" Title="Sessions" Width="110px">
+                        <Template>
+                            <div class="flex-center-y flex-center-x">
+                                @{
+                                    var user = context as AppUser;
+                                    if (user != null && user.Sessions > 0)
+                                    {
+                                        <MudIcon Icon="@Icons.Filled.DesktopWindows" Color="Color.Success" Size="Size.Small" />
+                                        <span class="k-px-2">@(user.Sessions)</span>
+                                    }
+                                    else if (user != null && user.Sessions < 1)
+                                    {
+                                        <MudIcon Icon="@Icons.Filled.DesktopAccessDisabled" Color="Color.Default" Size="Size.Small" />
+                                        <span class="k-px-2">@(user.Sessions)</span>
+                                    }
+                                    else
+                                    {
+                                        <MudIcon Icon="@Icons.Filled.DesktopAccessDisabled" Color="Color.Default" Size="Size.Small" />
+                                        <span class="k-px-2">0</span>
+                                    }
+                                }
+                            </div>
+                        </Template>
+                    </GridColumn>
+                    <GridColumn Field="@(nameof(AppUser.LastActivity))" Title="Last Activity" Width="150px">
+                        <Template>
                             @{
                                 var user = context as AppUser;
-                                if (user != null && user.Sessions > 0)
+                                if (user != null && user.LastActivity > new DateTime(1, 1, 1))
                                 {
-                                    <MudIcon Icon="@Icons.Filled.DesktopWindows" Color="Color.Success" Size="Size.Small" />
-                                    <span class="k-px-2">@(user.Sessions)</span>
-                                }
-                                else if (user != null && user.Sessions < 1)
-                                {
-                                    <MudIcon Icon="@Icons.Filled.DesktopAccessDisabled" Color="Color.Default" Size="Size.Small" />
-                                    <span class="k-px-2">@(user.Sessions)</span>
-                                }
-                                else
-                                {
-                                    <MudIcon Icon="@Icons.Filled.DesktopAccessDisabled" Color="Color.Default" Size="Size.Small" />
-                                    <span class="k-px-2">0</span>
+                                    <span>@(user.LastActivity.ToString("yyyy-MM-dd HH:mm"))</span>
                                 }
                             }
-                        </div>
-                    </Template>
-                </GridColumn>
-                <GridColumn Field="@(nameof(AppUser.LastActivity))" Title="Last Activity" Width="150px">
-                    <Template>
-                        @{
-                            var user = context as AppUser;
-                            if (user != null && user.LastActivity > new DateTime(1, 1, 1))
-                            {
-                                <span>@(user.LastActivity.ToString("yyyy-MM-dd HH:mm"))</span>
-                            }
-                        }
-                    </Template>
-                </GridColumn>
-                <GridColumn Field="@(nameof(AppUser.CreatedOn))" Title="Created" Width="150px">
-                    <Template>
-                        @{
-                            var user = context as AppUser;
-                            if (user != null && user.CreatedOn > new DateTime(1, 1, 1))
-                            {
-                                <span>@(user.CreatedOn.ToString("yyyy-MM-dd HH:mm"))</span>
-                            }
-                        }
-                    </Template>
-                </GridColumn>
-                <GridColumn Field="@(nameof(AppUser.StatusName))" Title="Status" Width="100px">
-                    <Template>
-                        <div class="flex-center-y">
+                        </Template>
+                    </GridColumn>
+                    <GridColumn Field="@(nameof(AppUser.CreatedOn))" Title="Created" Width="150px">
+                        <Template>
                             @{
                                 var user = context as AppUser;
-                                if (user is { StatusId: 0 })
+                                if (user != null && user.CreatedOn > new DateTime(1, 1, 1))
                                 {
-                                    <MudIcon Icon="@Icons.Filled.Person" Color="Color.Success" Size="Size.Small" />
-                                }
-                                else if (user is { StatusId: 1 })
-                                {
-                                    <MudIcon Icon="@Icons.Filled.Person" Color="Color.Default" Size="Size.Small" />
-                                }
-                                else if (user is { StatusId: 2 })
-                                {
-                                    <MudIcon Icon="@Icons.Filled.Person" Color="Color.Error" Size="Size.Small" />
-                                }
-                                else if (user is { StatusId: 9 })
-                                {
-                                    <MudIcon Icon="@Icons.Filled.PersonOff" Color="Color.Default" Size="Size.Small" />
-                                }
-                                else
-                                {
-                                    <span>-contact-dev-</span>
+                                    <span>@(user.CreatedOn.ToString("yyyy-MM-dd HH:mm"))</span>
                                 }
                             }
-                            <span class="k-px-2">@user.StatusName</span>
-                        </div>
-                    </Template>
-                </GridColumn>
+                        </Template>
+                    </GridColumn>
+                    <GridColumn Field="@(nameof(AppUser.StatusName))" Title="Status" Width="100px">
+                        <Template>
+                            <div class="flex-center-y">
+                                @{
+                                    var user = context as AppUser;
+                                    if (user is { StatusId: 0 })
+                                    {
+                                        <MudIcon Icon="@Icons.Filled.Person" Color="Color.Success" Size="Size.Small" />
+                                    }
+                                    else if (user is { StatusId: 1 })
+                                    {
+                                        <MudIcon Icon="@Icons.Filled.Person" Color="Color.Default" Size="Size.Small" />
+                                    }
+                                    else if (user is { StatusId: 2 })
+                                    {
+                                        <MudIcon Icon="@Icons.Filled.Person" Color="Color.Error" Size="Size.Small" />
+                                    }
+                                    else if (user is { StatusId: 9 })
+                                    {
+                                        <MudIcon Icon="@Icons.Filled.PersonOff" Color="Color.Default" Size="Size.Small" />
+                                    }
+                                    else
+                                    {
+                                        <span>-contact-dev-</span>
+                                    }
+                                }
+                                <span class="k-px-2">@user.StatusName</span>
+                            </div>
+                        </Template>
+                    </GridColumn>
+                </DataGridColumns>
             </DataGrid>
         </Content>
     </TabStripTab>
@@ -108,35 +115,6 @@
 </TelerikTabStrip>
 
 
-@*<TelerikDialog Visible="@showApproveDialog"
-               @ref="approveDialogRef"
-               VisibleChanged="@ShowApproveDialogChanged"
-               Title="@(approveSelected ? "Approve?" : "Reject?")"
-               Width="440px"
-               CloseOnOverlayClick="false"
-               ShowCloseButton="true">
-    <DialogContent>
-        <div class="fixed-width k-form">
-            <div class="k-form-field">
-                <div class="k-form-field-wrap">
-                    <label for="approve-comment" class="k-label k-form-label">Comment:</label>
-                    <div class="k-form-field-wrap">
-                        <TelerikTextArea Id="approve-comment"
-                                         AutoSize="true"
-                                         PlaceHolder="Enter your text here"
-                                         @bind-Value="@approveComment">
-                        </TelerikTextArea>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </DialogContent>
-    <DialogButtons>
-        <TelerikButton OnClick="@(() => ApproveRejectConfirmed())" ThemeColor="@(approveSelected ? ThemeConstants.Button.ThemeColor.Primary : ThemeConstants.Button.ThemeColor.Error)">@(approveSelected ? "Approve" : "Reject")</TelerikButton>
-        <TelerikButton OnClick="@(() => ApproveDialogClosed())">Close</TelerikButton>
-    </DialogButtons>
-</TelerikDialog>*@
-
 
 @code {
     [CascadingParameter] AppState? AppState { get; set; }
@@ -144,6 +122,7 @@
 
     List<AppUser>? userList = new();
     IEnumerable<AppUser>? selectedUserList = new List<AppUser>();
+    IEnumerable<AppUser>? deletedUserList = new List<AppUser>();
     IEnumerable<UserStatus>? userStatusList = new List<UserStatus>();
 
     //bool _showApproveDialog = false;
@@ -215,4 +194,14 @@
         AppState.Loading = false;
     }
 
+    async Task OnUserDelete(IEnumerable<AppUser> deletedUsers)
+    {
+        var sqlResult = await AppUserService.DeleteById(deletedUsers.Select(e => e.Id).ToList());
+        if (sqlResult.QueryResultMessage != null) { AppState.ShowAlert(sqlResult.QueryResultMessage, Severity.Error); }
+    }
+
+    async Task OnUserReset(IEnumerable<AppUser> resetUsers)
+    {
+        var sqlResult = await AppUserService.ResetSessionsCounter(resetUsers.Select(e => e.Id).ToList());
+    }
 }

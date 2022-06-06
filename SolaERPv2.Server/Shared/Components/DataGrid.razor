@@ -27,6 +27,7 @@
              OnRowClick="@OnRowClickHandler"
              OnRowDoubleClick="@OnRowDoubleClickHandler"
              OnRowContextMenu="@(ShowContextMenu ? OnRowContextMenu : null)"
+             OnRowRender="@OnRowRenderHandler"
              OnCreate="@OnCreateHandler"
              OnEdit="@OnEditHandler"
              OnCancel="@OnCancelHandler"
@@ -35,6 +36,12 @@
     <GridSettings>
         <GridPagerSettings PageSizes="@(new List<int?> { 1, 10, 20, 50, 100, 1000, null })" ButtonCount="5" InputType="PagerInputType.Buttons" />
     </GridSettings>
+    <DetailTemplate>
+        @if (HierarchyDetailsField != null && HierarchyContent != null) {
+            var itemContext = (TItem)context;
+            @HierarchyContent(itemContext)
+        }
+    </DetailTemplate>
     <GridToolBar>
         @if (Title != null)
         {
@@ -48,30 +55,34 @@
             }
             @if (CanAdd)
             {
-                <GridCommandButton Command="Add" Icon="add" Enabled="@(!inEditMode)" OnClick="OnAddHandler">Add</GridCommandButton>
+                <GridCommandButton Command="Add" Icon="add" Enabled="@(!inEditMode)" OnClick="OnAddHandler">@AddButtonText</GridCommandButton>
             }
             @if (CanDelete)
             {
-                <GridCommandButton Icon="delete" Enabled="@(!inEditMode && SelectedItems.Count() > 0)" OnClick="@OnDeleteSelectedItemsHandler">Delete</GridCommandButton>
+                <GridCommandButton Icon="delete" Enabled="@(!inEditMode && SelectedItems.Any())" OnClick="@OnDeleteSelectedItemsHandler">@DeleteButtonText</GridCommandButton>
+            }
+            @if (CanReset)
+            {
+                <GridCommandButton Icon="reset" Enabled="@(!inEditMode && SelectedItems.Any())" OnClick="@OnResetSelectedItemsHandler">@ResetButtonText</GridCommandButton>
             }
 
         }
         <span class="k-toolbar-spacer" />
         @if (CanMoveLeft)
         {
-            <GridCommandButton Icon="chevron-left" Enabled="@(!inEditMode && SelectedItems.Count() > 0)" OnClick="@(() => MoveAllLeftHandler(SelectedItems))">Move Left</GridCommandButton>
+            <GridCommandButton Icon="chevron-left" Enabled="@(!inEditMode && SelectedItems.Any())" OnClick="@(() => MoveAllLeftHandler(SelectedItems))">Move Left</GridCommandButton>
         }
         @if (CanMoveRight)
         {
-            <GridCommandButton Icon="chevron-right" Enabled="@(!inEditMode && SelectedItems.Count() > 0)" OnClick="@(() => MoveAllRightHandler(SelectedItems))">Move Right</GridCommandButton>
+            <GridCommandButton Icon="chevron-right" Enabled="@(!inEditMode && SelectedItems.Any())" OnClick="@(() => MoveAllRightHandler(SelectedItems))">Move Right</GridCommandButton>
         }
         @if (CanMoveUp)
         {
-            <GridCommandButton Icon="chevron-up" Enabled="@(!inEditMode && SelectedItems.Count() > 0)" OnClick="@(() => MoveAllUpHandler(SelectedItems))">Move Up</GridCommandButton>
+            <GridCommandButton Icon="chevron-up" Enabled="@(!inEditMode && SelectedItems.Any())" OnClick="@(() => MoveAllUpHandler(SelectedItems))">Move Up</GridCommandButton>
         }
         @if (CanMoveDown)
         {
-            <GridCommandButton Icon="chevron-down" Enabled="@(!inEditMode && SelectedItems.Count() > 0)" OnClick="@(() => MoveAllDownHandler(SelectedItems))">Move Down</GridCommandButton>
+            <GridCommandButton Icon="chevron-down" Enabled="@(!inEditMode && SelectedItems.Any())" OnClick="@(() => MoveAllDownHandler(SelectedItems))">Move Down</GridCommandButton>
         }
         @if (ShowToolbar)
         {
@@ -100,7 +111,7 @@
         }
     </GridToolBar>
     <GridAggregates>
-        @foreach(var item in AggregateFields )
+        @foreach (var item in AggregateFields)
         {
             <GridAggregate Field="@item" Aggregate="@GridAggregateType.Sum" />
         }
@@ -121,23 +132,23 @@
             }
             @if (CanMoveLeft)
             {
-                <GridCommandButton Icon="chevron-left" ShowInEdit="false" Enabled="(!inEditMode)" OnClick="@((e) => MoveLeftHandler(e))" />
+                <GridCommandButton Icon="chevron-left" ShowInEdit="false" Enabled="(!inEditMode)" OnClick="@MoveLeftHandler" />
             }
             @if (CanMoveRight)
             {
-                <GridCommandButton Icon="chevron-right" ShowInEdit="false" Enabled="(!inEditMode)" OnClick="@((e) => MoveRightHandler(e))" />
+                <GridCommandButton Icon="chevron-right" ShowInEdit="false" Enabled="(!inEditMode)" OnClick="@MoveRightHandler" />
             }
             @if (CanMoveUp)
             {
-                <GridCommandButton Icon="chevron-up" ShowInEdit="false" Enabled="(!inEditMode)" OnClick="@((e) => MoveUpHandler(e))" />
+                <GridCommandButton Icon="chevron-up" ShowInEdit="false" Enabled="(!inEditMode)" OnClick="@MoveUpHandler" />
             }
             @if (CanMoveDown)
             {
-                <GridCommandButton Icon="chevron-down" ShowInEdit="false" Enabled="(!inEditMode)" OnClick="@((e) => MoveDownHandler(e))" />
+                <GridCommandButton Icon="chevron-down" ShowInEdit="false" Enabled="(!inEditMode)" OnClick="@MoveDownHandler" />
             }
         </GridCommandColumn>
         <GridCheckboxColumn CheckBoxOnlySelection="@CheckBoxOnlySelection" ShowColumnMenu="false" VisibleInColumnChooser="false" Reorderable="false" Locked="true" Width="42px" Visible="@(!inEditMode && !ReadOnly && ShowCheckBoxColumn && showCheckBox)" />
-        @ChildContent
+        @DataGridColumns
     </GridColumns>
 </TelerikGrid>
 
@@ -154,7 +165,8 @@
     [CascadingParameter] public AppState? AppState { get; set; }
     [CascadingParameter] public DialogFactory? Dialogs { get; set; }
 
-    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? DataGridColumns { get; set; }
+    [Parameter] public RenderFragment<TItem>? HierarchyContent { get; set; }
 
     [Parameter] public Guid Key { get; set; }
 
@@ -189,6 +201,7 @@
     [Parameter] public EventCallback<GridCommandEventArgs> OnUpdate { get; set; }
     [Parameter] public EventCallback<GridCommandEventArgs> OnCancel { get; set; }
     [Parameter] public EventCallback<IEnumerable<TItem>> OnDelete { get; set; }
+    [Parameter] public EventCallback<IEnumerable<TItem>> OnReset { get; set; }
 
     [Parameter] public EventCallback<IEnumerable<TItem>> OnMoveAllLeft { get; set; }
     [Parameter] public EventCallback<IEnumerable<TItem>> OnMoveAllRight { get; set; }
@@ -202,6 +215,7 @@
 
     [Parameter] public string? Title { get; set; }
     [Parameter] public bool CheckBoxOnlySelection { get; set; } = false;
+    [Parameter] public string? HierarchyDetailsField { get; set; }
     [Parameter] public bool RowDraggable { get; set; } = false;
     [Parameter] public bool ShowToolbar { get; set; } = true;
     [Parameter] public bool ShowCheckBoxColumn { get; set; } = true;
@@ -215,11 +229,16 @@
     [Parameter] public bool CanAdd { get; set; } = false;
     [Parameter] public bool CanEdit { get; set; } = false;
     [Parameter] public bool CanDelete { get; set; } = false;
+    [Parameter] public bool CanReset { get; set; } = false;
     [Parameter] public bool CanExport { get; set; } = false;
     [Parameter] public bool CanMoveLeft { get; set; } = false;
     [Parameter] public bool CanMoveRight { get; set; } = false;
     [Parameter] public bool CanMoveUp { get; set; } = false;
     [Parameter] public bool CanMoveDown { get; set; } = false;
+
+    [Parameter] public string? AddButtonText { get; set; } = "Add";
+    [Parameter] public string? DeleteButtonText { get; set; } = "Delete";
+    [Parameter] public string? ResetButtonText { get; set; } = "Reset";
 
     [Parameter] public bool CustomAdd { get; set; } = false;
     [Parameter] public bool CustomCreate { get; set; } = false;
@@ -388,6 +407,11 @@
     {
         await DeleteSelectedItems(SelectedItems);
         await OnDelete.InvokeAsync(deletedItems);
+    }
+
+    async Task OnResetSelectedItemsHandler()
+    {
+        await OnReset.InvokeAsync(SelectedItems);
     }
 
     async Task OnDeleteFromContextMenuHandler(GridCommandEventArgs args)
@@ -791,7 +815,19 @@
         await DataChanged.InvokeAsync(Data);
     }
 
-
+    void OnRowRenderHandler(GridRowRenderEventArgs args)
+    {
+        var argsItem = (TItem)args.Item;
+        
+        var hasHierarchy = false;
+        if (HierarchyDetailsField != null)
+        {
+            var listData = (IList) argsItem.GetType().GetProperty(HierarchyDetailsField)?.GetValue(argsItem);
+            hasHierarchy = listData != null && listData.Count > 0;
+        }
+        args.Class = hasHierarchy ? "" : "no-children";
+    }
+    
     // component functions - end
 
     // -----------------------
@@ -824,4 +860,13 @@
     .k-pager-info, .k-pager-sizes {
         white-space: nowrap !important;
     }
+
+    .k-grid tr.no-children td.k-hierarchy-cell * {
+        display: none;
+    }
+
+    .k-grid tr.no-children td.k-hierarchy-cell {
+        pointer-events: none;
+    }
+    
 </style>

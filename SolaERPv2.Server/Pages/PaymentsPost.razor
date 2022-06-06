@@ -102,9 +102,9 @@
                     </div>
                 </div>
 
-                <ReadOnlyField Value="@(currentModel.ExpenseCode)" Label="Expense Code:" Class="flex-center-y flex-nowrap k-mb-2" LabelClass="k-mr-2 label-width" InputClass="item-width"/>
-                <ReadOnlyField Value="@(currentModel.GroupProject)" Label="Group Project:" Class="flex-center-y flex-nowrap k-mb-2" LabelClass="k-mr-2 label-width" InputClass="item-width"/>
-                <ReadOnlyField Value="@(currentModel.Project)" Label="Project:" Class="flex-center-y flex-nowrap k-mb-2" LabelClass="k-mr-2 label-width" InputClass="item-width"/>
+                <ReadOnlyField Value="@(currentModel.ExpenseCode)" Label="Expense Code:" Class="flex-center-y flex-nowrap k-mb-2" LabelClass="k-mr-2 label-width" InputClass="item-width" />
+                <ReadOnlyField Value="@(currentModel.GroupProject)" Label="Group Project:" Class="flex-center-y flex-nowrap k-mb-2" LabelClass="k-mr-2 label-width" InputClass="item-width" />
+                <ReadOnlyField Value="@(currentModel.Project)" Label="Project:" Class="flex-center-y flex-nowrap k-mb-2" LabelClass="k-mr-2 label-width" InputClass="item-width" />
 
                 <div class="flex-center-y flex-nowrap k-mb-2">
                     <span class="k-mr-2 label-width">Bank Charge:</span>
@@ -128,79 +128,81 @@
               @bind-SelectedItems="@selectedPaymentDocumentDetailList"
               Height="calc(100vh - 440px)"
               ShowSearchBar="false">
-        <GridColumn Field="@(nameof(PaymentDocumentDetail.PaymentDocumentDetailId))" Title="Id" Width="80px" Editable="false" Locked="true" Visible="false" />
-        <GridColumn Field="@(nameof(PaymentDocumentDetail.PONum))" Title="PO Num" Width="110px" Editable="false" Locked="true" />
-        <GridColumn Field="@(nameof(PaymentDocumentDetail.Voucher))" Title="Voucher" Width="100px" Editable="false" />
-        <GridColumn Field="@(nameof(PaymentDocumentDetail.BankAmount))" Title="Bank Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="140px">
-            <Template>
-                @{
-                    selectedPaymentDocumentDetail = context as PaymentDocumentDetail;
-                    <TelerikNumericTextBox Arrows="false" Format="N3" Class="text-right" Value="@(selectedPaymentDocumentDetail.BankAmount)" ValueChanged="@((decimal value) => BankAmountChanged(value))" />
-                }
-            </Template>
-        </GridColumn>
-        <GridColumn Field="@(nameof(PaymentDocumentDetail.VendorAmount))" Title="Vendor Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="140px">
-            <Template>
-                @{
-                    selectedPaymentDocumentDetail = context as PaymentDocumentDetail;
-                    <TelerikNumericTextBox Arrows="false" Format="N3" Class="text-right" Value="@(selectedPaymentDocumentDetail.VendorAmount)" ValueChanged="@((decimal value) => VendorAmountChanged(value))" />
-                }
-            </Template>
-        </GridColumn>
-        <GridColumn Field="@(nameof(PaymentDocumentDetail.BankRate))" Title="Bank Rate" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="140px">
-            <Template>
-                @{
-                    selectedPaymentDocumentDetail = context as PaymentDocumentDetail;
-                    <TelerikNumericTextBox Arrows="false" Format="N3" Class="text-right" Value="@(selectedPaymentDocumentDetail.BankRate)" ValueChanged="@((decimal value) => BankRateChanged(value))" />
-                }
-            </Template>
-        </GridColumn>
-        <GridColumn Field="@(nameof(PaymentDocumentDetail.VendorRate))" Title="Vendor Rate" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="140px">
-            <Template>
-                @{
-                    selectedPaymentDocumentDetail = context as PaymentDocumentDetail;
-                    <TelerikNumericTextBox Arrows="false" Format="N3" Class="text-right" Value="@(selectedPaymentDocumentDetail.VendorRate)" ValueChanged="@((decimal value) => VendorRateChanged(value))" />
-                }
-            </Template>
-        </GridColumn>
-        <GridColumn Field="@(nameof(PaymentDocumentDetail.VAT))" Title="VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="100px">
-            <Template>
-                @{
-                    selectedPaymentDocumentDetail = context as PaymentDocumentDetail;
-                    <TelerikNumericTextBox Arrows="false" Format="N3" Class="text-right" Value="@(selectedPaymentDocumentDetail.VAT)" ValueChanged="@((decimal value) => VATChanged(value))" />
-                }
-            </Template>
-        </GridColumn>
-        <GridColumn Field="@(nameof(PaymentDocumentDetail.VATBankAmount))" Title="VAT Bank Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="140px">
-            <Template>
-                @{
-                    selectedPaymentDocumentDetail = context as PaymentDocumentDetail;
-                    <TelerikNumericTextBox Arrows="false" Format="N3" Class="text-right" Value="@(selectedPaymentDocumentDetail.VATBankAmount)" ValueChanged="@((decimal value) => VATBankAmountChanged(value))" />
-                }
-            </Template>
-        </GridColumn>
+        <DataGridColumns>
+            <GridColumn Field="@(nameof(PaymentDocumentDetail.PaymentDocumentDetailId))" Title="Id" Width="80px" Editable="false" Locked="true" Visible="false" />
+            <GridColumn Field="@(nameof(PaymentDocumentDetail.PONum))" Title="PO Num" Width="110px" Editable="false" Locked="true" />
+            <GridColumn Field="@(nameof(PaymentDocumentDetail.Voucher))" Title="Voucher" Width="100px" Editable="false" />
+            <GridColumn Field="@(nameof(PaymentDocumentDetail.BankAmount))" Title="Bank Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="140px">
+                <Template>
+                    @{
+                        selectedPaymentDocumentDetail = context as PaymentDocumentDetail;
+                        <TelerikNumericTextBox Arrows="false" Format="N3" Class="text-right" Value="@(selectedPaymentDocumentDetail.BankAmount)" ValueChanged="@((decimal value) => BankAmountChanged(value))" />
+                    }
+                </Template>
+            </GridColumn>
+            <GridColumn Field="@(nameof(PaymentDocumentDetail.VendorAmount))" Title="Vendor Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="140px">
+                <Template>
+                    @{
+                        selectedPaymentDocumentDetail = context as PaymentDocumentDetail;
+                        <TelerikNumericTextBox Arrows="false" Format="N3" Class="text-right" Value="@(selectedPaymentDocumentDetail.VendorAmount)" ValueChanged="@((decimal value) => VendorAmountChanged(value))" />
+                    }
+                </Template>
+            </GridColumn>
+            <GridColumn Field="@(nameof(PaymentDocumentDetail.BankRate))" Title="Bank Rate" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="140px">
+                <Template>
+                    @{
+                        selectedPaymentDocumentDetail = context as PaymentDocumentDetail;
+                        <TelerikNumericTextBox Arrows="false" Format="N3" Class="text-right" Value="@(selectedPaymentDocumentDetail.BankRate)" ValueChanged="@((decimal value) => BankRateChanged(value))" />
+                    }
+                </Template>
+            </GridColumn>
+            <GridColumn Field="@(nameof(PaymentDocumentDetail.VendorRate))" Title="Vendor Rate" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="140px">
+                <Template>
+                    @{
+                        selectedPaymentDocumentDetail = context as PaymentDocumentDetail;
+                        <TelerikNumericTextBox Arrows="false" Format="N3" Class="text-right" Value="@(selectedPaymentDocumentDetail.VendorRate)" ValueChanged="@((decimal value) => VendorRateChanged(value))" />
+                    }
+                </Template>
+            </GridColumn>
+            <GridColumn Field="@(nameof(PaymentDocumentDetail.VAT))" Title="VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="100px">
+                <Template>
+                    @{
+                        selectedPaymentDocumentDetail = context as PaymentDocumentDetail;
+                        <TelerikNumericTextBox Arrows="false" Format="N3" Class="text-right" Value="@(selectedPaymentDocumentDetail.VAT)" ValueChanged="@((decimal value) => VATChanged(value))" />
+                    }
+                </Template>
+            </GridColumn>
+            <GridColumn Field="@(nameof(PaymentDocumentDetail.VATBankAmount))" Title="VAT Bank Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="140px">
+                <Template>
+                    @{
+                        selectedPaymentDocumentDetail = context as PaymentDocumentDetail;
+                        <TelerikNumericTextBox Arrows="false" Format="N3" Class="text-right" Value="@(selectedPaymentDocumentDetail.VATBankAmount)" ValueChanged="@((decimal value) => VATBankAmountChanged(value))" />
+                    }
+                </Template>
+            </GridColumn>
 
-        <GridColumn Field="@(nameof(PaymentDocumentDetail.PaidAmount))" Title="Paid Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="130px" Editable="false" />
-        <GridColumn Field="@(nameof(PaymentDocumentDetail.PaidVAT))" Title="Paid VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="110px" Editable="false" />
-        <GridColumn Field="@(nameof(PaymentDocumentDetail.AmountToPay))" Title="Amount To Pay" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="145px" Editable="false" Visible="false" />
-        <GridColumn Field="@(nameof(PaymentDocumentDetail.VATToPay))" Title="VAT To Pay" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="122px" Editable="false" Visible="false" />
-        <GridColumn Field="@(nameof(PaymentDocumentDetail.POAmount))" Title="PO Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="120px" Editable="false" Visible="false" />
-        <GridColumn Field="@(nameof(PaymentDocumentDetail.PO_VAT))" Title="PO VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="100px" Editable="false" Visible="false" />
-        <GridColumn Field="@(nameof(PaymentDocumentDetail.VoucherAmount))" Title="Voucher Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="154px" Editable="false" Visible="false" />
-        <GridColumn Field="@(nameof(PaymentDocumentDetail.VoucherVAT))" Title="Voucher VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="130px" Editable="false" Visible="false" />
-        <GridColumn Field="@(nameof(PaymentDocumentDetail.AdvanceAmount))" Title="Advance Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="157px" Editable="false" Visible="false" />
-        <GridColumn Field="@(nameof(PaymentDocumentDetail.AdvanceVAT))" Title="Advance VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="133px" Editable="false" Visible="false" />
-        <GridColumn Field="@(nameof(PaymentDocumentDetail.PaymentDocumentAmount))" Title="Paym. Doc. Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="177px" Editable="false" Visible="false" />
-        <GridColumn Field="@(nameof(PaymentDocumentDetail.PaymentDocumentVAT))" Title="Paym. Doc. VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="155px" Editable="false" Visible="false" />
-        <GridColumn Field="@(nameof(PaymentDocumentDetail.TotalToPay))" Title="Total To Pay" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="130px" Editable="false" Visible="false" />
-        <GridColumn Field="@(nameof(PaymentDocumentDetail.IsVAT))" Title="VAT" TextAlign="ColumnTextAlign.Right" Width="75px" Editable="false" Visible="false">
-            <Template>
-                @{
-                    var vat = (context as PaymentDocumentDetail).IsVAT;
-                    <div>@(vat > 0 ? (vat + "%") : "")</div>
-                }
-            </Template>
-        </GridColumn>
+            <GridColumn Field="@(nameof(PaymentDocumentDetail.PaidAmount))" Title="Paid Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="130px" Editable="false" />
+            <GridColumn Field="@(nameof(PaymentDocumentDetail.PaidVAT))" Title="Paid VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="110px" Editable="false" />
+            <GridColumn Field="@(nameof(PaymentDocumentDetail.AmountToPay))" Title="Amount To Pay" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="145px" Editable="false" Visible="false" />
+            <GridColumn Field="@(nameof(PaymentDocumentDetail.VATToPay))" Title="VAT To Pay" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="122px" Editable="false" Visible="false" />
+            <GridColumn Field="@(nameof(PaymentDocumentDetail.POAmount))" Title="PO Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="120px" Editable="false" Visible="false" />
+            <GridColumn Field="@(nameof(PaymentDocumentDetail.PO_VAT))" Title="PO VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="100px" Editable="false" Visible="false" />
+            <GridColumn Field="@(nameof(PaymentDocumentDetail.VoucherAmount))" Title="Voucher Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="154px" Editable="false" Visible="false" />
+            <GridColumn Field="@(nameof(PaymentDocumentDetail.VoucherVAT))" Title="Voucher VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="130px" Editable="false" Visible="false" />
+            <GridColumn Field="@(nameof(PaymentDocumentDetail.AdvanceAmount))" Title="Advance Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="157px" Editable="false" Visible="false" />
+            <GridColumn Field="@(nameof(PaymentDocumentDetail.AdvanceVAT))" Title="Advance VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="133px" Editable="false" Visible="false" />
+            <GridColumn Field="@(nameof(PaymentDocumentDetail.PaymentDocumentAmount))" Title="Paym. Doc. Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="177px" Editable="false" Visible="false" />
+            <GridColumn Field="@(nameof(PaymentDocumentDetail.PaymentDocumentVAT))" Title="Paym. Doc. VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="155px" Editable="false" Visible="false" />
+            <GridColumn Field="@(nameof(PaymentDocumentDetail.TotalToPay))" Title="Total To Pay" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="130px" Editable="false" Visible="false" />
+            <GridColumn Field="@(nameof(PaymentDocumentDetail.IsVAT))" Title="VAT" TextAlign="ColumnTextAlign.Right" Width="75px" Editable="false" Visible="false">
+                <Template>
+                    @{
+                        var vat = (context as PaymentDocumentDetail).IsVAT;
+                        <div>@(vat > 0 ? (vat + "%") : "")</div>
+                    }
+                </Template>
+            </GridColumn>
+        </DataGridColumns>
     </DataGrid>
 </div>
 

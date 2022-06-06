@@ -20,7 +20,10 @@ public class MenuService : BaseModelService<Menu>
 
     public async Task<IEnumerable<Menu>?> GetUserItemsAsync()
     {
-        var result = await _sqlDataAccess.QueryAll<Menu>("SELECT * FROM dbo.VW_Menus_List", null, "Menu-GetUserItems", CommandType.Text);
+        var user = await _appUserService.GetCurrentUserAsync();
+        var p = new DynamicParameters();
+        p.Add("@UserId", user.Id, DbType.Int32, ParameterDirection.Input);
+        var result = await _sqlDataAccess.QueryAll<Menu>("dbo.SP_UserMenu_Load", p, "Menu-GetUserItems");
         return GetHierarchy(result);
     }
 

@@ -13,9 +13,18 @@ public class VendorService : BaseModelService<Vendor>
 
     public async Task<IEnumerable<Vendor>?> GetAllAsync(int businessUnitId)
     {
-        var p = new DynamicParameters();
-        p.Add("@BusinessUnitId", businessUnitId, DbType.Int32, ParameterDirection.Input);
-        return await _sqlDataAccess.QueryAll<Vendor>("dbo.SP_VendorList", p, "Vendor-GetAll");
+        var sql = $"SELECT vn.VendorId, vn.VendorCode, vn.VendorName, vn.TaxId, vn.Country CountryCode, vn.Status StatusId, vn.BusinessUnitId, au.Id, au.FullName, au.StatusId, au.ExpirationDate, au.Sessions, au.LastActivity, au.UserName, au.Position FROM Procurement.Vendors vn LEFT JOIN Config.AppUser au ON vn.VendorId = au.VendorId WHERE vn.BusinessUnitId = {businessUnitId};";
+
+        using IDbConnection cn = new SqlConnection(_sqlDataAccess.ConnectionString);
+        var vendorList = await cn.QueryAsync<Vendor, AppUser, Vendor>(sql, (vendor, user) =>
+            {
+                if (vendor.CompanyUsers == null && user != null) { vendor.CompanyUsers = new(); };
+                if (user != null) { vendor.CompanyUsers.Add(user); };
+                return vendor;
+            },
+            splitOn: "Id");
+
+        return vendorList;
     }
 
     public async Task<Vendor?> GetByTaxIdAsync(string taxId)

@@ -14,37 +14,39 @@
           SearchFields="@(new List<string> { "GroupId", "GroupName", "Description" })"
           OnDelete="@((IEnumerable<Model> items) => DeleteHandler(items))"
           @bind-SelectedItems="@selectedItems">
-    <GridColumn Field="@(nameof(Model.GroupId))" Title="Id" Width="70px" Editable="false" TextAlign="ColumnTextAlign.Right" Visible="false" />
-    <GridColumn Field="@(nameof(Model.GroupName))" Title="@(!AppState.MobileView ? "Name" : "Groups")" ShowColumnMenu="@(!AppState.MobileView ? true : false)" Filterable="@(!AppState.MobileView ? true : false)">
-        <Template>
-            @{
-                var rowContext = context as Model;
-            }
-            @if (AppState.MobileView)
-            {
-                <TelerikCard>
-                    <CardHeader>
-                        <CardTitle>
-                            @(rowContext.GroupName)
-                        </CardTitle>
-                        <CardSubTitle>
-                            @(rowContext.Description)
-                        </CardSubTitle>
-                    </CardHeader>
-                    <CardActions>
-                        <TelerikButton OnClick="@(() => GoToDetails(rowContext.GroupId))">Details</TelerikButton>
-                    </CardActions>
-                </TelerikCard>
-            }
-            else
-            {
-                <LinkText OnClick="@(() => GoToDetails(rowContext.GroupId))">
-                    @rowContext.GroupName
-                </LinkText>
-            }
-        </Template>
-    </GridColumn>
-    <GridColumn Field="@(nameof(Model.Description))" Title="Description" Visible="!AppState.MobileView" />
+    <DataGridColumns>
+        <GridColumn Field="@(nameof(Model.GroupId))" Title="Id" Width="70px" Editable="false" TextAlign="ColumnTextAlign.Right" Visible="false" />
+        <GridColumn Field="@(nameof(Model.GroupName))" Title="@(!AppState.MobileView ? "Name" : "Groups")" ShowColumnMenu="@(!AppState.MobileView ? true : false)" Filterable="@(!AppState.MobileView ? true : false)">
+            <Template>
+                @{
+                    var rowContext = context as Model;
+                }
+                @if (AppState.MobileView)
+                {
+                    <TelerikCard>
+                        <CardHeader>
+                            <CardTitle>
+                                @(rowContext.GroupName)
+                            </CardTitle>
+                            <CardSubTitle>
+                                @(rowContext.Description)
+                            </CardSubTitle>
+                        </CardHeader>
+                        <CardActions>
+                            <TelerikButton OnClick="@(() => GoToDetails(rowContext.GroupId))">Details</TelerikButton>
+                        </CardActions>
+                    </TelerikCard>
+                }
+                else
+                {
+                    <LinkText OnClick="@(() => GoToDetails(rowContext.GroupId))">
+                        @rowContext.GroupName
+                    </LinkText>
+                }
+            </Template>
+        </GridColumn>
+        <GridColumn Field="@(nameof(Model.Description))" Title="Description" Visible="!AppState.MobileView" />
+    </DataGridColumns>
 </DataGrid>
 
 
@@ -125,7 +127,7 @@
 
     void OnRowClickHandler(GridRowClickEventArgs args)
     {
-    //
+        //
     }
 
     void OnRowDoubleClickHandler(GridRowClickEventArgs args)

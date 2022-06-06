@@ -11,6 +11,7 @@ global using System.Diagnostics;
 global using Microsoft.Data.SqlClient;
 global using System.Data;
 global using System.Text;
+global using System.Collections;
 global using System.ComponentModel.DataAnnotations;
 global using Microsoft.AspNetCore.Identity;
 global using Dapper;

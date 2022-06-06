@@ -15,9 +15,59 @@
                       ShowSearchBar="true"
                       OnRowDoubleClick="@OnRowDoubleClickHandler"
                       SearchFields="@(new List<string> { "VendorName" })"
-                      @bind-SelectedItems="@selectedVendorList">
-                <GridColumn Field="@(nameof(Vendor.VendorId))" Title="Id" Width="70px" Editable="false" TextAlign="ColumnTextAlign.Right" Visible="false" />
-                <GridColumn Field="@(nameof(Vendor.VendorName))" Title="Name" Width="260px" />
+                      @bind-SelectedItems="@selectedVendorList"
+                      HierarchyDetailsField="CompanyUsers">
+                <HierarchyContent>
+                    @{
+                        var vendor = context as Vendor;
+                        <TelerikGrid Data="@vendor.CompanyUsers">
+                            <GridColumns>
+                                <GridColumn Field="@(nameof(AppUser.UserName))" Title="UserName" Width="260px" />
+                                <GridColumn Field="@(nameof(AppUser.FullName))" Title="Name" Width="180px" />
+                                <GridColumn Field="@(nameof(AppUser.Position))" Title="Position" Width="180px" />
+                                <GridColumn Field="@(nameof(AppUser.StatusName))" Title="Status" Width="100px">
+                                    <Template Context="rowContext">
+                                        <div class="flex-center-y">
+                                            @{
+                                                var user = rowContext as AppUser;
+                                                if (user is { StatusId: 0 })
+                                                {
+                                                    <MudIcon Icon="@Icons.Filled.Person" Color="Color.Success" Size="Size.Small" />
+                                                }
+                                                else if (user is { StatusId: 1 })
+                                                {
+                                                    <MudIcon Icon="@Icons.Filled.Person" Color="Color.Default" Size="Size.Small" />
+                                                }
+                                                else if (user is { StatusId: 2 })
+                                                {
+                                                    <MudIcon Icon="@Icons.Filled.Person" Color="Color.Error" Size="Size.Small" />
+                                                }
+                                                else if (user is { StatusId: 9 })
+                                                {
+                                                    <MudIcon Icon="@Icons.Filled.PersonOff" Color="Color.Default" Size="Size.Small" />
+                                                }
+                                                else
+                                                {
+                                                    <span>-contact-dev-</span>
+                                                }
+                                            }
+                                            <span class="k-px-2">@(userStatusList.FirstOrDefault(e => e.StatusId == user.StatusId).StatusName)</span>
+                                        </div>
+                                    </Template>
+                                </GridColumn>
+                            </GridColumns>
+                        </TelerikGrid>
+                    }
+                </HierarchyContent>
+                <DataGridColumns>
+                    <GridColumn Field="@(nameof(Vendor.VendorId))" Title="Id" Width="70px" Editable="false" TextAlign="ColumnTextAlign.Right" Visible="false" />
+                    <GridColumn Field="@(nameof(Vendor.VendorCode))" Title="Code" Width="260px" />
+                    <GridColumn Field="@(nameof(Vendor.VendorName))" Title="Name" Width="260px" />
+                    <GridColumn Field="@(nameof(Vendor.TaxId))" Title="Tax Id" Width="260px" />
+                    <GridColumn Field="@(nameof(Vendor.CountryCode))" Title="Country" Width="260px" />
+                    <GridColumn Field="@(nameof(Vendor.CompanyWebsite))" Title="Website" Width="260px" />
+                    <GridColumn Field="@(nameof(Vendor.StatusId))" Title="Status" Width="260px" />
+                </DataGridColumns>
             </DataGrid>
         </Content>
     </TabStripTab>
@@ -30,35 +80,6 @@
 </TelerikTabStrip>
 
 
-@*<TelerikDialog Visible="@showApproveDialog"
-               @ref="approveDialogRef"
-               VisibleChanged="@ShowApproveDialogChanged"
-               Title="@(approveSelected ? "Approve?" : "Reject?")"
-               Width="440px"
-               CloseOnOverlayClick="false"
-               ShowCloseButton="true">
-    <DialogContent>
-        <div class="fixed-width k-form">
-            <div class="k-form-field">
-                <div class="k-form-field-wrap">
-                    <label for="approve-comment" class="k-label k-form-label">Comment:</label>
-                    <div class="k-form-field-wrap">
-                        <TelerikTextArea Id="approve-comment"
-                                         AutoSize="true"
-                                         PlaceHolder="Enter your text here"
-                                         @bind-Value="@approveComment">
-                        </TelerikTextArea>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </DialogContent>
-    <DialogButtons>
-        <TelerikButton OnClick="@(() => ApproveRejectConfirmed())" ThemeColor="@(approveSelected ? ThemeConstants.Button.ThemeColor.Primary : ThemeConstants.Button.ThemeColor.Error)">@(approveSelected ? "Approve" : "Reject")</TelerikButton>
-        <TelerikButton OnClick="@(() => ApproveDialogClosed())">Close</TelerikButton>
-    </DialogButtons>
-</TelerikDialog>*@
-
 
 @code {
     [CascadingParameter] AppState? AppState { get; set; }
@@ -68,10 +89,7 @@
     IEnumerable<Vendor>? selectedVendorList = new List<Vendor>();
     IEnumerable<VendorStatus>? vendorStatusList = new List<VendorStatus>();
 
-    //bool _showApproveDialog = false;
-    //string? _approveComment = "";
-    //bool _approveSelected = false;
-    //TelerikDialog? _approveDialogRef;
+    IEnumerable<UserStatus>? userStatusList = new List<UserStatus>();
 
     int activeTabIndex = 0;
 
@@ -100,8 +118,9 @@
         if (AppState == null) return;
 
         AppState.Loading = true;
+        userStatusList = AppUserService.GetStatusList();
         vendorStatusList = VendorService.GetStatusList();
-        var _vendorList = await VendorService.GetAllAsync(0);
+        var _vendorList = await VendorService.GetAllAsync(1);
         if (vendorList != null) { vendorList = _vendorList.ToList(); }
         AppState.Loading = false;
     }

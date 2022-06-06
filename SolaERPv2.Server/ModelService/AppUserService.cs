@@ -148,6 +148,30 @@ public class AppUserService : BaseModelService<AppUser>
         return await _sqlDataAccess.QueryReturnInteger(sql, p, "AppUser-LoggedOut", CommandType.Text);
     }
 
+    public async Task<SqlResult?> ResetSessionsCounter(List<int> userIdList)
+    {
+        var sqlString = "";
+        for (var x = 0; x < userIdList.Count(); x++)
+        {
+            sqlString = sqlString + $" Id = {userIdList[x]} ";
+            if (x < userIdList.Count() - 1) { sqlString = sqlString + $" OR "; }
+        }
+        var sql = $"UPDATE Config.AppUser SET Sessions = 0 WHERE {sqlString} SELECT @@ROWCOUNT";
+        return await _sqlDataAccess.QueryReturnInteger(sql, null, "AppUser-ResetSessions", CommandType.Text);
+    }
+
+    public async Task<SqlResult?> DeleteById(List<int> userIdList)
+    {
+        var sqlString = "";
+        for (var x = 0; x < userIdList.Count(); x++)
+        {
+            sqlString = sqlString + $" Id = {userIdList[x]} ";
+            if (x < userIdList.Count() - 1) { sqlString = sqlString + $" OR "; }
+        }
+        var sql = $"DELETE FROM Config.AppUser WHERE {sqlString} SELECT @@ROWCOUNT";
+        return await _sqlDataAccess.QueryReturnInteger(sql, null, "AppUser-Delete", CommandType.Text);
+    }
+
     public IEnumerable<UserStatus> GetStatusList()
     {
         return new List<UserStatus>() {
