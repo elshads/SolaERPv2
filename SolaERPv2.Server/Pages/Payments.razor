@@ -70,26 +70,28 @@
                       SearchFields="@(new List<string> { "VendorCode", "VendorName", "Reference", "StatusName", "CurrencyCode", "Comment" })"
                       OnDelete="@((IEnumerable<Model> items) => DeleteHandler(items))"
                       @bind-SelectedItems="@selectedItems">
-                <GridColumn Field="@(nameof(Model.PaymentDocumentMainId))" Title="Id" Width="70px" Editable="false" TextAlign="ColumnTextAlign.Right" Visible="false" />
-                <GridColumn Field="@(nameof(Model.VendorCode))" Title="Vendor Code" Width="130px" />
-                <GridColumn Field="@(nameof(Model.VendorName))" Title="Vendor Name" Width="300px" />
-                <GridColumn Field="@(nameof(Model.Reference))" Title="Reference" Width="240px" />
-                <GridColumn Field="@(nameof(Model.StatusName))" Title="Status" Width="110px" />
-                <GridColumn Field="@(nameof(Model.Amount))" Title="Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="200px" />
-                <GridColumn Field="@(nameof(Model.VAT))" Title="VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="200px" />
-                <GridColumn Field="@(nameof(Model.CurrencyCode))" Title="Currency" Width="110px" />
-                <GridColumn Field="@(nameof(Model.PaymentDocumentPriorityId))" Title="Priority" Width="108px">
-                    <Template>
-                        @{
-                            var priority = (context as Model).PaymentDocumentPriorityId;
-                            <div class="input-height item-width flex-center-y">
-                                <MudIcon Icon="@(priority == 1 ? Icons.Filled.North : priority == 2 || priority == 0 ? Icons.Filled.East : Icons.Filled.South)" Color="@(priority == 1 ? Color.Success : priority == 2 || priority == 0 ? Color.Warning : Color.Error)" />
-                                <span class="k-px-1">@(priority == 1 ? "High" : priority == 2 ? "Normal" : priority == 3 ? "Low" : "")</span>
-                            </div>
-                        }
-                    </Template>
-                </GridColumn>
-                <GridColumn Field="@(nameof(Model.Comment))" Title="Comment" Width="400px" />
+                <DataGridColumns>
+                    <GridColumn Field="@(nameof(Model.PaymentDocumentMainId))" Title="Id" Width="70px" Editable="false" TextAlign="ColumnTextAlign.Right" Visible="false" />
+                    <GridColumn Field="@(nameof(Model.VendorCode))" Title="Vendor Code" Width="130px" />
+                    <GridColumn Field="@(nameof(Model.VendorName))" Title="Vendor Name" Width="300px" />
+                    <GridColumn Field="@(nameof(Model.Reference))" Title="Reference" Width="240px" />
+                    <GridColumn Field="@(nameof(Model.StatusName))" Title="Status" Width="110px" />
+                    <GridColumn Field="@(nameof(Model.Amount))" Title="Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="200px" />
+                    <GridColumn Field="@(nameof(Model.VAT))" Title="VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="200px" />
+                    <GridColumn Field="@(nameof(Model.CurrencyCode))" Title="Currency" Width="110px" />
+                    <GridColumn Field="@(nameof(Model.PaymentDocumentPriorityId))" Title="Priority" Width="108px">
+                        <Template>
+                            @{
+                                var priority = (context as Model).PaymentDocumentPriorityId;
+                                <div class="input-height item-width flex-center-y">
+                                    <MudIcon Icon="@(priority == 1 ? Icons.Filled.North : priority == 2 || priority == 0 ? Icons.Filled.East : Icons.Filled.South)" Color="@(priority == 1 ? Color.Success : priority == 2 || priority == 0 ? Color.Warning : Color.Error)" />
+                                    <span class="k-px-1">@(priority == 1 ? "High" : priority == 2 ? "Normal" : priority == 3 ? "Low" : "")</span>
+                                </div>
+                            }
+                        </Template>
+                    </GridColumn>
+                    <GridColumn Field="@(nameof(Model.Comment))" Title="Comment" Width="400px" />
+                </DataGridColumns>
             </DataGrid>
         </Content>
     </TabStripTab>
@@ -100,29 +102,31 @@
                       Height="calc(100vh - 285px)"
                       ShowSearchBar="true"
                       OnRowDoubleClick="@OnRowDoubleClickHandler"
-                      SearchFields="@(new List<string> { "VendorCode", "VendorName", "Reference", "StatusName", "CurrencyCode","Comment" })"
+                      SearchFields="@(new List<string> { "VendorCode", "VendorName", "Reference", "StatusName", "CurrencyCode", "Comment" })"
                       @bind-SelectedItems="@selectedItems">
-                <GridColumn Field="@(nameof(Model.PaymentDocumentMainId))" Title="Id" Width="70px" Editable="false" TextAlign="ColumnTextAlign.Right" Visible="false" />
-                <GridColumn Field="@(nameof(Model.VendorCode))" Title="Vendor Code" Width="130px" />
-                <GridColumn Field="@(nameof(Model.VendorName))" Title="Vendor Name" Width="300px" />
-                <GridColumn Field="@(nameof(Model.Reference))" Title="Reference" Width="240px" />
-                <GridColumn Field="@(nameof(Model.StatusName))" Title="Status" Width="110px" />
-                <GridColumn Field="@(nameof(Model.ApproveStatusName))" Title="Approve" Width="175px" />
-                <GridColumn Field="@(nameof(Model.Amount))" Title="Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="200px" />
-                <GridColumn Field="@(nameof(Model.VAT))" Title="VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="200px" />
-                <GridColumn Field="@(nameof(Model.CurrencyCode))" Title="Currency" Width="110px" />
-                <GridColumn Field="@(nameof(Model.PaymentDocumentPriorityId))" Title="Priority" Width="108px">
-                    <Template>
-                        @{
-                            var priority = (context as Model).PaymentDocumentPriorityId;
-                            <div class="input-height item-width flex-center-y">
-                                <MudIcon Icon="@(priority == 1 ? Icons.Filled.North : priority == 2 || priority == 0 ? Icons.Filled.East : Icons.Filled.South)" Color="@(priority == 1 ? Color.Success : priority == 2 || priority == 0 ? Color.Warning : Color.Error)" />
-                                <span class="k-px-1">@(priority == 1 ? "High" : priority == 2 ? "Normal" : priority == 3 ? "Low" : "")</span>
-                            </div>
-                        }
-                    </Template>
-                </GridColumn>
-                <GridColumn Field="@(nameof(Model.Comment))" Title="Comment" Width="400px" />
+                <DataGridColumns>
+                    <GridColumn Field="@(nameof(Model.PaymentDocumentMainId))" Title="Id" Width="70px" Editable="false" TextAlign="ColumnTextAlign.Right" Visible="false" />
+                    <GridColumn Field="@(nameof(Model.VendorCode))" Title="Vendor Code" Width="130px" />
+                    <GridColumn Field="@(nameof(Model.VendorName))" Title="Vendor Name" Width="300px" />
+                    <GridColumn Field="@(nameof(Model.Reference))" Title="Reference" Width="240px" />
+                    <GridColumn Field="@(nameof(Model.StatusName))" Title="Status" Width="110px" />
+                    <GridColumn Field="@(nameof(Model.ApproveStatusName))" Title="Approve" Width="175px" />
+                    <GridColumn Field="@(nameof(Model.Amount))" Title="Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="200px" />
+                    <GridColumn Field="@(nameof(Model.VAT))" Title="VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="200px" />
+                    <GridColumn Field="@(nameof(Model.CurrencyCode))" Title="Currency" Width="110px" />
+                    <GridColumn Field="@(nameof(Model.PaymentDocumentPriorityId))" Title="Priority" Width="108px">
+                        <Template>
+                            @{
+                                var priority = (context as Model).PaymentDocumentPriorityId;
+                                <div class="input-height item-width flex-center-y">
+                                    <MudIcon Icon="@(priority == 1 ? Icons.Filled.North : priority == 2 || priority == 0 ? Icons.Filled.East : Icons.Filled.South)" Color="@(priority == 1 ? Color.Success : priority == 2 || priority == 0 ? Color.Warning : Color.Error)" />
+                                    <span class="k-px-1">@(priority == 1 ? "High" : priority == 2 ? "Normal" : priority == 3 ? "Low" : "")</span>
+                                </div>
+                            }
+                        </Template>
+                    </GridColumn>
+                    <GridColumn Field="@(nameof(Model.Comment))" Title="Comment" Width="400px" />
+                </DataGridColumns>
             </DataGrid>
         </Content>
     </TabStripTab>
@@ -133,28 +137,30 @@
                       Height="calc(100vh - 285px)"
                       ShowSearchBar="true"
                       OnRowDoubleClick="@OnRowDoubleClickHandler"
-                      SearchFields="@(new List<string> { "VendorCode", "VendorName", "Reference", "StatusName", "CurrencyCode","Comment" })"
+                      SearchFields="@(new List<string> { "VendorCode", "VendorName", "Reference", "StatusName", "CurrencyCode", "Comment" })"
                       @bind-SelectedItems="@selectedItems">
-                <GridColumn Field="@(nameof(Model.PaymentDocumentMainId))" Title="Id" Width="70px" Editable="false" TextAlign="ColumnTextAlign.Right" Visible="false" />
-                <GridColumn Field="@(nameof(Model.VendorCode))" Title="Vendor Code" Width="130px" />
-                <GridColumn Field="@(nameof(Model.VendorName))" Title="Vendor Name" Width="300px" />
-                <GridColumn Field="@(nameof(Model.Reference))" Title="Reference" Width="240px" />
-                <GridColumn Field="@(nameof(Model.StatusName))" Title="Status" Width="110px" />
-                <GridColumn Field="@(nameof(Model.Amount))" Title="Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="200px" />
-                <GridColumn Field="@(nameof(Model.VAT))" Title="VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="200px" />
-                <GridColumn Field="@(nameof(Model.CurrencyCode))" Title="Currency" Width="110px" />
-                <GridColumn Field="@(nameof(Model.PaymentDocumentPriorityId))" Title="Priority" Width="108px">
-                    <Template>
-                        @{
-                            var priority = (context as Model).PaymentDocumentPriorityId;
-                            <div class="input-height item-width flex-center-y">
-                                <MudIcon Icon="@(priority == 1 ? Icons.Filled.North : priority == 2 || priority == 0 ? Icons.Filled.East : Icons.Filled.South)" Color="@(priority == 1 ? Color.Success : priority == 2 || priority == 0 ? Color.Warning : Color.Error)" />
-                                <span class="k-px-1">@(priority == 1 ? "High" : priority == 2 ? "Normal" : priority == 3 ? "Low" : "")</span>
-                            </div>
-                        }
-                    </Template>
-                </GridColumn>
-                <GridColumn Field="@(nameof(Model.Comment))" Title="Comment" Width="400px" />
+                <DataGridColumns>
+                    <GridColumn Field="@(nameof(Model.PaymentDocumentMainId))" Title="Id" Width="70px" Editable="false" TextAlign="ColumnTextAlign.Right" Visible="false" />
+                    <GridColumn Field="@(nameof(Model.VendorCode))" Title="Vendor Code" Width="130px" />
+                    <GridColumn Field="@(nameof(Model.VendorName))" Title="Vendor Name" Width="300px" />
+                    <GridColumn Field="@(nameof(Model.Reference))" Title="Reference" Width="240px" />
+                    <GridColumn Field="@(nameof(Model.StatusName))" Title="Status" Width="110px" />
+                    <GridColumn Field="@(nameof(Model.Amount))" Title="Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="200px" />
+                    <GridColumn Field="@(nameof(Model.VAT))" Title="VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="200px" />
+                    <GridColumn Field="@(nameof(Model.CurrencyCode))" Title="Currency" Width="110px" />
+                    <GridColumn Field="@(nameof(Model.PaymentDocumentPriorityId))" Title="Priority" Width="108px">
+                        <Template>
+                            @{
+                                var priority = (context as Model).PaymentDocumentPriorityId;
+                                <div class="input-height item-width flex-center-y">
+                                    <MudIcon Icon="@(priority == 1 ? Icons.Filled.North : priority == 2 || priority == 0 ? Icons.Filled.East : Icons.Filled.South)" Color="@(priority == 1 ? Color.Success : priority == 2 || priority == 0 ? Color.Warning : Color.Error)" />
+                                    <span class="k-px-1">@(priority == 1 ? "High" : priority == 2 ? "Normal" : priority == 3 ? "Low" : "")</span>
+                                </div>
+                            }
+                        </Template>
+                    </GridColumn>
+                    <GridColumn Field="@(nameof(Model.Comment))" Title="Comment" Width="400px" />
+                </DataGridColumns>
             </DataGrid>
         </Content>
     </TabStripTab>
@@ -166,28 +172,30 @@
                       ShowSearchBar="true"
                       OnRowDoubleClick="@OnRowDoubleClickHandler"
                       ShowCheckBoxColumn="false"
-                      SearchFields="@(new List<string> { "VendorCode", "VendorName", "Reference", "StatusName", "CurrencyCode","Comment" })"
+                      SearchFields="@(new List<string> { "VendorCode", "VendorName", "Reference", "StatusName", "CurrencyCode", "Comment" })"
                       @bind-SelectedItems="@selectedItems">
-                <GridColumn Field="@(nameof(Model.PaymentDocumentMainId))" Title="Id" Width="70px" Editable="false" TextAlign="ColumnTextAlign.Right" Visible="false" />
-                <GridColumn Field="@(nameof(Model.VendorCode))" Title="Vendor Code" Width="130px" />
-                <GridColumn Field="@(nameof(Model.VendorName))" Title="Vendor Name" Width="300px" />
-                <GridColumn Field="@(nameof(Model.Reference))" Title="Reference" Width="240px" />
-                <GridColumn Field="@(nameof(Model.StatusName))" Title="Status" Width="110px" />
-                <GridColumn Field="@(nameof(Model.Amount))" Title="Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="200px" />
-                <GridColumn Field="@(nameof(Model.VAT))" Title="VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="200px" />
-                <GridColumn Field="@(nameof(Model.CurrencyCode))" Title="Currency" Width="110px" />
-                <GridColumn Field="@(nameof(Model.PaymentDocumentPriorityId))" Title="Priority" Width="108px">
-                    <Template>
-                        @{
-                            var priority = (context as Model).PaymentDocumentPriorityId;
-                            <div class="input-height item-width flex-center-y">
-                                <MudIcon Icon="@(priority == 1 ? Icons.Filled.North : priority == 2 || priority == 0 ? Icons.Filled.East : Icons.Filled.South)" Color="@(priority == 1 ? Color.Success : priority == 2 || priority == 0 ? Color.Warning : Color.Error)" />
-                                <span class="k-px-1">@(priority == 1 ? "High" : priority == 2 ? "Normal" : priority == 3 ? "Low" : "")</span>
-                            </div>
-                        }
-                    </Template>
-                </GridColumn>
-                <GridColumn Field="@(nameof(Model.Comment))" Title="Comment" Width="400px" />
+                <DataGridColumns>
+                    <GridColumn Field="@(nameof(Model.PaymentDocumentMainId))" Title="Id" Width="70px" Editable="false" TextAlign="ColumnTextAlign.Right" Visible="false" />
+                    <GridColumn Field="@(nameof(Model.VendorCode))" Title="Vendor Code" Width="130px" />
+                    <GridColumn Field="@(nameof(Model.VendorName))" Title="Vendor Name" Width="300px" />
+                    <GridColumn Field="@(nameof(Model.Reference))" Title="Reference" Width="240px" />
+                    <GridColumn Field="@(nameof(Model.StatusName))" Title="Status" Width="110px" />
+                    <GridColumn Field="@(nameof(Model.Amount))" Title="Amount" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="200px" />
+                    <GridColumn Field="@(nameof(Model.VAT))" Title="VAT" DisplayFormat="{0:N3}" TextAlign="ColumnTextAlign.Right" Width="200px" />
+                    <GridColumn Field="@(nameof(Model.CurrencyCode))" Title="Currency" Width="110px" />
+                    <GridColumn Field="@(nameof(Model.PaymentDocumentPriorityId))" Title="Priority" Width="108px">
+                        <Template>
+                            @{
+                                var priority = (context as Model).PaymentDocumentPriorityId;
+                                <div class="input-height item-width flex-center-y">
+                                    <MudIcon Icon="@(priority == 1 ? Icons.Filled.North : priority == 2 || priority == 0 ? Icons.Filled.East : Icons.Filled.South)" Color="@(priority == 1 ? Color.Success : priority == 2 || priority == 0 ? Color.Warning : Color.Error)" />
+                                    <span class="k-px-1">@(priority == 1 ? "High" : priority == 2 ? "Normal" : priority == 3 ? "Low" : "")</span>
+                                </div>
+                            }
+                        </Template>
+                    </GridColumn>
+                    <GridColumn Field="@(nameof(Model.Comment))" Title="Comment" Width="400px" />
+                </DataGridColumns>
             </DataGrid>
         </Content>
     </TabStripTab>

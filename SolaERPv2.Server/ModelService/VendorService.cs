@@ -143,6 +143,23 @@ public class VendorService : BaseModelService<Vendor>
         return true;
     }
 
+    public async Task<SqlResult?> Approve(IEnumerable<ApproveData> approveDataList)
+    {
+        var user = await _appUserService.GetCurrentUserAsync();
+        SqlResult? result = new();
+        foreach (var item in approveDataList)
+        {
+            var p = new DynamicParameters();
+            p.Add("@VendorId", item.ModelId, DbType.Int32, ParameterDirection.Input);
+            p.Add("@UserId", user.Id, DbType.Int32, ParameterDirection.Input);
+            p.Add("@ApproveStatusId", item.ApproveStatusId, DbType.Int32, ParameterDirection.Input);
+            p.Add("@Comment", item.Comment, DbType.String, ParameterDirection.Input);
+            p.Add("@Sequence", item.Sequence, DbType.Int32, ParameterDirection.Input);
+            result = await _sqlDataAccess.ExecuteSql("dbo.SP_VendorsApprove", p, "Vendor-Approve");
+        }
+        return result;
+    }
+
     public async Task<SqlResult?> RegisterSupplier(Vendor vendor)
     {
         var saveResult = await SaveSupplier(vendor);

@@ -51,7 +51,8 @@
                             TextField="AttachmentTypeName"
                             TItem="AttachmentType"
                             TValue="int"
-                            Layout="RadioGroupLayout.Vertical">
+                            Layout="RadioGroupLayout.Vertical"
+                            Enabled="@(paymentDocumentMain.StatusId < 1)">
             </ItemRadioGroup>
         </GridLayoutItem>
         <GridLayoutItem Row="1" Column="2">
@@ -97,7 +98,8 @@
                                  ValueField="AnalysisCode"
                                  Placeholder="Select..."
                                  Filterable="true"
-                                 FilterOperator="StringFilterOperator.Contains" />
+                                 FilterOperator="StringFilterOperator.Contains" 
+                                 Enabled="@(paymentDocumentMain.StatusId < 1)" />
             </div>
             <div class="k-pb-3">
                 <label class="k-input-label k-pb-1" for="groupproject">Group Project:</label>
@@ -108,7 +110,8 @@
                                  ValueField="AnalysisCode"
                                  Placeholder="Select..."
                                  Filterable="true"
-                                 FilterOperator="StringFilterOperator.Contains" />
+                                 FilterOperator="StringFilterOperator.Contains"
+                                 Enabled="@(paymentDocumentMain.StatusId < 1)"/>
             </div>
             <div class="k-pb-3">
                 <label class="k-input-label k-pb-1" for="project">Project:</label>
@@ -119,17 +122,18 @@
                                  ValueField="AnalysisCode"
                                  Placeholder="Select..."
                                  Filterable="true"
-                                 FilterOperator="StringFilterOperator.Contains" />
+                                 FilterOperator="StringFilterOperator.Contains"
+                                 Enabled="@(paymentDocumentMain.StatusId < 1)"/>
             </div>
         </GridLayoutItem>
         <GridLayoutItem Row="@(!AppState.MobileView ? 1 : 3)" Column="@(!AppState.MobileView ? 4 : 1)" ColumnSpan="@(!AppState.MobileView ? 1 : 2)">
             <div class="flex-center-y k-mb-2">
                 <span class="column-3-label">Reference:</span>
-                <TelerikTextBox @bind-Value="@paymentDocumentMain.Reference" Title="Reference" PlaceHolder="Type here..."></TelerikTextBox>
+                <TelerikTextBox @bind-Value="@paymentDocumentMain.Reference" Title="Reference" PlaceHolder="Type here..." Enabled="@(paymentDocumentMain.StatusId < 1)"></TelerikTextBox>
             </div>
             <div class="flex-center-y k-mb-2">
                 <span class="column-3-label">Comment:</span>
-                <TelerikTextBox Id="comment" @bind-Value="@paymentDocumentMain.Comment" Title="Comment" PlaceHolder="Type here..."></TelerikTextBox>
+                <TelerikTextBox Id="comment" @bind-Value="@paymentDocumentMain.Comment" Title="Comment" PlaceHolder="Type here..." Enabled="@(paymentDocumentMain.StatusId < 1)"></TelerikTextBox>
             </div>
             <div class="flex-center-y k-mb-2">
                 <span class="column-3-label">Priority:</span>
@@ -141,7 +145,8 @@
                                 TextField="PaymentDocumentPriorityName"
                                 TItem="PaymentDocumentPriority"
                                 TValue="int"
-                                Layout="RadioGroupLayout.Horizontal">
+                                Layout="RadioGroupLayout.Horizontal"
+                                Enabled="@(paymentDocumentMain.StatusId < 1)">
                 </ItemRadioGroup>
             </div>
             <div class="flex-center-y k-mb-2">
@@ -163,6 +168,7 @@
                           Pageable="false"
                           ShowCheckBoxColumn="false"
                           CheckBoxOnlySelection="false"
+                          ReadOnly="@(paymentDocumentMain.StatusId > 0)"
                           Width="@(AppState.MobileView ? "calc(100vw - 40px)" : AppState.OpenDrawer ? "calc(100vw - 280px)" : "calc(100vw - 104px)")"
                           Height="@(!AppState.MobileView ? "calc((100vh - 462px) / 2)" : "auto")"
                           SearchFields="@(new List<string> { "PONum", "Voucher" })">
@@ -195,6 +201,7 @@
                           ShowContextMenu="false"
                           ShowToolbar="false"
                           Pageable="false"
+                          ReadOnly="@(paymentDocumentMain.StatusId > 0)"
                           ShowCheckBoxColumn="false"
                           CheckBoxOnlySelection="false"
                           Width="@(AppState.MobileView ? "calc(100vw - 40px)" : AppState.OpenDrawer ? "calc((100vw - 288px) / 2)" : "calc((100vw - 112px) / 2)")"
@@ -266,6 +273,7 @@
                           ShowContextMenu="false"
                           ShowToolbar="false"
                           Pageable="false"
+                          ReadOnly="@(paymentDocumentMain.StatusId > 0)"
                           ShowCheckBoxColumn="false"
                           CheckBoxOnlySelection="true"
                           Width="@(AppState.MobileView ? "calc(100vw - 40px)" : AppState.OpenDrawer ? "calc((100vw - 288px) / 2)" : "calc((100vw - 112px) / 2)")"
@@ -300,6 +308,7 @@
                      AttachmentSubTypeId="@selectedAttachmentSubType.AttachmentSubTypeId"
                      Title="@("- " + selectedAttachmentSubType.AttachmentSubTypeName)"
                      DocumentReference="@paymentDocumentMain.Reference"
+                     ReadOnly="@(paymentDocumentMain.StatusId > 0)"
                      SourceId="@paymentDocumentMain.PaymentDocumentMainId"
                      SourceTypeName="PYMDC"
                      OnDelete="@DeleteAttachmentHandler" />
@@ -428,6 +437,8 @@
 
         await GetPaymentDocument(modelId);
         SessionData.PaymentDocumentMain = new();
+        AppState.SaveButtonEnabled = paymentDocumentMain.StatusId < 1;
+        AppState.DeleteButtonEnabled = paymentDocumentMain.StatusId < 1;
         await GetApproveStageList();
         await GetAnalysisList();
 

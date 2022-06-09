@@ -79,6 +79,35 @@
     </TabStripTab>
 </TelerikTabStrip>
 
+<TelerikDialog Visible="@showApproveDialog"
+               @ref="approveDialogRef"
+               VisibleChanged="@ShowApproveDialogChanged"
+               Title="@(approveSelected ? "Approve?" : "Reject?")"
+               Width="440px"
+               CloseOnOverlayClick="false"
+               ShowCloseButton="true">
+    <DialogContent>
+        <div class="fixed-width k-form">
+            <div class="k-form-field">
+                <div class="k-form-field-wrap">
+                    <label for="approve-comment" class="k-label k-form-label">Comment:</label>
+                    <div class="k-form-field-wrap">
+                        <TelerikTextArea Id="approve-comment"
+                                         AutoSize="true"
+                                         PlaceHolder="Enter your text here"
+                                         @bind-Value="@approveComment">
+                        </TelerikTextArea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </DialogContent>
+    <DialogButtons>
+        <TelerikButton OnClick="@(() => ApproveRejectConfirmed())" ThemeColor="@(approveSelected ? ThemeConstants.Button.ThemeColor.Primary : ThemeConstants.Button.ThemeColor.Error)">@(approveSelected ? "Approve" : "Reject")</TelerikButton>
+        <TelerikButton OnClick="@(() => ApproveDialogClosed())">Close</TelerikButton>
+    </DialogButtons>
+</TelerikDialog>
+
 
 
 @code {
@@ -93,6 +122,11 @@
 
     int activeTabIndex = 0;
 
+    bool showApproveDialog = false;
+    string approveComment = "";
+    bool approveSelected = false;
+    TelerikDialog approveDialogRef;
+
     protected override async Task OnInitializedAsync()
     {
         OnAppStateInitialized();
@@ -103,16 +137,21 @@
     {
         if (AppState == null) return;
         AppState.SetDefaults();
+        SetMenuButtonsVisibility();
         AppState.BackButtonVisible = true;
         AppState.OnBackClick += BackClick;
+        AppState.OnApproveClick += ApproveClick;
+        AppState.OnRejectClick += RejectClick;
     }
 
     void IDisposable.Dispose()
     {
         if (AppState == null) return;
         AppState.OnBackClick -= BackClick;
+        AppState.OnApproveClick -= ApproveClick;
+        AppState.OnRejectClick -= RejectClick;
     }
-
+    
     async Task LoadData()
     {
         if (AppState == null) return;
@@ -123,6 +162,90 @@
         var _vendorList = await VendorService.GetAllAsync(1);
         if (vendorList != null) { vendorList = _vendorList.ToList(); }
         AppState.Loading = false;
+    }
+
+    void SetMenuButtonsVisibility()
+    {
+        if (activeTabIndex == 0)
+        {
+            AppState.ApproveButtonVisible = true;
+            AppState.RejectButtonVisible = true;
+        }
+        else if (activeTabIndex == 1)
+        {
+            AppState.ApproveButtonVisible = false;
+            AppState.RejectButtonVisible = false;
+        }
+        else
+        {
+            AppState.ApproveButtonVisible = false;
+            AppState.RejectButtonVisible = false;
+        }
+    }
+
+    void ApproveClick()
+    {
+        if (selectedVendorList.Any())
+        {
+            approveSelected = true;
+            showApproveDialog = true;
+            AppState.Refresh();
+        }
+        else
+        {
+            AppState.ShowAlert("Please select item(s) first", Severity.Warning);
+        }
+    }
+
+    void RejectClick()
+    {
+        if (selectedVendorList.Any())
+        {
+            approveSelected = false;
+            showApproveDialog = true;
+            AppState.Refresh();
+        }
+        else
+        {
+            AppState.ShowAlert("Please select item(s) first", Severity.Warning);
+        }
+    }
+
+    void ShowApproveDialogChanged(bool visible)
+    {
+        showApproveDialog = visible;
+        if (!visible)
+        {
+            ApproveDialogClosed();
+        }
+    }
+
+    void ApproveDialogClosed()
+    {
+        approveComment = "";
+        showApproveDialog = false;
+    }
+
+    async Task ApproveRejectConfirmed()
+    {
+        var approveDataList = new List<ApproveData>();
+        foreach (var item in selectedVendorList)
+        {
+            var newItem = new ApproveData { ModelId = item.VendorId, ApproveStatusId = (approveSelected ? 1 : 99), Comment = approveComment, Sequence = 0 };
+            approveDataList.Add(newItem);
+        }
+        var result = await VendorService.Approve(approveDataList);
+        if (result.QueryResultMessage == null)
+        {
+            var _vendorList = await VendorService.GetAllAsync(1);
+            vendorList = _vendorList.ToList();
+            AppState.ShowAlert("Successfully updated", Severity.Success);
+        }
+        else
+        {
+            AppState.ShowAlert(result.QueryResultMessage, Severity.Error);
+        }
+        ApproveDialogClosed();
     }
 
     void GoToDetails(int id)
@@ -152,7 +275,7 @@
         AppState.Loading = true;
         activeTabIndex = tabIndex;
         selectedVendorList = new List<Vendor>();
-        //SetMenuButtonsVisibility();
+        SetMenuButtonsVisibility();
         AppState.Loading = false;
     }
 
