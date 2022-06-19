@@ -131,6 +131,8 @@ public class AppUserService : BaseModelService<AppUser>
     public async Task<SqlResult?> UserLoggedIn()
     {
         var currentUser = await GetCurrentUserAsync();
+        if (currentUser == null || currentUser.Id == 0) { return new SqlResult() {QueryResultMessage = "currentUser is null"}; }
+
         var p = new DynamicParameters();
         p.Add("@CurrentUserId", currentUser.Id, DbType.Int32, ParameterDirection.Input);
         p.Add("@LastActivity", DateTime.Now, DbType.DateTime, ParameterDirection.Input);
@@ -141,6 +143,7 @@ public class AppUserService : BaseModelService<AppUser>
     public async Task<SqlResult?> UserLoggedOut()
     {
         var currentUser = await GetCurrentUserAsync();
+        if (currentUser == null || currentUser.Id == 0) { return new SqlResult() { QueryResultMessage = "currentUser is null" }; }
         var p = new DynamicParameters();
         p.Add("@CurrentUserId", currentUser.Id, DbType.Int32, ParameterDirection.Input);
         p.Add("@LastActivity", DateTime.Now, DbType.DateTime, ParameterDirection.Input);
