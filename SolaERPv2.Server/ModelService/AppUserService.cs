@@ -61,20 +61,8 @@ public class AppUserService : BaseModelService<AppUser>
 
     public async Task<IEnumerable<AppUser>?> GetAllAsync()
     {
-        var sql = $"SELECT u.*, (CASE WHEN u.VendorId > 0 THEN v.VendorName ELSE 'local' END) CompanyName FROM Config.AppUser u LEFT JOIN Procurement.Vendors v ON u.VendorId = v.VendorId";
-        var userList = await _sqlDataAccess.QueryAll<AppUser>(sql, null, "AppUser-GetAll", CommandType.Text);
-        List<AppUser> newList = new();
-        if (userList == null)
-        {
-            return newList;
-        }
-
-        foreach (var item in userList)
-        {
-            item.StatusName = GetStatusList().FirstOrDefault(e => e.StatusId == item.StatusId).StatusName;
-            newList.Add(item);
-        }
-        return newList;
+        var sql = "SELECT u.*, (CASE WHEN u.StatusId = 0 THEN 'Draft' WHEN u.StatusId = 1 THEN 'Open' WHEN u.StatusId = 2 THEN 'Closed' ELSE 'none' END) StatusName, (CASE WHEN u.VendorId > 0 THEN v.VendorName ELSE 'local' END) CompanyName FROM Config.AppUser u LEFT JOIN Procurement.Vendors v ON u.VendorId = v.VendorId";
+        return await _sqlDataAccess.QueryAll<AppUser>(sql, null, "AppUser-GetAll", CommandType.Text);
     }
 
     public async Task<AppUser?> GetByIdAsync(int id)
@@ -175,13 +163,23 @@ public class AppUserService : BaseModelService<AppUser>
         return await _sqlDataAccess.QueryReturnInteger(sql, null, "AppUser-Delete", CommandType.Text);
     }
 
-    public IEnumerable<UserStatus> GetStatusList()
+    public IEnumerable<Status> GetStatusList()
     {
-        return new List<UserStatus>() {
-            new UserStatus() { StatusId = 0, StatusName = "Open" },
-            new UserStatus() { StatusId = 1, StatusName = "Draft" },
-            new UserStatus() { StatusId = 2, StatusName = "Approval" },
-            new UserStatus() { StatusId = 9, StatusName = "Closed" },
+        return new List<Status>() {
+            new Status() { StatusId = 0, StatusName = "Draft" },
+            new Status() { StatusId = 1, StatusName = "Open" },
+            new Status() { StatusId = 2, StatusName = "Closed" },
         };
+    }
+
+    public async Task<SqlResult?> UpdateUserToken(string userName)
+    {
+        var token = Guid.NewGuid();
+        var p = new DynamicParameters();
+        p.Add("@UserName", userName, DbType.String, ParameterDirection.Input);
+        p.Add("@UserToken", token, DbType.Guid, ParameterDirection.Input);
+        var sql = $"UPDATE Config.AppUser SET UserToken = @UserToken WHERE UserName = @UserName SELECT @@ROWCOUNT";
+        var result = await _sqlDataAccess.QueryReturnInteger(sql, p, "AppUser-UpdateUserToken", CommandType.Text);
+        return result;
     }
 }

@@ -22,11 +22,13 @@ namespace SolaERPv2.Server.Areas.Identity.Pages.Account
     {
         private readonly SignInManager<AppUser> _signInManager;
         private readonly ILogger<LoginModel> _logger;
+        private readonly AppUserService _appUserService;
 
-        public LoginModel(SignInManager<AppUser> signInManager, ILogger<LoginModel> logger)
+        public LoginModel(SignInManager<AppUser> signInManager, ILogger<LoginModel> logger, AppUserService appUserService)
         {
             _signInManager = signInManager;
             _logger = logger;
+            _appUserService = appUserService;
         }
 
         /// <summary>
@@ -116,6 +118,7 @@ namespace SolaERPv2.Server.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User logged in.");
+                    await _appUserService.UpdateUserToken(Input.Email);
                     return LocalRedirect(returnUrl);
                 }
                 if (result.RequiresTwoFactor)

@@ -1,0 +1,512 @@
+﻿@page "/vendors/card"
+
+@implements IDisposable
+@inject VendorService VendorService
+
+
+<TelerikGridLayout ColumnSpacing="1rem" Class="k-mb-4">
+    <GridLayoutColumns>
+        <GridLayoutColumn Width="auto" />
+        @if (companyLogo != null)
+        {
+            <GridLayoutColumn Width="200px" />
+        }
+    </GridLayoutColumns>
+    <GridLayoutItems>
+        <GridLayoutItem Row="1" Column="1" ColumnSpan="@(AppState.MobileView && companyLogo != null ? 2 : 1)">
+            <TelerikForm Model="@selectedVendor"
+                         ValidationMessageType="FormValidationMessageType.Inline"
+                         Orientation="FormOrientation.Horizontal"
+                         Columns="@(AppState.MobileView ? 1 : 2)"
+                         ColumnSpacing="1rem">
+                <FormValidation>
+                    <FluentValidationValidator @ref="vendorValidator" DisableAssemblyScanning="true" />
+                </FormValidation>
+                <FormItems>
+                    <FormItem Field="@nameof(Vendor.VendorId)" LabelText="Vendor Id">
+                        <Template>
+                            <label for="vendorid" class="k-label k-form-label">Vendor Id: </label>
+                            <div class="k-form-field-wrap">
+                                <ReadOnlyField Id="vendorid" Value="@selectedVendor.VendorId.ToString()" />
+                                <TelerikValidationMessage For="@(() => selectedVendor.VendorId)" />
+                            </div>
+                        </Template>
+                    </FormItem>
+                    <FormItem Field="@nameof(Vendor.TaxId)" LabelText="Tax Id">
+                        <Template>
+                            <label for="taxid" class="k-label k-form-label">Tax Id: </label>
+                            <div class="k-form-field-wrap">
+                                <ReadOnlyField Id="taxid" Value="@selectedVendor.TaxId" />
+                                <TelerikValidationMessage For="@(() => selectedVendor.TaxId)" />
+                            </div>
+                        </Template>
+                    </FormItem>
+                    <FormItem Field="@nameof(Vendor.VendorCode)" LabelText="Vendor Code">
+                        <Template>
+                            <label for="vendorcode" class="k-label k-form-label">Vendor Code: </label>
+                            <div class="k-form-field-wrap">
+                                <ReadOnlyField Id="vendorcode" Value="@selectedVendor.VendorCode" />
+                                <TelerikValidationMessage For="@(() => selectedVendor.VendorCode)" />
+                            </div>
+                        </Template>
+                    </FormItem>
+                    <FormItem Field="@nameof(Vendor.VendorName)" LabelText="Vendor Name">
+                        <Template>
+                            <label for="vendorname" class="k-label k-form-label">Vendor Name: </label>
+                            <div class="k-form-field-wrap">
+                                <ReadOnlyField Id="vendorname" Value="@selectedVendor.VendorName" />
+                                <TelerikValidationMessage For="@(() => selectedVendor.VendorName)" />
+                            </div>
+                        </Template>
+                    </FormItem>
+                </FormItems>
+                <FormButtons />
+            </TelerikForm>
+        </GridLayoutItem>
+
+        @if (companyLogo != null)
+        {
+            <GridLayoutItem Row="@(AppState.MobileView ? 2 : 1)" Column="@(AppState.MobileView ? 1 : 2)" ColumnSpan="@(AppState.MobileView ? 2 : 1)">
+                <MudImage ObjectFit="ObjectFit.Contain" Height="88" Src="@companyLogo" Alt="logo" Elevation="25" Style="border-radius: 8px;" />
+            </GridLayoutItem>
+        }
+    </GridLayoutItems>
+
+</TelerikGridLayout>
+
+
+<TelerikTabStrip ActiveTabIndex="@activeTabIndex" ActiveTabIndexChanged="@ActiveTabIndexChanged">
+    <TabStripTab Title="Details">
+        <HeaderTemplate>
+            <MudIcon Icon="@Icons.Filled.GridView" />
+            <span class="k-pl-2">
+                @if (AppState.MobileView)
+                {
+                    <MudIcon Icon="@Icons.Filled.Circle" Style="font-size: 0.5rem;" Color="@(activeTabIndex == 0 ? Color.Success : Color.Transparent)" />
+                }
+                else
+                {
+                    <div>Details</div>
+                }
+            </span>
+        </HeaderTemplate>
+        <Content>
+            <TelerikForm Model="@selectedVendor"
+                         ValidationMessageType="FormValidationMessageType.Inline"
+                         Orientation="FormOrientation.Horizontal"
+                         Columns="@(AppState.MobileView ? 1 : 2)"
+                         ColumnSpacing="1rem">
+                <FormValidation>
+                    <FluentValidationValidator @ref="vendorValidator" DisableAssemblyScanning="true" />
+                </FormValidation>
+                <FormItems>
+                    <FormItem Field="@nameof(Vendor.CompanyLocation)" LabelText="Location">
+                        <Template>
+                            <label for="location" class="k-label k-form-label">Location: </label>
+                            <div class="k-form-field-wrap">
+                                <ReadOnlyField Id="location" Value="@selectedVendor.CompanyLocation" />
+                                <TelerikValidationMessage For="@(() => selectedVendor.CompanyLocation)" />
+                            </div>
+                        </Template>
+                    </FormItem>
+                    <FormItem Field="@nameof(Vendor.CompanyWebsite)" LabelText="Website">
+                        <Template>
+                            <label for="website" class="k-label k-form-label">Website: </label>
+                            <div class="k-form-field-wrap">
+                                <ReadOnlyField Id="website" Value="@selectedVendor.CompanyWebsite" />
+                                <TelerikValidationMessage For="@(() => selectedVendor.CompanyWebsite)" />
+                            </div>
+                        </Template>
+                    </FormItem>
+                    <FormItem Field="@nameof(Vendor.RepresentedProducts)" LabelText="Repr. Products">
+                        <Template>
+                            <label for="representedproducts" class="k-label k-form-label">Repr. Products: </label>
+                            <div class="k-form-field-wrap">
+                                <ReadOnlyField Id="representedproducts" Value="@selectedVendor.RepresentedProducts" />
+                                <TelerikValidationMessage For="@(() => selectedVendor.RepresentedProducts)" />
+                            </div>
+                        </Template>
+                    </FormItem>
+                    <FormItem Field="@nameof(Vendor.RepresentedCompanies)" LabelText="Repr. Companies">
+                        <Template>
+                            <label for="representedcompanies" class="k-label k-form-label">Repr. Companies: </label>
+                            <div class="k-form-field-wrap">
+                                <ReadOnlyField Id="representedcompanies" Value="@selectedVendor.RepresentedCompanies" />
+                                <TelerikValidationMessage For="@(() => selectedVendor.RepresentedCompanies)" />
+                            </div>
+                        </Template>
+                    </FormItem>
+                    <FormItem Field="@nameof(Vendor.PaymentTermsCode)" LabelText="Payment Terms">
+                        <Template>
+                            <label for="paymentterms" class="k-label k-form-label">Website: </label>
+                            <div class="k-form-field-wrap">
+                                <ReadOnlyField Id="paymentterms" Value="@selectedVendor.PaymentTermsCode" />
+                                <TelerikValidationMessage For="@(() => selectedVendor.PaymentTermsCode)" />
+                            </div>
+                        </Template>
+                    </FormItem>
+                    <FormItem Field="@nameof(Vendor.CreditDays)" LabelText="Credit Days">
+                        <Template>
+                            <label for="creditdays" class="k-label k-form-label">Credit Days: </label>
+                            <div class="k-form-field-wrap">
+                                <ReadOnlyField Id="creditdays" Value="@selectedVendor.CreditDays.ToString()" />
+                                <TelerikValidationMessage For="@(() => selectedVendor.CreditDays)" />
+                            </div>
+                        </Template>
+                    </FormItem>
+                    <FormItem Field="@nameof(Vendor.AgreeWithDefaultDays)" LabelText="60 days?">
+                        <Template>
+                            <label for="website" class="k-label k-form-label">60 days?: </label>
+                            <div class="k-form-field-wrap">
+                                @{
+                                    var isAgree = selectedVendor.AgreeWithDefaultDays ? "Yes" : "No";
+                                    <ReadOnlyField Id="website" Value="@isAgree" />
+                                }
+                                <TelerikValidationMessage For="@(() => selectedVendor.AgreeWithDefaultDays)" />
+                            </div>
+                        </Template>
+                    </FormItem>
+                    <FormItem Field="@nameof(Vendor.CountryCode)" LabelText="Country">
+                        <Template>
+                            <label for="country" class="k-label k-form-label">Country: </label>
+                            <div class="k-form-field-wrap">
+                                <ReadOnlyField Id="country" Value="@selectedVendor.CountryCode" />
+                                <TelerikValidationMessage For="@(() => selectedVendor.CountryCode)" />
+                            </div>
+                        </Template>
+                    </FormItem>
+                    <FormItem Field="@nameof(Vendor.StatusName)" LabelText="Status">
+                        <Template>
+                            <label for="status" class="k-label k-form-label">Status: </label>
+                            <div class="k-form-field-wrap">
+                                <ReadOnlyField Id="status" Value="@selectedVendor.StatusName" />
+                                <TelerikValidationMessage For="@(() => selectedVendor.StatusName)" />
+                            </div>
+                        </Template>
+                    </FormItem>
+                </FormItems>
+                <FormButtons />
+            </TelerikForm>
+        </Content>
+    </TabStripTab>
+
+    <TabStripTab Title="Bank Details">
+        <HeaderTemplate>
+            <MudIcon Icon="@Icons.Filled.AccountBalance" />
+            <span class="k-pl-2">
+                @if (AppState.MobileView)
+                {
+                    <MudIcon Icon="@Icons.Filled.Circle" Style="font-size: 0.5rem;" Color="@(activeTabIndex == 1 ? Color.Success : Color.Transparent)" />
+                }
+                else
+                {
+                    <div>Bank Details</div>
+                }
+            </span>
+        </HeaderTemplate>
+        <Content>
+            <MudCard Class="k-p-8">
+                @if (showBankPanel)
+                {
+                    <TelerikForm Class="k-pb-4" Model="selectedBank" Orientation="FormOrientation.Horizontal" ColumnSpacing="16px" Columns="@(AppState.MobileView ? 1 : 2)">
+                        <FormValidation>
+                            <FluentValidationValidator @ref="bankValidator" DisableAssemblyScanning="true" />
+                        </FormValidation>
+                        <FormItems>
+                            <FormItem LabelText="Bank Account Number: " Field="@nameof(Bank.BankAccountNumber)">
+                                <Template>
+                                    <label for="accountnumber" class="k-label k-form-label">Bank Account Number: </label>
+                                    <div class="k-form-field-wrap">
+                                        <ReadOnlyField Id="accountnumber" Value="@selectedBank.BankAccountNumber" />
+                                        <TelerikValidationMessage For="@(() => selectedBank.BankAccountNumber)" />
+                                    </div>
+                                </Template>
+                            </FormItem>
+                            <FormItem LabelText="Currency Code: " Field="@nameof(Bank.CurrencyCode)">
+                                <Template>
+                                    <label for="currencycode" class="k-label k-form-label">Currency Code: </label>
+                                    <div class="k-form-field-wrap">
+                                        <ReadOnlyField Id="currencycode" Value="@selectedBank.BankAccountNumber" />
+                                        <TelerikValidationMessage For="@(() => selectedBank.CurrencyCode)" />
+                                    </div>
+                                </Template>
+                            </FormItem>
+                            <FormItem LabelText="Add bank letter head: " Field="@nameof(Bank.BankLetter)">
+                                <Template>
+                                    <label for="bankletter" class="k-label k-form-label">Add bank letter head: </label>
+                                    <div class="k-form-field-wrap">
+                                        <ReadOnlyField Id="bankletter" Value="@selectedBank.BankAccountNumber" />
+                                        <TelerikValidationMessage For="@(() => selectedBank.BankLetter)" />
+                                    </div>
+                                </Template>
+                            </FormItem>
+                            <FormItem LabelText="Beneficiary Full Name: " Field="@nameof(Bank.BeneficiaryFullName)">
+                                <Template>
+                                    <label for="fullname" class="k-label k-form-label">Beneficiary Full Name: </label>
+                                    <div class="k-form-field-wrap">
+                                        <ReadOnlyField Id="fullname" Value="@selectedBank.BankAccountNumber" />
+                                        <TelerikValidationMessage For="@(() => selectedBank.BeneficiaryFullName)" />
+                                    </div>
+                                </Template>
+                            </FormItem>
+                            <FormItem LabelText="Beneficiary Address: " Field="@nameof(Bank.BeneficiaryAddress)">
+                                <Template>
+                                    <label for="beneficiaryaddress" class="k-label k-form-label">Beneficiary Address: </label>
+                                    <div class="k-form-field-wrap">
+                                        <ReadOnlyField Id="beneficiaryaddress" Value="@selectedBank.BankAccountNumber" />
+                                        <TelerikValidationMessage For="@(() => selectedBank.BeneficiaryAddress)" />
+                                    </div>
+                                </Template>
+                            </FormItem>
+                            <FormItem LabelText="Beneficiary Address 1: " Field="@nameof(Bank.BeneficiaryAddress1)">
+                                <Template>
+                                    <label for="beneficiaryaddress1" class="k-label k-form-label">Beneficiary Address 1: </label>
+                                    <div class="k-form-field-wrap">
+                                        <ReadOnlyField Id="beneficiaryaddress1" Value="@selectedBank.BankAccountNumber" />
+                                        <TelerikValidationMessage For="@(() => selectedBank.BeneficiaryAddress1)" />
+                                    </div>
+                                </Template>
+                            </FormItem>
+                            <FormItem LabelText="Beneficiary Bank Name: " Field="@nameof(Bank.BeneficiaryBankName)">
+                                <Template>
+                                    <label for="beneficiarybankname" class="k-label k-form-label">Beneficiary Bank Name: </label>
+                                    <div class="k-form-field-wrap">
+                                        <ReadOnlyField Id="beneficiarybankname" Value="@selectedBank.BankAccountNumber" />
+                                        <TelerikValidationMessage For="@(() => selectedBank.BeneficiaryBankName)" />
+                                    </div>
+                                </Template>
+                            </FormItem>
+                            <FormItem LabelText="Beneficiary Bank Address: " Field="@nameof(Bank.BeneficiaryBankAddress)">
+                                <Template>
+                                    <label for="beneficiarybankaddress" class="k-label k-form-label">Beneficiary Bank Address: </label>
+                                    <div class="k-form-field-wrap">
+                                        <ReadOnlyField Id="beneficiarybankaddress" Value="@selectedBank.BankAccountNumber" />
+                                        <TelerikValidationMessage For="@(() => selectedBank.BeneficiaryBankAddress)" />
+                                    </div>
+                                </Template>
+                            </FormItem>
+                            <FormItem LabelText="Beneficiary Bank Address 1: " Field="@nameof(Bank.BeneficiaryBankAddress1)">
+                                <Template>
+                                    <label for="beneficiarybankaddress1" class="k-label k-form-label">Beneficiary Bank Address 1: </label>
+                                    <div class="k-form-field-wrap">
+                                        <ReadOnlyField Id="beneficiarybankaddress1" Value="@selectedBank.BankAccountNumber" />
+                                        <TelerikValidationMessage For="@(() => selectedBank.BeneficiaryBankAddress1)" />
+                                    </div>
+                                </Template>
+                            </FormItem>
+                            <FormItem LabelText="Beneficiary Bank Code: " Field="@nameof(Bank.BeneficiaryBankCode)">
+                                <Template>
+                                    <label for="beneficiarybankcode" class="k-label k-form-label">Beneficiary Bank Code: </label>
+                                    <div class="k-form-field-wrap">
+                                        <ReadOnlyField Id="beneficiarybankcode" Value="@selectedBank.BankAccountNumber" />
+                                        <TelerikValidationMessage For="@(() => selectedBank.BeneficiaryBankCode)" />
+                                    </div>
+                                </Template>
+                            </FormItem>
+                            <FormItem LabelText="Intermediary Bank Code Number: " Field="@nameof(Bank.IntermediaryBankCodeNumber)">
+                                <Template>
+                                    <label for="intermediarybankcodenumber" class="k-label k-form-label">Intermediary Bank Code Number: </label>
+                                    <div class="k-form-field-wrap">
+                                        <ReadOnlyField Id="intermediarybankcodenumber" Value="@selectedBank.BankAccountNumber" />
+                                        <TelerikValidationMessage For="@(() => selectedBank.IntermediaryBankCodeNumber)" />
+                                    </div>
+                                </Template>
+                            </FormItem>
+                            <FormItem LabelText="Intermediary Bank Code Type: " Field="@nameof(Bank.IntermediaryBankCodeType)">
+                                <Template>
+                                    <label for="intermediarybankcodetype" class="k-label k-form-label">Intermediary Bank Code Type: </label>
+                                    <div class="k-form-field-wrap">
+                                        <ReadOnlyField Id="intermediarybankcodetype" Value="@selectedBank.BankAccountNumber" />
+                                        <TelerikValidationMessage For="@(() => selectedBank.IntermediaryBankCodeType)" />
+                                    </div>
+                                </Template>
+                            </FormItem>
+                        </FormItems>
+                        <FormButtons>
+                            <TelerikButton Rounded="@Telerik.Blazor.ThemeConstants.Button.Rounded.Small" OnClick="@BankCloseHandler">Close</TelerikButton>
+                        </FormButtons>
+                    </TelerikForm>
+                }
+
+
+                <TelerikGrid Data="@(selectedVendor.BankList)"
+                             EditMode="@GridEditMode.None"
+                             Pageable="true"
+                             PageSize="20"
+                             SelectionMode="GridSelectionMode.Single"
+                             SelectedItems="@selectedBankList"
+                             SelectedItemsChanged="@((IEnumerable<Bank> bankList) => SelectedBankListChanged(bankList))"
+                             OnRowClick="@OnBankRowClick">
+                    <GridColumns>
+                        <GridColumn Field=@nameof(Bank.BeneficiaryBankName) />
+                        <GridColumn Field=@nameof(Bank.BankAccountNumber) />
+                        <GridColumn Field=@nameof(Bank.CurrencyCode) />
+                        <GridColumn Field=@nameof(Bank.BeneficiaryFullName) />
+                    </GridColumns>
+                </TelerikGrid>
+            </MudCard>
+        </Content>
+    </TabStripTab>
+
+    <TabStripTab Title="Evaluation Form">
+        <HeaderTemplate>
+            <MudIcon Icon="@Icons.Filled.Assignment" />
+            <span class="k-pl-2">
+                @if (AppState.MobileView)
+                {
+                    <MudIcon Icon="@Icons.Filled.Circle" Style="font-size: 0.5rem;" Color="@(activeTabIndex == 2 ? Color.Success : Color.Transparent)" />
+                }
+                else
+                {
+                    <div>Evaluation Form</div>
+                }
+            </span>
+        </HeaderTemplate>
+        <Content>
+
+        </Content>
+    </TabStripTab>
+
+    <TabStripTab Title="Approvals">
+        <HeaderTemplate>
+            <MudIcon Icon="@Icons.Filled.Task" />
+            <span class="k-pl-2">
+                @if (AppState.MobileView)
+                {
+                    <MudIcon Icon="@Icons.Filled.Circle" Style="font-size: 0.5rem;" Color="@(activeTabIndex == 3 ? Color.Success : Color.Transparent)" />
+                }
+                else
+                {
+                    <div>Approvals</div>
+                }
+            </span>
+        </HeaderTemplate>
+        <Content>
+
+        </Content>
+    </TabStripTab>
+
+    <TabStripTab Title="Users">
+        <HeaderTemplate>
+            <MudIcon Icon="@Icons.Filled.AccountCircle" />
+            <span class="k-pl-2">
+                @if (AppState.MobileView)
+                {
+                    <MudIcon Icon="@Icons.Filled.Circle" Style="font-size: 0.5rem;" Color="@(activeTabIndex == 4 ? Color.Success : Color.Transparent)" />
+                }
+                else
+                {
+                    <div>Users</div>
+                }
+            </span>
+        </HeaderTemplate>
+        <Content>
+            <TelerikGrid Data="@(selectedVendor.CompanyUsers)"
+                         EditMode="@GridEditMode.None"
+                         Pageable="true"
+                         PageSize="20">
+                <GridColumns>
+                    <GridColumn Field=@nameof(AppUser.UserName) />
+                    <GridColumn Field=@nameof(AppUser.FullName) />
+                    <GridColumn Field=@nameof(AppUser.StatusName) />
+                </GridColumns>
+            </TelerikGrid>
+        </Content>
+    </TabStripTab>
+
+</TelerikTabStrip>
+
+
+@code {
+    [CascadingParameter] AppState AppState { get; set; }
+
+    FluentValidationValidator? vendorValidator;
+    FluentValidationValidator? bankValidator;
+
+    int vendorId = 0;
+    int activeTabIndex = 0;
+    bool showBankPanel = false;
+
+    Vendor selectedVendor = new();
+    Bank? selectedBank = new();
+
+    IEnumerable<Bank>? selectedBankList = new List<Bank>();
+
+    string? companyLogo => selectedVendor is { CompanyLogo.FileData: { } } ? string.Format($"data:image/png;base64," + Convert.ToBase64String(selectedVendor.CompanyLogo.FileData)) : null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        SetQueryVariables();
+        OnAppStateInitialized();
+        await LoadData();
+    }
+
+    void SetQueryVariables()
+    {
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("id", out var _id))
+        {
+            vendorId = Convert.ToInt32(_id);
+        }
+    }
+
+    void OnAppStateInitialized()
+    {
+        AppState.SetDefaults();
+
+        AppState.BackButtonVisible = true;
+        AppState.OnBackClick += BackClick;
+    }
+
+    void IDisposable.Dispose()
+    {
+        AppState.OnBackClick -= BackClick;
+    }
+
+    async Task LoadData()
+    {
+        AppState.Loading = true;
+        selectedVendor = await VendorService.GetByIdAsync(vendorId);
+        AppState.Loading = false;
+    }
+
+    void BackClick()
+    {
+        NavigationManager.NavigateTo("/vendors");
+    }
+
+    //bool ValidateVendor()
+    //{
+    //    if (vendorValidator != null) { return vendorValidator.Validate(options => options.IncludeAllRuleSets()); }
+    //    return false;
+    //}
+
+    void ActiveTabIndexChanged(int tabIndex)
+    {
+        activeTabIndex = tabIndex;
+    }
+
+    void SelectedBankListChanged(IEnumerable<Bank> bankList)
+    {
+        if (!showBankPanel)
+        {
+            selectedBankList = bankList;
+        }
+    }
+
+    void OnBankRowClick(GridRowClickEventArgs args)
+    {
+        var argsItem = args.Item as Bank;
+        argsItem.RowIndex = selectedVendor.BankList.IndexOf(argsItem);
+        selectedBank = argsItem;
+        showBankPanel = true;
+    }
+
+    void BankCloseHandler()
+    {
+        showBankPanel = false;
+        selectedBank = new();
+        selectedBankList = new List<Bank>();
+    }
+}

@@ -18,6 +18,7 @@ public class Vendor : BaseModel
     public List<int>? ProvidedProducts { get; set; }
     public List<Bank>? BankList { get; set; }
     public List<AppUser>? CompanyUsers { get; set; }
+    public int NumberOfUsers { get; set; }
     public EvaluationForm? EvaluationForm { get; set; }
     public string? OtherProducts { get; set; }
     public string? RepresentedProducts { get; set; }
@@ -25,4 +26,5 @@ public class Vendor : BaseModel
     public bool AgreeWithDefaultDays { get; set; } = true;
     public bool Exists { get; set; }
     public int StatusId { get; set; }
+    public string? StatusName { get; set; }
 }

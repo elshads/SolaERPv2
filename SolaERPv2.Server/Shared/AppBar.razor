@@ -28,7 +28,7 @@
 
     <form method="post" action="Identity/Account/Logout">
         <MudTooltip Text="Log out" Duration="500">
-            <MudIconButton Icon="@Icons.Filled.Logout" Color="Color.Inherit" ButtonType="MudBlazor.ButtonType.Submit"></MudIconButton>
+            <MudIconButton Icon="@Icons.Filled.Logout" Color="Color.Inherit" OnClick="@ClearUserToken" ButtonType="MudBlazor.ButtonType.Submit"></MudIconButton>
         </MudTooltip>
     </form>
 
@@ -74,6 +74,11 @@
             AppState.ShowAlert(result.QueryResultMessage, Severity.Error);
         }
         AppState.Refresh();
+    }
+
+    async Task ClearUserToken()
+    {
+        await LocalStorage.SetItemAsync("logged_user_token", "");
     }
 }
 

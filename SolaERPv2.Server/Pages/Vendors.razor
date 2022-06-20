@@ -14,13 +14,13 @@
                       Height="calc(100vh - 240px)"
                       ShowSearchBar="true"
                       OnRowDoubleClick="@OnRowDoubleClickHandler"
-                      SearchFields="@(new List<string> { "VendorName" })"
+                      SearchFields="@(new List<string> { "VendorCode", "VendorName", "TaxId", "CountryCode", "CompanyWebsite", "StatusName" })"
                       @bind-SelectedItems="@selectedVendorList"
                       HierarchyDetailsField="CompanyUsers">
                 <HierarchyContent>
                     @{
                         var vendor = context as Vendor;
-                        <TelerikGrid Data="@vendor.CompanyUsers">
+                        <TelerikGrid Data="@vendor.CompanyUsers" SelectionMode="GridSelectionMode.Single" OnRowDoubleClick="@OnUserRowDoubleClick">
                             <GridColumns>
                                 <GridColumn Field="@(nameof(AppUser.UserName))" Title="UserName" Width="260px" />
                                 <GridColumn Field="@(nameof(AppUser.FullName))" Title="Name" Width="180px" />
@@ -32,26 +32,22 @@
                                                 var user = rowContext as AppUser;
                                                 if (user is { StatusId: 0 })
                                                 {
-                                                    <MudIcon Icon="@Icons.Filled.Person" Color="Color.Success" Size="Size.Small" />
+                                                    <MudIcon Icon="@Icons.Filled.Person" Color="Color.Warning" Size="Size.Small" />
                                                 }
                                                 else if (user is { StatusId: 1 })
                                                 {
-                                                    <MudIcon Icon="@Icons.Filled.Person" Color="Color.Default" Size="Size.Small" />
+                                                    <MudIcon Icon="@Icons.Filled.Person" Color="Color.Success" Size="Size.Small" />
                                                 }
                                                 else if (user is { StatusId: 2 })
-                                                {
-                                                    <MudIcon Icon="@Icons.Filled.Person" Color="Color.Error" Size="Size.Small" />
-                                                }
-                                                else if (user is { StatusId: 9 })
                                                 {
                                                     <MudIcon Icon="@Icons.Filled.PersonOff" Color="Color.Default" Size="Size.Small" />
                                                 }
                                                 else
                                                 {
-                                                    <span>-contact-dev-</span>
+                                                    <span>none</span>
                                                 }
                                             }
-                                            <span class="k-px-2">@(userStatusList.FirstOrDefault(e => e.StatusId == user.StatusId).StatusName)</span>
+                                            <span class="k-px-2">@(user.StatusName)</span>
                                         </div>
                                     </Template>
                                 </GridColumn>
@@ -66,7 +62,45 @@
                     <GridColumn Field="@(nameof(Vendor.TaxId))" Title="Tax Id" Width="260px" />
                     <GridColumn Field="@(nameof(Vendor.CountryCode))" Title="Country" Width="260px" />
                     <GridColumn Field="@(nameof(Vendor.CompanyWebsite))" Title="Website" Width="260px" />
-                    <GridColumn Field="@(nameof(Vendor.StatusId))" Title="Status" Width="260px" />
+                    <GridColumn Field="@(nameof(Vendor.NumberOfUsers))" Title="No. of Users" TextAlign="ColumnTextAlign.Right" Width="120px">
+                        <Template Context="rowContext">
+                            @{
+                                var vendor = rowContext as Vendor;
+                                var numberOfUsers = vendor != null && vendor.CompanyUsers != null && vendor.CompanyUsers.Any() ? vendor.CompanyUsers.Count() : 0;
+                                <span>@numberOfUsers</span>
+                            }
+                        </Template>
+                    </GridColumn>
+                    <GridColumn Field="@(nameof(Vendor.StatusName))" Title="Status" Width="100px">
+                        <Template Context="rowContext">
+                            <div class="flex-center-y">
+                                @{
+                                    var vendor = rowContext as Vendor;
+                                    if (vendor is { StatusId: 0 })
+                                    {
+                                        <MudIcon Icon="@Icons.Filled.Circle" Color="Color.Warning" Size="Size.Small" />
+                                    }
+                                    else if (vendor is { StatusId: 1 })
+                                    {
+                                        <MudIcon Icon="@Icons.Filled.Circle" Color="Color.Success" Size="Size.Small" />
+                                    }
+                                    else if (vendor is { StatusId: 2 })
+                                    {
+                                        <MudIcon Icon="@Icons.Filled.Circle" Color="Color.Default" Size="Size.Small" />
+                                    }
+                                    else if (vendor is { StatusId: 3 })
+                                    {
+                                        <MudIcon Icon="@Icons.Filled.Circle" Color="Color.Error" Size="Size.Small" />
+                                    }
+                                    else
+                                    {
+                                        <span>-contact-dev-</span>
+                                    }
+                                }
+                                <span class="k-px-2">@(vendor.StatusName)</span>
+                            </div>
+                        </Template>
+                                </GridColumn>
                 </DataGridColumns>
             </DataGrid>
         </Content>
@@ -74,7 +108,100 @@
 
     <TabStripTab Title="All">
         <Content>
-
+            <DataGrid Data="@vendorList"
+                      CanExport="true"
+                      Height="calc(100vh - 240px)"
+                      ShowSearchBar="true"
+                      OnRowDoubleClick="@OnRowDoubleClickHandler"
+                      SearchFields="@(new List<string> { "VendorCode", "VendorName", "TaxId", "CountryCode", "CompanyWebsite", "StatusName" })"
+                      @bind-SelectedItems="@selectedVendorList"
+                      HierarchyDetailsField="CompanyUsers">
+                <HierarchyContent>
+                    @{
+                        var vendor = context as Vendor;
+                        <TelerikGrid Data="@vendor.CompanyUsers" SelectionMode="GridSelectionMode.Single" OnRowDoubleClick="@OnUserRowDoubleClick">
+                            <GridColumns>
+                                <GridColumn Field="@(nameof(AppUser.UserName))" Title="UserName" Width="260px" />
+                                <GridColumn Field="@(nameof(AppUser.FullName))" Title="Name" Width="180px" />
+                                <GridColumn Field="@(nameof(AppUser.Position))" Title="Position" Width="180px" />
+                                <GridColumn Field="@(nameof(AppUser.StatusName))" Title="Status" Width="100px">
+                                    <Template Context="rowContext">
+                                        <div class="flex-center-y">
+                                            @{
+                                                var user = rowContext as AppUser;
+                                                if (user is { StatusId: 0 })
+                                                {
+                                                    <MudIcon Icon="@Icons.Filled.Person" Color="Color.Warning" Size="Size.Small" />
+                                                }
+                                                else if (user is { StatusId: 1 })
+                                                {
+                                                    <MudIcon Icon="@Icons.Filled.Person" Color="Color.Success" Size="Size.Small" />
+                                                }
+                                                else if (user is { StatusId: 2 })
+                                                {
+                                                    <MudIcon Icon="@Icons.Filled.PersonOff" Color="Color.Default" Size="Size.Small" />
+                                                }
+                                                else
+                                                {
+                                                    <span>none</span>
+                                                }
+                                            }
+                                            <span class="k-px-2">@(user.StatusName)</span>
+                                        </div>
+                                    </Template>
+                                </GridColumn>
+                            </GridColumns>
+                        </TelerikGrid>
+                    }
+                </HierarchyContent>
+                <DataGridColumns>
+                    <GridColumn Field="@(nameof(Vendor.VendorId))" Title="Id" Width="70px" Editable="false" TextAlign="ColumnTextAlign.Right" Visible="false" />
+                    <GridColumn Field="@(nameof(Vendor.VendorCode))" Title="Code" Width="260px" />
+                    <GridColumn Field="@(nameof(Vendor.VendorName))" Title="Name" Width="260px" />
+                    <GridColumn Field="@(nameof(Vendor.TaxId))" Title="Tax Id" Width="260px" />
+                    <GridColumn Field="@(nameof(Vendor.CountryCode))" Title="Country" Width="260px" />
+                    <GridColumn Field="@(nameof(Vendor.CompanyWebsite))" Title="Website" Width="260px" />
+                    <GridColumn Field="@(nameof(Vendor.NumberOfUsers))" Title="No. of Users" TextAlign="ColumnTextAlign.Right" Width="120px">
+                        <Template Context="rowContext">
+                                @{
+                                    var vendor = rowContext as Vendor;
+                                    var numberOfUsers = vendor != null && vendor.CompanyUsers != null && vendor.CompanyUsers.Any() ? vendor.CompanyUsers.Count() : 0;
+                                    <span>@numberOfUsers</span>
+                                }
+                        </Template>
+                    </GridColumn>
+                    <GridColumn Field="@(nameof(Vendor.StatusName))" Title="Status" Width="100px">
+                                    <Template Context="rowContext">
+                                        <div class="flex-center-y">
+                                            @{
+                                                var vendor = rowContext as Vendor;
+                                                if (vendor is { StatusId: 0 })
+                                                {
+                                                    <MudIcon Icon="@Icons.Filled.Circle" Color="Color.Warning" Size="Size.Small" />
+                                                }
+                                                else if (vendor is { StatusId: 1 })
+                                                {
+                                                    <MudIcon Icon="@Icons.Filled.Circle" Color="Color.Success" Size="Size.Small" />
+                                                }
+                                                else if (vendor is { StatusId: 2 })
+                                                {
+                                                    <MudIcon Icon="@Icons.Filled.Circle" Color="Color.Default" Size="Size.Small" />
+                                                }
+                                                else if (vendor is { StatusId: 3 })
+                                                {
+                                                    <MudIcon Icon="@Icons.Filled.Circle" Color="Color.Error" Size="Size.Small" />
+                                                }
+                                                else
+                                                {
+                                                    <span>-contact-dev-</span>
+                                                }
+                                            }
+                                            <span class="k-px-2">@(vendor.StatusName)</span>
+                                        </div>
+                                    </Template>
+                                </GridColumn>
+                </DataGridColumns>
+            </DataGrid>
         </Content>
     </TabStripTab>
 </TelerikTabStrip>
@@ -111,21 +238,28 @@
 
 
 @code {
-    [CascadingParameter] AppState? AppState { get; set; }
-    [CascadingParameter] DialogFactory? DialogFactory { get; set; }
+
+    [CascadingParameter]
+    AppState? AppState { get; set; }
+
+    [CascadingParameter]
+    DialogFactory? DialogFactory { get; set; }
 
     List<Vendor>? vendorList = new();
     IEnumerable<Vendor>? selectedVendorList = new List<Vendor>();
-    IEnumerable<VendorStatus>? vendorStatusList = new List<VendorStatus>();
+    IEnumerable<Status>? vendorStatusList = new List<Status>();
 
-    IEnumerable<UserStatus>? userStatusList = new List<UserStatus>();
+    IEnumerable<Status>? userStatusList = new List<Status>();
 
     int activeTabIndex = 0;
+    bool isWaitingForApproval => activeTabIndex == 0 ? true : false;
 
     bool showApproveDialog = false;
     string approveComment = "";
     bool approveSelected = false;
     TelerikDialog approveDialogRef;
+
+    //int menuButtonsVisibility => activeTabIndex == 0 ? (() => AppState.ApproveButtonVisible = true; AppState.RejectButtonVisible = true;}) : 0;
 
     protected override async Task OnInitializedAsync()
     {
@@ -154,12 +288,17 @@
     
     async Task LoadData()
     {
+        userStatusList = AppUserService.GetStatusList();
+        vendorStatusList = VendorService.GetStatusList();
+        await LoadVendorList();
+    }
+
+    async Task LoadVendorList()
+    {
         if (AppState == null) return;
 
         AppState.Loading = true;
-        userStatusList = AppUserService.GetStatusList();
-        vendorStatusList = VendorService.GetStatusList();
-        var _vendorList = await VendorService.GetAllAsync(1);
+        var _vendorList = await VendorService.GetAllAsync(1, isWaitingForApproval);
         if (vendorList != null) { vendorList = _vendorList.ToList(); }
         AppState.Loading = false;
     }
@@ -237,8 +376,7 @@
         var result = await VendorService.Approve(approveDataList);
         if (result.QueryResultMessage == null)
         {
-            var _vendorList = await VendorService.GetAllAsync(1);
-            vendorList = _vendorList.ToList();
+            await LoadVendorList();
             AppState.ShowAlert("Successfully updated", Severity.Success);
         }
         else
@@ -260,15 +398,21 @@
 
     void OnRowDoubleClickHandler(GridRowClickEventArgs args)
     {
-        if (args.Item is AppUser argsItem) { GoToDetails(argsItem.Id); }
+        if (args.Item is Vendor argsItem) { GoToDetails(argsItem.VendorId); }
     }
 
+    void OnUserRowDoubleClick(GridRowClickEventArgs args)
+    {
+        var argsItem = args.Item as AppUser;
+        NavigationManager.NavigateTo($"/users/card?id={argsItem.Id}");
+    }
+    
     void BackClick()
     {
         NavigationManager.NavigateTo("/");
     }
 
-    void ActiveTabIndexChanged(int tabIndex)
+    async Task ActiveTabIndexChanged(int tabIndex)
     {
         if (AppState == null) return;
 
@@ -276,6 +420,7 @@
         activeTabIndex = tabIndex;
         selectedVendorList = new List<Vendor>();
         SetMenuButtonsVisibility();
+        await LoadVendorList();
         AppState.Loading = false;
     }
 

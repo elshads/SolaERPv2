@@ -45,4 +45,6 @@ public class AppUser : IdentityUser<int>, IBaseModel
     public int VendorId { get; set; }
     [NotMapped]
     public IEnumerable<Menu>? UserMenuList { get; set; } = new List<Menu>();
+
+    public Guid UserToken { get; set; }
 }

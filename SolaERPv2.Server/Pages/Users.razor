@@ -79,23 +79,19 @@
                                     var user = context as AppUser;
                                     if (user is { StatusId: 0 })
                                     {
-                                        <MudIcon Icon="@Icons.Filled.Person" Color="Color.Success" Size="Size.Small" />
+                                        <MudIcon Icon="@Icons.Filled.Person" Color="Color.Warning" Size="Size.Small" />
                                     }
                                     else if (user is { StatusId: 1 })
                                     {
-                                        <MudIcon Icon="@Icons.Filled.Person" Color="Color.Default" Size="Size.Small" />
+                                        <MudIcon Icon="@Icons.Filled.Person" Color="Color.Success" Size="Size.Small" />
                                     }
                                     else if (user is { StatusId: 2 })
-                                    {
-                                        <MudIcon Icon="@Icons.Filled.Person" Color="Color.Error" Size="Size.Small" />
-                                    }
-                                    else if (user is { StatusId: 9 })
                                     {
                                         <MudIcon Icon="@Icons.Filled.PersonOff" Color="Color.Default" Size="Size.Small" />
                                     }
                                     else
                                     {
-                                        <span>-contact-dev-</span>
+                                        <span>none</span>
                                     }
                                 }
                                 <span class="k-px-2">@user.StatusName</span>
@@ -123,7 +119,7 @@
     List<AppUser>? userList = new();
     IEnumerable<AppUser>? selectedUserList = new List<AppUser>();
     IEnumerable<AppUser>? deletedUserList = new List<AppUser>();
-    IEnumerable<UserStatus>? userStatusList = new List<UserStatus>();
+    IEnumerable<Status>? userStatusList = new List<Status>();
 
     //bool _showApproveDialog = false;
     //string? _approveComment = "";

@@ -50,6 +50,7 @@
     {
         _appState = new AppState(Snackbar);
         _appState.OnRefreshClick += Refresh;
+
         await AppUserService.UserLoggedIn();
     }
 
@@ -68,7 +69,11 @@
     {
         var authenticationState = await AuthenticationStateProvider?.GetAuthenticationStateAsync();
         var isAuthenticated = authenticationState?.User.Identity is {IsAuthenticated: true };
-        if (firstRender && !isAuthenticated)
+        if (firstRender && isAuthenticated)
+        {
+            await LocalStorage.SetItemAsync("logged_user_token", SessionData.CurrentUser.UserToken);
+        }
+        else if (firstRender && !isAuthenticated)
         {
             NavigationManager.NavigateTo("Identity/Account/Login", true);
         }
