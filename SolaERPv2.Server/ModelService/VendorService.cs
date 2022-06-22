@@ -18,24 +18,26 @@ public class VendorService : BaseModelService<Vendor>
         try
         {
             var currentUser = await _appUserService.GetCurrentUserAsync();
-            var sql = isWaitingForApproval ? "dbo.SP_VendorWFA" : "dbo.SP_VendorAll";
-            //var sql = "dbo.SP_ZZZTest";
+            //var sql = isWaitingForApproval ? "dbo.SP_VendorWFA" : "dbo.SP_VendorAll";
+            var sql = "dbo.SP_VendorList";
 
             var p = new DynamicParameters();
-            p.Add("@UserId", currentUser.Id, DbType.Int32, ParameterDirection.Input);
+            //p.Add("@UserId", currentUser.Id, DbType.Int32, ParameterDirection.Input);
             p.Add("@BusinessUnitId", businessUnitId, DbType.Int32, ParameterDirection.Input);
 
             using IDbConnection cn = new SqlConnection(_sqlDataAccess.ConnectionString);
-            result = await cn.QueryAsync<Vendor, AppUser, Vendor>(sql,
-                (vendor, user) =>
-                {
-                    if (vendor.CompanyUsers == null && user != null) { vendor.CompanyUsers = new(); };
-                    if (user != null) { vendor.CompanyUsers.Add(user); };
-                    return vendor;
-                },
-                param: p,
-                splitOn: "Id",
-                commandType: CommandType.StoredProcedure);
+            //result = await cn.QueryAsync<Vendor, AppUser, Vendor>(sql,
+            //    (vendor, user) =>
+            //    {
+            //        if (vendor.CompanyUsers == null && user != null) { vendor.CompanyUsers = new(); };
+            //        if (user != null) { vendor.CompanyUsers.Add(user); };
+            //        return vendor;
+            //    },
+            //    param: p,
+            //    splitOn: "Id",
+            //    commandType: CommandType.StoredProcedure);
+
+            result = await _sqlDataAccess.QueryAll<Vendor>(sql, p, "Vendor-GetAll");
         }
         catch (Exception e)
         {
