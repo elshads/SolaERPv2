@@ -169,6 +169,7 @@ public class AppUserService : BaseModelService<AppUser>
             new Status() { StatusId = 0, StatusName = "Draft" },
             new Status() { StatusId = 1, StatusName = "Open" },
             new Status() { StatusId = 2, StatusName = "Closed" },
+            new Status() { StatusId = 3, StatusName = "Approve" },
         };
     }
 

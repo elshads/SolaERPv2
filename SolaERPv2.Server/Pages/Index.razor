@@ -79,7 +79,7 @@ else
 
     void ShowSupplierRegistrationPage()
     {
-        if (SessionData.CurrentUser != null && SessionData.CurrentUser.StatusId == 1 && SessionData.CurrentUser.UserTypeId == 1)
+        if (SessionData.CurrentUser != null && SessionData.CurrentUser.StatusId == 0 && SessionData.CurrentUser.UserTypeId == 1)
         {
             if (AppState != null)
             {
@@ -89,7 +89,7 @@ else
             showSupplierRegistration = true;
             showWaitForConfirmation = false;
         }
-        else if (SessionData.CurrentUser != null && SessionData.CurrentUser.StatusId == 2 && SessionData.CurrentUser.UserTypeId == 1)
+        else if (SessionData.CurrentUser != null && SessionData.CurrentUser.StatusId == 3 && SessionData.CurrentUser.UserTypeId == 1)
         {
             if (AppState != null)
             {

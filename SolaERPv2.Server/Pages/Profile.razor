@@ -14,7 +14,7 @@
                     <MudImage Src="@imgUrl" Width="250" Height="250" Alt="avatar" Elevation="25" Class="rounded-lg" />
                 </div>
                 <TelerikButton Class="w-100 k-my-2" OnClick="@DeletePhotoHandler" ThemeColor="@Telerik.Blazor.ThemeConstants.Button.ThemeColor.Error">Delete Photo</TelerikButton>
-                <FileSelect HideList="true" Multiple="false" AllowedExtensions="@(new List<string> { ".png", ".jpg", ".jpeg" })" OnSelect="@OnAvatarSelect" />
+                <FileSelect HideList="true" Multiple="false" AllowedExtensions="@(new List<string> { ".png", ".jpg", ".jpeg" })" AttachmentListChanged="@OnAvatarSelect" />
             </GridLayoutItem>
             <GridLayoutItem Row="@(AppState.MobileView ? 2 : 1)" Column="@(AppState.MobileView ? 1 : 2)" ColumnSpan="@(AppState.MobileView ? 2 : 1)">
                 <TelerikForm Model="@currentUser" Orientation="FormOrientation.Vertical">

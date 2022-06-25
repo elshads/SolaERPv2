@@ -11,31 +11,19 @@ public class VendorService : BaseModelService<Vendor>
         _sqlDataAccess = sqlDataAccess;
     }
 
-    public async Task<IEnumerable<Vendor>?> GetAllAsync(int businessUnitId, bool isWaitingForApproval = false)
+    public async Task<IEnumerable<Vendor>?> GetAllAsync(int businessUnitId)
     {
         IEnumerable<Vendor>? result = new List<Vendor>();
 
         try
         {
             var currentUser = await _appUserService.GetCurrentUserAsync();
-            //var sql = isWaitingForApproval ? "dbo.SP_VendorWFA" : "dbo.SP_VendorAll";
             var sql = "dbo.SP_VendorList";
 
             var p = new DynamicParameters();
-            //p.Add("@UserId", currentUser.Id, DbType.Int32, ParameterDirection.Input);
             p.Add("@BusinessUnitId", businessUnitId, DbType.Int32, ParameterDirection.Input);
 
             using IDbConnection cn = new SqlConnection(_sqlDataAccess.ConnectionString);
-            //result = await cn.QueryAsync<Vendor, AppUser, Vendor>(sql,
-            //    (vendor, user) =>
-            //    {
-            //        if (vendor.CompanyUsers == null && user != null) { vendor.CompanyUsers = new(); };
-            //        if (user != null) { vendor.CompanyUsers.Add(user); };
-            //        return vendor;
-            //    },
-            //    param: p,
-            //    splitOn: "Id",
-            //    commandType: CommandType.StoredProcedure);
 
             result = await _sqlDataAccess.QueryAll<Vendor>(sql, p, "Vendor-GetAll");
         }
@@ -47,28 +35,65 @@ public class VendorService : BaseModelService<Vendor>
         return result;
     }
 
-    public async Task<Vendor?> GetByIdAsync(int vendorid)
+    public async Task<IEnumerable<Vendor>?> GetAllExtendedAsync(int businessUnitId, bool isWaitingForApproval)
     {
+        var currentUser = await _appUserService.GetCurrentUserAsync();
+        Dictionary<int, Vendor> result = new();
+        var sql = isWaitingForApproval ? "SP_VendorWFA" : "dbo.SP_VendorAll";
+
         var p = new DynamicParameters();
-        p.Add("@VendorId", vendorid, DbType.Int32, ParameterDirection.Input);
-        
+        p.Add("@UserId", currentUser.Id, DbType.Int32, ParameterDirection.Input);
+        p.Add("@BusinessUnitId", businessUnitId, DbType.Int32, ParameterDirection.Input);
+
         using IDbConnection cn = new SqlConnection(_sqlDataAccess.ConnectionString);
-        var vendor = await cn.QueryAsync<Vendor, AppUser, Bank, Vendor>("dbo.SP_Vendor_Load",
-            (vendor, user, bank) =>
+        _ = await cn.QueryAsync<Vendor, AppUser, Vendor>(sql,
+            (vendor, user) =>
             {
-                if (vendor.CompanyUsers == null && user != null) { vendor.CompanyUsers = new(); };
-                if (user != null) { vendor.CompanyUsers.Add(user); };
-
-                if (vendor.BankList == null && bank != null) { vendor.BankList = new(); };
-                if (bank != null) { vendor.BankList.Add(bank); };
-
+                if (!result.ContainsKey(vendor.VendorId))
+                {
+                    vendor.CompanyUsers = new();
+                    result.Add(vendor.VendorId, vendor);
+                }
+                var currentVendor = result[vendor.VendorId];
+                if (user != null) { currentVendor.CompanyUsers.Add(user); }
                 return vendor;
             },
             param: p,
-            splitOn: "Id,BankId",
+            splitOn: "Id",
             commandType: CommandType.StoredProcedure);
 
-        return vendor.FirstOrDefault();
+        return result.Values;
+    }
+    
+    public async Task<Vendor?> GetByIdAsync(int vendorId)
+    {
+        Dictionary<int, Vendor> result = new();
+        var p = new DynamicParameters();
+        p.Add("@VendorId", vendorId, DbType.Int32, ParameterDirection.Input);
+
+        using IDbConnection cn = new SqlConnection(_sqlDataAccess.ConnectionString);
+        _ = await cn.QueryAsync<Vendor, AppUser, Bank, EvaluationForm, ApproveStage, Vendor>("dbo.SP_Vendor_Load",
+            (vendor, user, bank, eval, approve) =>
+            {
+                if (!result.ContainsKey(vendor.VendorId))
+                {
+                    vendor.CompanyUsers = new();
+                    vendor.BankList = new();
+                    vendor.ApproveStageList = new();
+                    result.Add(vendor.VendorId, vendor);
+                }
+                var currentVendor = result[vendor.VendorId];
+                if (user != null && !currentVendor.CompanyUsers.Select(e => e.Id).Contains(user.Id)) { currentVendor.CompanyUsers.Add(user); }
+                if (bank != null && !currentVendor.BankList.Select(e => e.BankId).Contains(bank.BankId)) { currentVendor.BankList.Add(bank); }
+                if (approve != null && !currentVendor.ApproveStageList.Select(e => e.ApprovalId).Contains(approve.ApprovalId)) { currentVendor.ApproveStageList.Add(approve); }
+                currentVendor.EvaluationForm = eval;
+                return vendor;
+            },
+            param: p,
+            splitOn: "Id,BankId,VendorEvaluationFormId,ApprovalId",
+            commandType: CommandType.StoredProcedure);
+
+        return result.Values.FirstOrDefault();
     }
 
     public async Task<Vendor?> GetByTaxIdAsync(string taxId)
@@ -214,7 +239,7 @@ public class VendorService : BaseModelService<Vendor>
             var p = new DynamicParameters();
             p.Add("@VendorId", saveResult.QueryResult, DbType.Int32, ParameterDirection.Input);
             p.Add("@UserId", user.Id, DbType.Int32, ParameterDirection.Input);
-            p.Add("@Status", 1, DbType.Int32, ParameterDirection.Input);
+            p.Add("@Status", 3, DbType.Int32, ParameterDirection.Input);
             var registerResult = await _sqlDataAccess.ExecuteSql("dbo.SP_VendorsChangeStatus", p, "Vendor-ChangeStatus");
 
             if (registerResult != null && registerResult.QueryResultMessage != null) { saveResult.QueryResultMessage = registerResult.QueryResultMessage; }

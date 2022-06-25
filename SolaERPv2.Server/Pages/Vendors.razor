@@ -42,6 +42,10 @@
                                                 {
                                                     <MudIcon Icon="@Icons.Filled.PersonOff" Color="Color.Default" Size="Size.Small" />
                                                 }
+                                                else if (user is { StatusId: 3 })
+                                                {
+                                                    <MudIcon Icon="@Icons.Filled.Person" Color="Color.Info" Size="Size.Small" />
+                                                }
                                                 else
                                                 {
                                                     <span>none</span>
@@ -140,6 +144,10 @@
                                                 else if (user is { StatusId: 2 })
                                                 {
                                                     <MudIcon Icon="@Icons.Filled.PersonOff" Color="Color.Default" Size="Size.Small" />
+                                                }
+                                                else if (user is { StatusId: 3 })
+                                                {
+                                                    <MudIcon Icon="@Icons.Filled.Person" Color="Color.Info" Size="Size.Small" />
                                                 }
                                                 else
                                                 {
@@ -298,7 +306,7 @@
         if (AppState == null) return;
 
         AppState.Loading = true;
-        var _vendorList = await VendorService.GetAllAsync(1, isWaitingForApproval);
+        var _vendorList = await VendorService.GetAllExtendedAsync(1, activeTabIndex == 0);
         if (vendorList != null) { vendorList = _vendorList.ToList(); }
         AppState.Loading = false;
     }
