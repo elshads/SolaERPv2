@@ -71,24 +71,24 @@
                         </FormItem>
                         <FormItem LabelText="Location: " Field="@nameof(Vendor.CompanyLocation)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)" />
                         <FormItem LabelText="Website: " Field="@nameof(Vendor.CompanyWebsite)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)" />
-                        <FormItem LabelText="Products / Services provided: " Field="@nameof(Vendor.ProvidedProducts)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)">
+                        <FormItem LabelText="Products / Services provided: " Field="@nameof(Vendor.ProvidedProductIdList)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)">
                             <Template>
                                 <label for="productlist" class="k-label k-form-label">Products / Services provided: </label>
                                 <div class="k-form-field-wrap">
                                     <TelerikMultiSelect Id="productlist"
                                                     Data="@productList"
-                                                    Value="@CurrentVendor?.ProvidedProducts"
+                                                    Value="@CurrentVendor?.ProvidedProductIdList"
                                                     ValueChanged="@((List<int> selectedList) => ProvidedProductsChanged(selectedList))"
                                                     TItem="Product"
                                                     TValue="int"
-                                                    ValueExpression="@(() => CurrentVendor.ProvidedProducts)"
+                                                    ValueExpression="@(() => CurrentVendor.ProvidedProductIdList)"
                                                     TextField="@nameof(Product.ProductServiceName)"
                                                     ValueField="@nameof(Product.ProductServiceId)"
                                                     Placeholder="Select ..."
                                                     Filterable="true"
                                                     FilterOperator="StringFilterOperator.Contains"
                                                     Width="100%" />
-                                    <TelerikValidationMessage For="@(() => CurrentVendor.ProvidedProducts)" />
+                                    <TelerikValidationMessage For="@(() => CurrentVendor.ProvidedProductIdList)" />
                                 </div>
                             </Template>
                         </FormItem>
@@ -632,12 +632,12 @@ else
 
     void SetOtherProductsVisibility()
     {
-        if (CurrentVendor != null && CurrentVendor.ProvidedProducts != null)
+        if (CurrentVendor != null && CurrentVendor.ProvidedProductIdList != null)
         {
             var otherId = 0;
             var otherProduct = productList.FirstOrDefault(e => e.Other == 1);
             if (otherProduct != null) { otherId = otherProduct.ProductServiceId; }
-            otherProductsVisible = CurrentVendor.ProvidedProducts.Contains(otherId);
+            otherProductsVisible = CurrentVendor.ProvidedProductIdList.Contains(otherId);
             if (!otherProductsVisible) { CurrentVendor.OtherProducts = null; }
         }
     }
@@ -646,7 +646,7 @@ else
     {
         if (CurrentVendor != null)
         {
-            CurrentVendor.ProvidedProducts = selectedList;
+            CurrentVendor.ProvidedProductIdList = selectedList;
             SetOtherProductsVisibility();
         }
     }

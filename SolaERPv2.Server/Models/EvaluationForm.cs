@@ -14,5 +14,7 @@ public class EvaluationForm : BaseModel
     public int Planning2 { get; set; }
     public int Planning3 { get; set; }
     public Attachment? CertificateAttachment { get; set; }
+    public int CertificateAttachmentId { get; set; }
+    public string? CertificateAttachmentName { get; set; }
     public List<Attachment>? OtherAttachments { get; set; }
 }

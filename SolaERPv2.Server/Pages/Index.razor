@@ -46,7 +46,7 @@ else
     {
         if (SessionData.CurrentUser != null && SessionData.CurrentUser.StatusId == 0)
         {
-            var _currentVendor = await VendorService.GetByUserIdAsync(SessionData.CurrentUser.Id);
+            var _currentVendor = await VendorService.GetByUserIdAsync();
             if (_currentVendor != null) { SetModelNewInstance(_currentVendor); }
         }
     }
@@ -66,7 +66,7 @@ else
         currentVendor.PaymentTermsCode = vendor.PaymentTermsCode;
         currentVendor.CountryCode = vendor.CountryCode;
         currentVendor.PaymentTerms = vendor.PaymentTerms;
-        currentVendor.ProvidedProducts = vendor.ProvidedProducts;
+        currentVendor.ProvidedProductIdList = vendor.ProvidedProductIdList;
         currentVendor.BankList = vendor.BankList;
         currentVendor.EvaluationForm = vendor.EvaluationForm;
         currentVendor.OtherProducts = vendor.OtherProducts;

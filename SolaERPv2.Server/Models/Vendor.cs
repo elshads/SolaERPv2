@@ -10,12 +10,17 @@ public class Vendor : BaseModel
     public string? CompanyLocation { get; set; }
     public string? CompanyWebsite { get; set; }
     public Attachment? CompanyLogo { get; set; }
+    public int CompanyLogoId { get; set; }
+    public string? CompanyLogoName { get; set; }
     public Attachment? OfficialLetter { get; set; }
+    public int OfficialLetterId { get; set; }
+    public string? OfficialLetterName { get; set; }
     public int CreditDays { get; set; } = 60;
     public string? PaymentTermsCode { get; set; }
     public string? CountryCode { get; set; }
     public Analysis? PaymentTerms { get; set; }
-    public List<int>? ProvidedProducts { get; set; }
+    public List<int>? ProvidedProductIdList { get; set; }
+    public List<Product>? ProvidedProductList { get; set; }
     public List<Bank>? BankList { get; set; }
     public List<AppUser>? CompanyUsers { get; set; }
     public List<ApproveStage>? ApproveStageList { get; set; }
@@ -28,4 +33,5 @@ public class Vendor : BaseModel
     public bool Exists { get; set; }
     public int StatusId { get; set; }
     public string? StatusName { get; set; }
+    public int Sequence { get; set; }
 }

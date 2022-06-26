@@ -20,5 +20,7 @@ public class Bank : BaseModel
     public string? IntermediaryBankCodeNumber { get; set; }
     public string? IntermediaryBankCodeType { get; set; }
     public Attachment? BankLetter { get; set; }
+    public int BankLetterId { get; set; }
+    public string? BankLetterName { get; set; }
     public bool IsNewItem { get; set; } = true;
 }

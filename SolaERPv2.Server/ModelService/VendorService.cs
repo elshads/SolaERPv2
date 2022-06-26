@@ -110,7 +110,7 @@ public class VendorService : BaseModelService<Vendor>
             var productList = await _sqlDataAccess.QueryAll<Product>("dbo.SP_VendorProductServices_Load", rp, "Vendor-GetByTaxId2");
             if (productList != null && productList.Any())
             {
-                vendor.ProvidedProducts = productList.Select(e => e.ProductServiceId).ToList();
+                vendor.ProvidedProductIdList = productList.Select(e => e.ProductServiceId).ToList();
             }
 
             var bankList = await _sqlDataAccess.QueryAll<Bank>("dbo.SP_VendorBank_Load", rp, "Vendor-GetByTaxId3");
@@ -129,10 +129,12 @@ public class VendorService : BaseModelService<Vendor>
         return vendor;
     }
 
-    public async Task<Vendor?> GetByUserIdAsync(int userId)
+    public async Task<Vendor?> GetByUserIdAsync()
     {
+        var currentUser = await _appUserService.GetCurrentUserAsync();
+
         var p = new DynamicParameters();
-        p.Add("@UserId", userId, DbType.Int32, ParameterDirection.Input);
+        p.Add("@UserId", currentUser.Id, DbType.Int32, ParameterDirection.Input);
         var vendor = await _sqlDataAccess.QuerySingle<Vendor>("dbo.SP_VendorByUserId", p, "Vendor-GetByUserId1");
 
         if (vendor != null)
@@ -157,7 +159,7 @@ public class VendorService : BaseModelService<Vendor>
             var productList = await _sqlDataAccess.QueryAll<Product>("dbo.SP_VendorProductServices_Load", rp, "Vendor-GetByUserId2");
             if (productList != null && productList.Any())
             {
-                vendor.ProvidedProducts = productList.Select(e => e.ProductServiceId).ToList();
+                vendor.ProvidedProductIdList = productList.Select(e => e.ProductServiceId).ToList();
             }
 
             var bankList = await _sqlDataAccess.QueryAll<Bank>("dbo.SP_VendorBank_Load", rp, "Vendor-GetByUserId3");
@@ -203,6 +205,40 @@ public class VendorService : BaseModelService<Vendor>
         return vendor;
     }
 
+    //public async Task<Vendor?> GetByUserIdAsync()
+    //{
+    //    var currentUser = await _appUserService.GetCurrentUserAsync();
+
+    //    Dictionary<int, Vendor> result = new();
+    //    var p = new DynamicParameters();
+    //    p.Add("@UserId", currentUser.Id, DbType.Int32, ParameterDirection.Input);
+
+    //    using IDbConnection cn = new SqlConnection(_sqlDataAccess.ConnectionString);
+    //    _ = await cn.QueryAsync<Vendor, EvaluationForm, Attachment, int, Bank, Vendor>("dbo.SP_ZZZTest",
+    //        (vendor, eval, evalAttach, product, bank) =>
+    //        {
+    //            if (!result.ContainsKey(vendor.VendorId))
+    //            {
+    //                vendor.ProvidedProductIdList = new();
+    //                vendor.BankList = new();
+    //                result.Add(vendor.VendorId, vendor);
+    //            }
+    //            var currentVendor = result[vendor.VendorId];
+    //            currentVendor.EvaluationForm = eval;
+    //            if (eval != null && currentVendor.EvaluationForm.OtherAttachments == null) { currentVendor.EvaluationForm.OtherAttachments = new(); }
+    //            currentVendor.EvaluationForm = eval;
+    //            if (evalAttach != null && !currentVendor.EvaluationForm.OtherAttachments.Select(e => e.AttachmentId).Contains(evalAttach.AttachmentId)) { currentVendor.EvaluationForm.OtherAttachments.Add(evalAttach); }
+    //            if (product != 0 && !currentVendor.ProvidedProductIdList.Contains(product)) { currentVendor.ProvidedProductIdList.Add(product); }
+    //            if (bank != null && !currentVendor.BankList.Select(e => e.BankId).Contains(bank.BankId)) { currentVendor.BankList.Add(bank); }
+    //            return vendor;
+    //        },
+    //        param: p,
+    //        splitOn: "VendorEvaluationFormId,AttachmentId,ProductServiceId,BankId",
+    //        commandType: CommandType.StoredProcedure);
+
+    //    return result.Values.FirstOrDefault();
+    //}
+
     public async Task<bool> IsVendorUniqueAsync(string taxId)
     {
         var p = new DynamicParameters();
@@ -239,7 +275,7 @@ public class VendorService : BaseModelService<Vendor>
             var p = new DynamicParameters();
             p.Add("@VendorId", saveResult.QueryResult, DbType.Int32, ParameterDirection.Input);
             p.Add("@UserId", user.Id, DbType.Int32, ParameterDirection.Input);
-            p.Add("@Status", 3, DbType.Int32, ParameterDirection.Input);
+            p.Add("@Status", 1, DbType.Int32, ParameterDirection.Input);
             var registerResult = await _sqlDataAccess.ExecuteSql("dbo.SP_VendorsChangeStatus", p, "Vendor-ChangeStatus");
 
             if (registerResult != null && registerResult.QueryResultMessage != null) { saveResult.QueryResultMessage = registerResult.QueryResultMessage; }
@@ -281,13 +317,13 @@ public class VendorService : BaseModelService<Vendor>
             vendor.VendorId = p.Get<int>("@NewVendorId");
             supplierResult.QueryResult = vendor.VendorId;
 
-            if (vendor.ProvidedProducts != null && vendor.ProvidedProducts.Any())
+            if (vendor.ProvidedProductIdList != null && vendor.ProvidedProductIdList.Any())
             {
                 var pdp = new DynamicParameters();
                 pdp.Add("@VendorId", vendor.VendorId, DbType.Int32, ParameterDirection.Input);
                 var productsDeleteResult = await _sqlDataAccess.ExecuteSql("dbo.SP_VendorProductServices_ID", pdp, "Vendor-SaveDeleteProducts");
 
-                foreach (var itemId in vendor.ProvidedProducts)
+                foreach (var itemId in vendor.ProvidedProductIdList)
                 {
                     var pp = new DynamicParameters();
                     pp.Add("@VendorId", vendor.VendorId, DbType.Int32, ParameterDirection.Input);

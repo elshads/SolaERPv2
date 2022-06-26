@@ -33,9 +33,9 @@ public class VendorValidator : AbstractValidator<Model>
                 .NotEmpty().WithMessage("'Location' is mandatory");
         });
 
-        RuleSet(nameof(Model.ProvidedProducts), () =>
+        RuleSet(nameof(Model.ProvidedProductIdList), () =>
         {
-            RuleFor(p => p.ProvidedProducts)
+            RuleFor(p => p.ProvidedProductIdList)
             .NotEmpty().WithMessage("Choose at least one item");
         });
 
