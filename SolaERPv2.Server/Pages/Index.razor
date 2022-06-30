@@ -184,6 +184,17 @@ else
             if (AppState != null)
             {
                 AppState.BackButtonEnabled = true;
+                AppState.NextButtonEnabled = true;
+                AppState.AddButtonVisible = false;
+                AppState.SaveButtonVisible = false;
+                AppState.CustomButton04Visible = false;
+            }
+        }
+        else if (currentPageIndex == 3)
+        {
+            if (AppState != null)
+            {
+                AppState.BackButtonEnabled = true;
                 AppState.NextButtonEnabled = false;
                 AppState.AddButtonVisible = false;
                 AppState.SaveButtonVisible = true;

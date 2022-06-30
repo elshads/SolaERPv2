@@ -9,6 +9,7 @@
         <StepperSteps>
             <StepperStep Icon="home" Label="Company Info"></StepperStep>
             <StepperStep Icon="dollar" Label="Bank Details"></StepperStep>
+            <StepperStep Icon="signature" Label="Agreement"></StepperStep>
             <StepperStep Icon="paste-plain-text" Label="Evaluation Form"></StepperStep>
         </StepperSteps>
     </TelerikStepper>
@@ -341,6 +342,37 @@ else if (CurrentPageIndex == 1)
 else if (CurrentPageIndex == 2)
 {
     <MudCard Class="k-p-8" Style="max-width:1280px; margin:auto">
+        <h3 class="k-mb-4">CONFIDENTIALITY AGREEMENT</h3>
+
+        <RegisterSupplierAgreement BusinessUnitName="SOCAR-STP" VendorName="@(CurrentVendor.VendorName)" />
+        <div class="k-px-4">
+            <TelerikGridLayout ColumnSpacing="16px">
+                <GridLayoutRows>
+                    <GridLayoutRow Height="52px"></GridLayoutRow>
+                    <GridLayoutRow></GridLayoutRow>
+                </GridLayoutRows>
+                <GridLayoutItems>
+                    <GridLayoutItem Row="1" Column="1">
+                        <strong>SOCAR-STP</strong>
+                    </GridLayoutItem>
+                    <GridLayoutItem Row="1" Column="2">
+                        <strong>@(CurrentVendor.VendorName)</strong>
+                        <div class="k-my-2">@(SessionData.CurrentUser.FullName)</div>
+                    </GridLayoutItem>
+                    <GridLayoutItem Row="2" Column="1" ColumnSpan="2">
+                        <div class="k-px-4 k-py-2" style="background: var(--checkbox-background)">
+                            <TelerikCheckBox Id="cbxAgree" Size="lg" @bind-Value="@(CurrentVendor.IsAgree)"/>
+                            <span class="k-pl-2">I agree</span>
+                        </div>
+                    </GridLayoutItem>
+                </GridLayoutItems>
+            </TelerikGridLayout>
+        </div>
+    </MudCard>
+}
+else if (CurrentPageIndex == 3)
+{
+    <MudCard Class="k-p-8" Style="max-width:1280px; margin:auto">
         <h3 class="k-mb-4">SUPPLIER EVALUATION FORM</h3>
 
         <div class="k-mb-2 flex-content-right flex-center-y">
@@ -525,7 +557,7 @@ else
     [Parameter] public EventCallback<Vendor> CurrentVendorChanged { get; set; }
     [Parameter] public EventCallback<int> CurrentPageIndexChanged { get; set; }
 
-    // ----- Page 1 -----
+    // ----- Page Init -----
 
     FluentValidationValidator? personValidator;
     FluentValidationValidator? vendorValidator;
@@ -540,7 +572,7 @@ else
     List<Attachment>? logoAttachmentList = new();
     List<Attachment>? officialLetterList = new();
 
-    // ----- Page 2 -----
+    // ----- Page Bank -----
 
     Bank? selectedBank = new();
     IEnumerable<Bank>? selectedBankList = new List<Bank>();
@@ -552,7 +584,11 @@ else
     bool showAddPanel = false;
     List<Attachment>? bankLetterList = new();
 
-    // ----- Page 3 -----
+    // ----- Page Agreement -----
+
+    bool isAgree = false;
+
+    // ----- Page Eval -----
 
     int ev1 => CurrentVendor != null && CurrentVendor.EvaluationForm != null ? CurrentVendor.EvaluationForm.ContextOfTheOrganization1 : 0;
     int ev2 => CurrentVendor != null && CurrentVendor.EvaluationForm != null ? CurrentVendor.EvaluationForm.ContextOfTheOrganization2 : 0;
@@ -591,7 +627,7 @@ else
 
     protected override void OnParametersSet()
     {
-        // ----- Page 1 -----
+        // ----- Page Init -----
         logoAttachmentList = new();
         officialLetterList = new();
         certificateList = new();
@@ -607,16 +643,16 @@ else
         paymentTermsList = await AnalysisService.GetPaymentTerms();
         await Task.Run(SetOtherProductsVisibility);
 
-        // ----- Page 2 -----
+        // ----- Page Bank -----
         currencyList = await CurrencyService.GetAll();
 
-        // ----- Page 3 -----
+        // ----- Page Eval -----
         await Task.Run(SetCertificateAttachment);
     }
 
-    // ----- Page 1 -----
+    // ----- Page Init -----
 
-    async Task<bool> OnNextValidatePage1()
+    async Task<bool> OnNextValidatePageInit()
     {
         var personValid = ValidatePerson();
         var vendorValid = ValidateVendor();
@@ -728,9 +764,9 @@ else
         return false;
     }
 
-    // ----- Page 2 -----
+    // ----- Page Bank -----
 
-    async Task<bool> OnNextValidatePage2()
+    async Task<bool> OnNextValidatePageBank()
     {
         var isBankListValid = CurrentVendor != null && CurrentVendor.BankList != null && CurrentVendor.BankList.Any() ? true : false;
         var isCurrencyValid = ValidateCurrencyCodes();
@@ -850,9 +886,21 @@ else
         return true;
     }
 
-    // ----- Page 3 -----
+    // ----- Page Agreement -----
 
-    async Task<bool> SaveOnPage3Valid()
+    async Task<bool> OnNextValidatePageAgreement()
+    {
+        if (!CurrentVendor.IsAgree)
+        {
+            AppState.ShowAlert("Check an agreement to continue", Severity.Error);
+        }
+        await CurrentVendorChanged.InvokeAsync(CurrentVendor);
+        return CurrentVendor.IsAgree;
+    }
+
+    // ----- Page Eval -----
+
+    async Task<bool> SaveOnPageEvalValid()
     {
         var isFormValid = ValidateEvaluationForm();
         if (!isFormValid)
@@ -911,18 +959,22 @@ else
     {
         if (CurrentPageIndex == 0)
         {
-            return await OnNextValidatePage1();
+            return await OnNextValidatePageInit();
         }
         else if (CurrentPageIndex == 1)
         {
-            return await OnNextValidatePage2();
+            return await OnNextValidatePageBank();
+        }
+        else if (CurrentPageIndex == 2)
+        {
+            return await OnNextValidatePageAgreement();
         }
         return false;
     }
 
     public async Task<bool> SaveValid()
     {
-        return await SaveOnPage3Valid();
+        return await SaveOnPageEvalValid();
     }
 
     public void AddClickHandler()
@@ -944,11 +996,12 @@ else
 
     async Task CurrentPageIndexChangeHandler(int currentPageIndex)
     {
-        if (currentPageIndex == 2 && CurrentPageIndex == 0)
+        if (currentPageIndex == 3 && CurrentPageIndex == 0)
         {
-            var page0Valid = await OnNextValidatePage1();
-            var page1Valid = await OnNextValidatePage2(); ;
-            if (page0Valid && page1Valid)
+            var pageInitValid = await OnNextValidatePageInit();
+            var pageBankValid = await OnNextValidatePageBank();
+            var pageAgreementValid = await OnNextValidatePageAgreement();
+            if (pageInitValid && pageBankValid && pageAgreementValid)
             {
                 CurrentPageIndex = currentPageIndex;
                 await CurrentPageIndexChanged.InvokeAsync(CurrentPageIndex);

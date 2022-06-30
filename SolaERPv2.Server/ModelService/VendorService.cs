@@ -175,9 +175,9 @@ public class VendorService : BaseModelService<Vendor>
                     if (attBank != null)
                     {
                         item.BankLetter = attBank;
-                        vendor.BankList ??= new();
-                        vendor.BankList.Add(item);
                     }
+                    vendor.BankList ??= new();
+                    vendor.BankList.Add(item);
                 }
             }
 
