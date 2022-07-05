@@ -1,5 +1,4 @@
-﻿@inject ThemeService ThemeService
-
+﻿
 <MudAppBar Color="Color.Primary" Fixed="false">
 
     <MudIconButton OnClick="@OpenHandler" Icon="@Icons.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" />
@@ -23,9 +22,9 @@
 
     <MudTooltip Text="Change theme" Duration="500">
         <MudToggleIconButton Icon="@Icons.Filled.DarkMode" Color="@Color.Inherit"
-                             ToggledIcon="@Icons.Filled.LightMode" ToggledColor="@Color.Inherit" Toggled="@(SessionData.CurrentUser?.Theme == "dark")" ToggledChanged="@ChangeTheme" />
+                             ToggledIcon="@Icons.Filled.LightMode" ToggledColor="@Color.Inherit" Toggled="AppState.IsDarkMode" ToggledChanged="@ChangeTheme" />
     </MudTooltip>
-
+    
     <form method="post" action="Identity/Account/Logout">
         <MudTooltip Text="Log out" Duration="500">
             <MudIconButton Icon="@Icons.Filled.Logout" Color="Color.Inherit" OnClick="@ClearUserToken" ButtonType="MudBlazor.ButtonType.Submit"></MudIconButton>
@@ -42,6 +41,8 @@
     string? avatar;
     string? fullName;
     string? initials;
+
+    //bool isDarkMode = false;
 
     protected override void OnParametersSet()
     {
@@ -61,19 +62,9 @@
         await OpenChanged.InvokeAsync(Open);
     }
 
-    async Task ChangeTheme(bool toggle)
+    void ChangeTheme(bool value)
     {
-        SessionData.CurrentUser.Theme = SessionData.CurrentUser?.Theme == "light" ? "dark" : "light";
-        var result = await ThemeService.UpdateUserTheme(SessionData.CurrentUser.Theme);
-        if (result.QueryResultMessage == null)
-        {
-            AppState.ShowAlert($"{SessionData.CurrentUser.Theme} theme is on", Severity.Success);
-        }
-        else
-        {
-            AppState.ShowAlert(result.QueryResultMessage, Severity.Error);
-        }
-        AppState.Refresh();
+        AppState.ChangeTheme();
     }
 
     async Task ClearUserToken()

@@ -18,6 +18,13 @@ public class ApproveStageService : BaseModelService<ApproveStage>
         return await _sqlDataAccess.QueryAll<ApproveStage>(sql, p, "GetAllApproveStages");
     }
 
+    public async Task<IEnumerable<ApproveStage>?> GetApproveStagesAsync(string procedureKey)
+    {
+        var p = new DynamicParameters();
+        p.Add("@ProcedureKey", procedureKey, DbType.String, ParameterDirection.Input);
+        return await _sqlDataAccess.QueryAll<ApproveStage>("dbo.SP_ApproveStages_List", p, "GetApproveStageList");
+    }
+
     public async Task<IEnumerable<ApproveRole>?> GetAllRolesAsync()
     {
         return await _sqlDataAccess.QueryAll<ApproveRole>("SELECT * FROM dbo.VW_ApproveRoles_List", null, "ApproveStage-GetAllRoles", CommandType.Text);

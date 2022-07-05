@@ -118,6 +118,7 @@ public class AppState
     public bool MobileView { get { return mobileView; } set { mobileView = value; OnMobileViewChanged?.Invoke(mobileView); Refresh(); } }
     public bool OpenDrawer { get { return openDrawer; } set { openDrawer = value; Refresh(); } }
     public bool Loading { get { return loading; } set { loading = value; Refresh(); } }
+    public bool IsDarkMode { get; set; } = false;
     public bool BackButtonVisible { get; set; }
     public bool BackButtonEnabled { get; set; }
     public bool NextButtonVisible { get; set; }
@@ -203,6 +204,7 @@ public class AppState
     public event Action<bool>? OnMobileViewChanged;
 
     public event Action? OnRefreshClick;
+    public event Action? OnChangeThemeClick;
     public event Action? OnBackClick;
     public event Action? OnNextClick;
     public event Action? OnAddClick;
@@ -233,6 +235,11 @@ public class AppState
     public void Refresh()
     {
         OnRefreshClick?.Invoke();
+    }
+
+    public void ChangeTheme()
+    {
+        OnChangeThemeClick?.Invoke();
     }
 
     public void BackClick()

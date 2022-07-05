@@ -21,6 +21,8 @@ else if (showWaitForConfirmation)
 else
 {
     <h3>Dashboard Placeholder</h3>
+    <MudButton Variant="Variant.Filled" Color="Color.Success">Mud Button</MudButton>
+    <TelerikButton ThemeColor="success">Telerik Button</TelerikButton>
 }
 
 @code {
@@ -231,7 +233,7 @@ else
         if (AppState != null && isValid)
         {
             AppState.Loading = true;
-            var sqlResult = justSave ? await VendorService.SaveSupplier(currentVendor) : await VendorService.RegisterSupplier(currentVendor);
+            var sqlResult = justSave ? await VendorService.SaveSupplier(currentVendor, currentPerson) : await VendorService.RegisterSupplier(currentVendor, currentPerson);
             if (sqlResult != null && sqlResult.QueryResultMessage == null)
             {
                 if (!justSave) { SessionData.CurrentUser = await AppUserService.GetCurrentUserAsync(); }

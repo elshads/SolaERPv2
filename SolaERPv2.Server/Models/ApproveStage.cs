@@ -3,6 +3,9 @@
 public class ApproveStage : BaseModel
 {
     public int ApprovalId { get; set; }
+    public int ApproveStageMainId { get; set; }
+    public string? ApproveStageName { get; set; }
+    public int StagesCount { get; set; }
     public int ApproveStageDetailsId { get; set; }
     public string? ApproveStageDetailsName { get; set; }
     public int Sequence { get; set; }

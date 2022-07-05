@@ -35,11 +35,17 @@ public class VendorService : BaseModelService<Vendor>
         return result;
     }
 
-    public async Task<IEnumerable<Vendor>?> GetAllExtendedAsync(int businessUnitId, bool isWaitingForApproval)
+    public async Task<IEnumerable<Vendor>?> GetAllExtendedAsync(int businessUnitId, int activeTabIndex)
     {
         var currentUser = await _appUserService.GetCurrentUserAsync();
         Dictionary<int, Vendor> result = new();
-        var sql = isWaitingForApproval ? "SP_VendorWFA" : "dbo.SP_VendorAll";
+
+        var sql = activeTabIndex switch {
+            0 => "dbo.SP_VendorWFA",
+            1 => "dbo.SP_VendorAll",
+            2 => "dbo.SP_VendorDraft",
+            _ => ""
+        };
 
         var p = new DynamicParameters();
         p.Add("@UserId", currentUser.Id, DbType.Int32, ParameterDirection.Input);
@@ -265,16 +271,16 @@ public class VendorService : BaseModelService<Vendor>
         return result;
     }
 
-    public async Task<SqlResult?> RegisterSupplier(Vendor vendor)
+    public async Task<SqlResult?> RegisterSupplier(Vendor vendor, AppUser user)
     {
-        var saveResult = await SaveSupplier(vendor);
-        var user = await _appUserService.GetCurrentUserAsync();
+        var saveResult = await SaveSupplier(vendor, user);
+        var currentUser = await _appUserService.GetCurrentUserAsync();
 
         if (saveResult != null && saveResult.QueryResultMessage == null)
         {
             var p = new DynamicParameters();
             p.Add("@VendorId", saveResult.QueryResult, DbType.Int32, ParameterDirection.Input);
-            p.Add("@UserId", user.Id, DbType.Int32, ParameterDirection.Input);
+            p.Add("@UserId", currentUser.Id, DbType.Int32, ParameterDirection.Input);
             p.Add("@Status", 1, DbType.Int32, ParameterDirection.Input);
             var registerResult = await _sqlDataAccess.ExecuteSql("dbo.SP_VendorsChangeStatus", p, "Vendor-ChangeStatus");
 
@@ -284,15 +290,17 @@ public class VendorService : BaseModelService<Vendor>
         return saveResult;
     }
 
-    public async Task<SqlResult?> SaveSupplier(Vendor vendor)
+    public async Task<SqlResult?> SaveSupplier(Vendor vendor, AppUser user)
     {
         //var timer = new Stopwatch();
         //timer.Start();
         //timer.Stop();
         //Console.WriteLine($"Vendor saved: {timer.ElapsedMilliseconds}");
 
+        _ = await _appUserService.UpdateAsync(user);
+
         var supplierResult = new SqlResult();
-        var user = await _appUserService.GetCurrentUserAsync();
+        var currentUser = await _appUserService.GetCurrentUserAsync();
 
         var p = new DynamicParameters();
         p.Add("@VendorId", vendor.VendorId, DbType.Int32, ParameterDirection.Input);
@@ -307,7 +315,7 @@ public class VendorService : BaseModelService<Vendor>
         p.Add("@CreditDays", vendor.CreditDays, DbType.Int32, ParameterDirection.Input);
         p.Add("@_0DaysPayment", vendor.AgreeWithDefaultDays, DbType.Boolean, ParameterDirection.Input);
         p.Add("@Country", vendor.CountryCode, DbType.String, ParameterDirection.Input);
-        p.Add("@UserId", user.Id, DbType.Int32, ParameterDirection.Input);
+        p.Add("@UserId", currentUser.Id, DbType.Int32, ParameterDirection.Input);
         p.Add("@OtherProducts", vendor.OtherProducts, DbType.String, ParameterDirection.Input);
         p.Add("@NewVendorId", DbType.Int32, direction: ParameterDirection.Output);
         supplierResult = await _sqlDataAccess.ExecuteSql("dbo.SP_Vendors_IUD", p, "Vendor-Save");

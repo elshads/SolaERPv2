@@ -183,4 +183,14 @@ public class AppUserService : BaseModelService<AppUser>
         var result = await _sqlDataAccess.QueryReturnInteger(sql, p, "AppUser-UpdateUserToken", CommandType.Text);
         return result;
     }
+
+    //public async Task<SqlResult?> UpdateAsync(AppUser user)
+    //{
+    //    var p = new DynamicParameters();
+    //    p.Add("@UserId", user.Id, DbType.Int32, ParameterDirection.Input);
+    //    p.Add("@Position", user.Position, DbType.String, ParameterDirection.Input);
+    //    p.Add("@PhoneNumber", user.PhoneNumber, DbType.String, ParameterDirection.Input);
+    //    var result = await _sqlDataAccess.QueryReturnInteger("dbo.SP_UserData_U", p, "AppUser-Update", CommandType.Text);
+    //    return result;
+    //}
 }

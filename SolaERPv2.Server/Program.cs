@@ -65,7 +65,6 @@ builder.Services.AddScoped<BusinessUnitService>();
 builder.Services.AddScoped<GroupService>();
 builder.Services.AddScoped<MenuService>();
 builder.Services.AddScoped<PaymentDocumentService>();
-builder.Services.AddScoped<ThemeService>();
 builder.Services.AddScoped<VendorService>();
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<CountryService>();

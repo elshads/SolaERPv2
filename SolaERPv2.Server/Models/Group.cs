@@ -10,4 +10,8 @@ public class Group : BaseModel
     public List<Menu>? Menus { get; set; } = new();
     public List<ApproveRole>? ApproveRoles { get; set; } = new();
     public List<Unit>? Units { get; set; } = new();
+
+
+    public int GroupAdditionalPrivilegeId { get; set; }
+    public bool VendorDraft { get; set; }
 }

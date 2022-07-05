@@ -35,4 +35,5 @@ public class Vendor : BaseModel
     public string? StatusName { get; set; }
     public int Sequence { get; set; }
     public bool IsAgree { get; set; }
+
 }

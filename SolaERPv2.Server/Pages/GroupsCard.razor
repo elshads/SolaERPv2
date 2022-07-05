@@ -83,9 +83,9 @@
         </HeaderTemplate>
         <Content>
             @*<DoubleGrid @bind-LeftGridData="groupUnits" @bind-RightGridData="allUnits" LeftGridTitle="Group Units" RightGridTitle="All Units" SearchFields="@(new List<string> {"UnitCode", "UnitName"})">
-                <GridColumn Field="@(nameof(Unit.UnitCode))" Title="Code"/>
-                <GridColumn Field="@(nameof(Unit.UnitName))" Title="Name"/>
-                </DoubleGrid>*@
+            <GridColumn Field="@(nameof(Unit.UnitCode))" Title="Code"/>
+            <GridColumn Field="@(nameof(Unit.UnitName))" Title="Name"/>
+            </DoubleGrid>*@
         </Content>
     </TabStripTab>
 
@@ -110,13 +110,35 @@
         </Content>
     </TabStripTab>
 
+    <TabStripTab Title="Additional Privileges">
+        <HeaderTemplate>
+            <MudIcon Icon="@Icons.Filled.AdminPanelSettings" />
+            <span class="k-pl-2">
+                @if (AppState.MobileView)
+                {
+                    <MudIcon Icon="@Icons.Filled.AdminPanelSettings" Style="font-size: 0.5rem;" Color="@(activeTabIndex == 4 ? Color.Success : Color.Transparent)" />
+                }
+                else
+                {
+                    <div>Additional Privileges</div>
+                }
+            </span>
+        </HeaderTemplate>
+        <Content>
+            <div>
+                <TelerikCheckBox Id="cbxVendorDraft" @bind-Value="@currentModel.VendorDraft" Enabled="@((pageAccess.CreateAccess && currentModel.GroupId == 0) || (pageAccess.EditAccess && currentModel.GroupId > 0))" />
+                <label for="cbxVendorDraft" class="k-ml-4">See "Draft" vendors</label>
+            </div>
+        </Content>
+    </TabStripTab>
+
     <TabStripTab Title="Menus">
         <HeaderTemplate>
             <MudIcon Icon="@Icons.Filled.Menu" />
             <span class="k-pl-2">
                 @if (AppState.MobileView)
                 {
-                    <MudIcon Icon="@Icons.Filled.Circle" Style="font-size: 0.5rem;" Color="@(activeTabIndex == 4 ? Color.Success : Color.Transparent)" />
+                    <MudIcon Icon="@Icons.Filled.Circle" Style="font-size: 0.5rem;" Color="@(activeTabIndex == 5 ? Color.Success : Color.Transparent)" />
                 }
                 else
                 {
@@ -135,7 +157,9 @@
                         <Template>
                             @{
                                 selectedMenu = (context as Menu);
-                                <div class="@(selectedMenu.ParentId == null ? "bg-gray" : "")"><TelerikCheckBox @bind-Value="@selectedMenu.CreateAccess" Enabled="@((pageAccess.CreateAccess && currentModel.GroupId == 0) || (pageAccess.EditAccess && currentModel.GroupId > 0))" OnChange="@(() => CreateAccessChanged(selectedMenu))" /></div>
+                                <div class="@(selectedMenu.ParentId == null ? "bg-gray" : "")">
+                                    <TelerikCheckBox @bind-Value="@selectedMenu.CreateAccess" Enabled="@((pageAccess.CreateAccess && currentModel.GroupId == 0) || (pageAccess.EditAccess && currentModel.GroupId > 0))" OnChange="@(() => CreateAccessChanged(selectedMenu))" />
+                                </div>
                             }
                         </Template>
                     </TreeListColumn>
@@ -143,7 +167,9 @@
                         <Template>
                             @{
                                 selectedMenu = (context as Menu);
-                                <div class="@(selectedMenu.ParentId == null ? "bg-gray" : "")"><TelerikCheckBox @bind-Value="@selectedMenu.EditAccess" Enabled="@((pageAccess.CreateAccess && currentModel.GroupId == 0) || (pageAccess.EditAccess && currentModel.GroupId > 0))" OnChange="@(() => EditAccessChanged(selectedMenu))" /></div>
+                                <div class="@(selectedMenu.ParentId == null ? "bg-gray" : "")">
+                                    <TelerikCheckBox @bind-Value="@selectedMenu.EditAccess" Enabled="@((pageAccess.CreateAccess && currentModel.GroupId == 0) || (pageAccess.EditAccess && currentModel.GroupId > 0))" OnChange="@(() => EditAccessChanged(selectedMenu))" />
+                                </div>
                             }
                         </Template>
                     </TreeListColumn>
@@ -151,7 +177,9 @@
                         <Template>
                             @{
                                 selectedMenu = (context as Menu);
-                                <div class="@(selectedMenu.ParentId == null ? "bg-gray" : "")"><TelerikCheckBox @bind-Value="@selectedMenu.DeleteAccess" Enabled="@((pageAccess.CreateAccess && currentModel.GroupId == 0) || (pageAccess.EditAccess && currentModel.GroupId > 0))" OnChange="@(() => DeleteAccessChanged(selectedMenu))" /></div>
+                                <div class="@(selectedMenu.ParentId == null ? "bg-gray" : "")">
+                                    <TelerikCheckBox @bind-Value="@selectedMenu.DeleteAccess" Enabled="@((pageAccess.CreateAccess && currentModel.GroupId == 0) || (pageAccess.EditAccess && currentModel.GroupId > 0))" OnChange="@(() => DeleteAccessChanged(selectedMenu))" />
+                                </div>
                             }
                         </Template>
                     </TreeListColumn>
@@ -159,7 +187,9 @@
                         <Template>
                             @{
                                 selectedMenu = (context as Menu);
-                                <div class="@(selectedMenu.ParentId == null ? "bg-gray" : "")"><TelerikCheckBox @bind-Value="@selectedMenu.ExportAccess" Enabled="@((pageAccess.CreateAccess && currentModel.GroupId == 0) || (pageAccess.EditAccess && currentModel.GroupId > 0))" OnChange="@(() => ExportAccessChanged(selectedMenu))" /></div>
+                                <div class="@(selectedMenu.ParentId == null ? "bg-gray" : "")">
+                                    <TelerikCheckBox @bind-Value="@selectedMenu.ExportAccess" Enabled="@((pageAccess.CreateAccess && currentModel.GroupId == 0) || (pageAccess.EditAccess && currentModel.GroupId > 0))" OnChange="@(() => ExportAccessChanged(selectedMenu))" />
+                                </div>
                             }
                         </Template>
                     </TreeListColumn>

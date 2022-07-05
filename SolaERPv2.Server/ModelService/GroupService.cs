@@ -61,6 +61,12 @@ public class GroupService : BaseModelService<Group>
 
         if (sqlResult?.QueryResultMessage != null) { return sqlResult; } // return if failed
 
+        var ap = new DynamicParameters();
+        ap.Add("@GroupAdditionalPrivilegeId", group.GroupAdditionalPrivilegeId, DbType.Int32, ParameterDirection.Input);
+        ap.Add("@GroupId", groupId, DbType.Int32, ParameterDirection.Input);
+        ap.Add("@VendorDraft", group.VendorDraft, DbType.Boolean, ParameterDirection.Input);
+        var addPrivResult = await _sqlDataAccess.ExecuteSql("dbo.SP_GroupAdditionalPrivileges_IUD", ap, "Group-SaveAddPriv");
+
         var up = new DynamicParameters();
         up.Add("@GroupId", groupId, DbType.Int32, ParameterDirection.Input);
         await _sqlDataAccess.ExecuteSql("dbo.SP_GroupUsers_ID", up, "Group-SaveUsers1");

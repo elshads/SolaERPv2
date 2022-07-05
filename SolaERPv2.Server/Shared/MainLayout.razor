@@ -5,11 +5,11 @@
 
 
 <HeadContent>
-    <link rel="stylesheet" href="@(SessionData != null ? $"/css/kendo/{SessionData?.CurrentUser?.Theme}.css" : "/css/kendo/light.css")">
+    <link rel="stylesheet" href="/css/kendo/@(_appState.IsDarkMode ? "dark" : "light").css">
 </HeadContent>
-<MudThemeProvider IsDarkMode="@(SessionData is {CurrentUser.Theme: "dark" })" />
 
-
+@*<MudThemeProvider IsDarkMode="@(SessionData is {CurrentUser.Theme: "dark" })" />*@
+<MudThemeProvider DefaultScrollbar="false" Theme="Theme.DefaultTheme" @bind-IsDarkMode="_appState.IsDarkMode" />
 <MudSnackbarProvider />
 <MudDialogProvider FullWidth="false"
                    MaxWidth="MaxWidth.Large"
@@ -45,18 +45,23 @@
 
 @code {
     AppState? _appState = new();
-
+    
     protected override async Task OnInitializedAsync()
     {
         _appState = new AppState(Snackbar);
         _appState.OnRefreshClick += Refresh;
-
+        _appState.OnChangeThemeClick += ChangeTheme;
+        
         await AppUserService.UserLoggedIn();
     }
 
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
-        if(_appState != null) { _appState.OnRefreshClick -= Refresh; }
+        if (_appState != null)
+        {
+            _appState.OnRefreshClick -= Refresh;
+            _appState.OnChangeThemeClick -= ChangeTheme;
+        }
         await AppUserService.UserLoggedOut();
     }
 
@@ -65,23 +70,48 @@
         await InvokeAsync(StateHasChanged);
     }
 
+    async Task GetTheme()
+    {
+        if (await LocalStorage.ContainKeyAsync("theme"))
+        {
+            _appState.IsDarkMode = await LocalStorage.GetItemAsStringAsync("theme") == "dark";
+        }
+        else
+        {
+            _appState.IsDarkMode = false;
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    async void ChangeTheme()
+    {
+        _appState.IsDarkMode = !_appState.IsDarkMode;
+        await LocalStorage.SetItemAsStringAsync("theme", _appState.IsDarkMode ? "dark" : "light");
+        await InvokeAsync(StateHasChanged);
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         var authenticationState = await AuthenticationStateProvider?.GetAuthenticationStateAsync();
-        var isAuthenticated = authenticationState?.User.Identity is {IsAuthenticated: true };
-        if (firstRender && isAuthenticated)
+        var isAuthenticated = authenticationState?.User.Identity is { IsAuthenticated: true };
+        if (firstRender)
         {
-            await LocalStorage.SetItemAsync("logged_user_token", SessionData.CurrentUser.UserToken);
+            await GetTheme();
         }
-        else if (firstRender && !isAuthenticated)
+        switch (firstRender)
         {
-            NavigationManager.NavigateTo("Identity/Account/Login", true);
+            case true when isAuthenticated:
+                await LocalStorage.SetItemAsync("logged_user_token", SessionData.CurrentUser.UserToken);
+                break;
+            case true when !isAuthenticated:
+                NavigationManager.NavigateTo("Identity/Account/Login", true);
+                break;
         }
     }
 
     void OnMobileViewChanged(bool mobileView)
     {
-        if(_appState != null) { _appState.MobileView = mobileView; }
+        if (_appState != null) { _appState.MobileView = mobileView; }
     }
 }
 
