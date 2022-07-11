@@ -13,4 +13,5 @@ public class Attachment : BaseModel
     public string? Reference { get; set; }
     public string? ExtensionType { get; set; }
     public long Size { get; set; }
+    public DateTime UploadDateTime { get; set; }
 }

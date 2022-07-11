@@ -9,10 +9,10 @@ public class Vendor : BaseModel
     public string? TaxId { get; set; }
     public string? CompanyLocation { get; set; }
     public string? CompanyWebsite { get; set; }
-    public Attachment? CompanyLogo { get; set; }
+    public List<Attachment>? CompanyLogo { get; set; }
     public int CompanyLogoId { get; set; }
     public string? CompanyLogoName { get; set; }
-    public Attachment? OfficialLetter { get; set; }
+    public List<Attachment>? OfficialLetter { get; set; }
     public int OfficialLetterId { get; set; }
     public string? OfficialLetterName { get; set; }
     public int CreditDays { get; set; } = 60;
@@ -35,5 +35,5 @@ public class Vendor : BaseModel
     public string? StatusName { get; set; }
     public int Sequence { get; set; }
     public bool IsAgree { get; set; }
-
+    public string? ApproveStatusName { get; set; }
 }

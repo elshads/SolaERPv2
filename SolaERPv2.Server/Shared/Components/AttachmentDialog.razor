@@ -1,0 +1,302 @@
+﻿@using MudBlazor.Utilities
+
+
+@if (WithButton && !IconButton)
+{
+    <MudBadge Visible="@(_isFileLoading || (AttachmentList != null && AttachmentList.Any()))" Content="AttachmentList?.Count" Color="@(_isFileLoading ? Color.Warning : Color.Primary)" Overlap="true" Bordered="true">
+        <MudButton Disabled="@Disabled" Size="Size.Small" StartIcon="@Icons.Filled.CloudUpload" Variant="Variant.Filled" Color="Color.Secondary" OnClick="@(() => IsVisible = true)">@ButtonText</MudButton>
+    </MudBadge>
+}
+else if (WithButton && IconButton)
+{
+    <MudBadge Visible="@(AttachmentList != null && AttachmentList.Any())" Content="AttachmentList?.Count" Color=" Color.Primary" Overlap="true" Bordered="true">
+        <MudIconButton Disabled="@Disabled" Size="Size.Small" Icon="@Icons.Filled.CloudUpload" Variant="Variant.Filled" Color="Color.Secondary" OnClick="@(() => IsVisible = true)"></MudIconButton>
+    </MudBadge>
+}
+
+<MudDialog IsVisible="IsVisible" IsVisibleChanged="IsVisibleChangedHandler" Class="attachment-dialog">
+    <TitleContent>
+        <MudText Typo="Typo.h6">@Title</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudPaper Class="py-3" Elevation="0">
+            <div class="d-flex mb-3">
+                <MudButton HtmlTag="label"
+                           Variant="Variant.Filled"
+                           Color="@Color.Secondary"
+                           Class="mr-2"
+                           Style="min-width: 9.625rem"
+                           StartIcon="@Icons.Filled.CloudUpload"
+                           Disabled="_isFileLoading || !CanUpload"
+                           for="fileInput">
+                    Upload Files
+                </MudButton>
+                <MudPaper @ondragenter="@SetDragClass" @ondragleave="@ClearDragClass" @ondragend="@ClearDragClass" Height="100%" Outlined="true" Class="@($"{_dragClass} rounded-lg mud-width-full mud-height-full")">
+                    <InputFile accept="@AllowedFileTypes" disabled="@(_isFileLoading || !CanUpload)" OnChange="OnInputFileChange" id="fileInput" multiple="@Multiple" class="mud-width-full z-2" style="opacity: 0; height: 2rem;" />
+                </MudPaper>
+            </div>
+            @if (_isFileLoading && _selectedFile != null)
+            {
+                <div class="hint-message">@(_selectedFile.Name + " - " + ConvertBytes(_selectedFile.Size))</div>
+                <MudAlert Severity="Severity.Warning" Class="mb-2">Do not reload browser during file upload</MudAlert>
+            }
+            @if (_singleFileAlert)
+            {
+                <MudAlert Severity="Severity.Error" Class="mb-2">Only one file is allowed. Delete other files prior to uploading a new one</MudAlert>
+            }
+            @if (_maxFileSizeAlert)
+            {
+                <MudAlert Severity="Severity.Error" Class="mb-2">The file size exceeds the allowed limit of @ConvertBytes(AllowedFileSize)</MudAlert>
+            }
+            @if (_fileTypeAlert)
+            {
+                <MudAlert Severity="Severity.Error" Class="mb-2">Upload only allowed file types: @AllowedFileTypes</MudAlert>
+            }
+            <MudTable MultiSelection="true" @bind-SelectedItems="_selectedItems" Items="@AttachmentList" Hover="true" Class="attachment-table" Breakpoint="Breakpoint.Xs" Dense="true" Loading="@_isFileLoading" LoadingProgressColor="Color.Info">
+                <HeaderContent>
+                    <MudTh>Name</MudTh>
+                    <MudTh>Type</MudTh>
+                    <MudTh>Size</MudTh>
+                    <MudTh>Uploaded</MudTh>
+                    <MudTh>Download</MudTh>
+                    <MudTh>Delete</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Name" Class="text-nowrap"><MudTooltip Text="@context.FileName">@TakeFirstCharacters(context.FileName,50)</MudTooltip></MudTd>
+                    <MudTd DataLabel="Type">@context.ExtensionType</MudTd>
+                    <MudTd DataLabel="Size" Class="text-right">@ConvertBytes(context.Size)</MudTd>
+                    <MudTd DataLabel="Uploaded" Class="text-right">@context.UploadDateTime.ToString("yyyy-MM-dd HH:mm")</MudTd>
+                    <MudTd DataLabel="Download" Class="text-center"><MudIconButton Icon="@Icons.Filled.Download" OnClick="@(() => DownloadAttachment(context))" Size="Size.Small" Color="Color.Success" Disabled="_isFileLoading || !CanDownload" /></MudTd>
+                    <MudTd DataLabel="Delete" Class="text-center"><MudIconButton Icon="@Icons.Filled.DeleteForever" OnClick="@(() => DeleteAttachment(new List<Attachment>() {context}))" Size="Size.Small" Color="Color.Error" Disabled="_isFileLoading || !CanDelete" /></MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudPaper>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => DeleteAttachment(_selectedItems.ToList()))" Class="mr-2" Color="Color.Error" Disabled="_isFileLoading || !CanDelete || _selectedItems == null || !_selectedItems.Any()">Delete Selection</MudButton>
+        <MudButton OnClick="CloseDialog" Class="mr-2">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+
+@code {
+    [Parameter] public string? Title { get; set; } = "Attachments";
+    [Parameter] public bool WithButton { get; set; } = true;
+    [Parameter] public bool IconButton { get; set; } = false;
+    [Parameter] public string? ButtonText { get; set; } = "Attachments";
+    [Parameter] public bool Multiple { get; set; } = true;
+    [Parameter] public long AllowedFileSize { get; set; } = 2147483647; // max 2147483647
+    [Parameter] public string? AllowedFileTypes { get; set; } = "*";
+    
+    [Parameter] public bool Disabled { get; set; } = false;
+    [Parameter] public bool CanUpload { get; set; } = true;
+    [Parameter] public bool CanDownload { get; set; } = true;
+    [Parameter] public bool CanDelete { get; set; } = true;
+
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+
+    [Parameter] public List<Attachment>? AttachmentList { get; set; } = new();
+    [Parameter] public EventCallback<List<Attachment>> AttachmentListChanged { get; set; }
+    
+    [Parameter] public EventCallback<Attachment> OnDownloadClick { get; set; }
+    [Parameter] public EventCallback<List<Attachment>> OnDeleteClick { get; set; }
+
+    [Parameter] public int SourceId { get; set; }
+    [Parameter] public string? SourceTypeName { get; set; }
+    [Parameter] public int AttachmentTypeId { get; set; }
+    [Parameter] public int AttachmentSubTypeId { get; set; }
+    [Parameter] public string? Reference { get; set; }
+
+    IReadOnlyList<IBrowserFile>? _selectedFiles = new List<IBrowserFile>();
+    IBrowserFile? _selectedFile;
+    
+    bool _isFileLoading = false;
+    string? _dragClass = "border-2 border-dashed";
+    HashSet<Attachment>? _selectedItems;
+
+    bool _singleFileAlert = false;
+    bool _maxFileSizeAlert = false;
+    bool _fileTypeAlert = false;
+
+    void CloseDialog()
+    {
+        IsVisible = false;
+    }
+
+    async Task IsVisibleChangedHandler(bool isVisible)
+    {
+        if (!isVisible)
+        {
+            _singleFileAlert = false;
+            _fileTypeAlert = false;
+            _maxFileSizeAlert = false;
+        }
+        IsVisible = isVisible;
+        await IsVisibleChanged.InvokeAsync(IsVisible);
+    }
+
+    async Task OnInputFileChange(InputFileChangeEventArgs args)
+    {
+        _fileTypeAlert = false;
+        _maxFileSizeAlert = false;
+        ClearDragClass();
+        if (!Multiple && AttachmentList != null && AttachmentList.Any())
+        {
+            _singleFileAlert = true;
+            return;
+        }
+        _selectedFiles = args.GetMultipleFiles();
+        _isFileLoading = true;
+        using var ms = new MemoryStream();
+        foreach (var file in _selectedFiles)
+        {
+            _selectedFile = file;
+            var fileExtension = GetExtensionFromFileName(file.Name);
+            if (AllowedFileTypes != "*" && !AllowedFileTypes.Contains(fileExtension))
+            {
+                _fileTypeAlert = true;
+                _isFileLoading = false;
+                return;
+            }
+            if (_selectedFile.Size > AllowedFileSize)
+            {
+                _maxFileSizeAlert = true;
+                _isFileLoading = false;
+                return;
+            }
+            await file.OpenReadStream(AllowedFileSize).CopyToAsync(ms);
+            var attachment = new Attachment
+                {
+                    FileData = ms.ToArray(),
+                    FileName = file.Name,
+                    Size = file.Size,
+                    ExtensionType = fileExtension,
+                    UploadDateTime = DateTime.Now,
+                    SourceId = this.SourceId,
+                    SourceTypeName = this.SourceTypeName,
+                    AttachmentTypeId = this.AttachmentTypeId,
+                    AttachmentSubTypeId = this.AttachmentSubTypeId,
+                    Reference = this.Reference,
+                };
+            if (Multiple)
+            {
+                AttachmentList ??= new List<Attachment>();
+            }
+            else
+            {
+                AttachmentList = new List<Attachment>();
+            }
+            AttachmentList?.Add(attachment);
+            await InvokeAsync(StateHasChanged);
+        }
+        _isFileLoading = false;
+        await AttachmentListChanged.InvokeAsync(AttachmentList);
+    }
+
+    string GetExtensionFromFileName(string fileName)
+    {
+        var lastIndex = fileName.LastIndexOf('.');
+        var extension = lastIndex > 0 ? fileName.Substring(lastIndex + 1).ToLower() : "null";
+        return extension;
+    }
+
+    string TakeFirstCharacters(string longString, int length)
+    {
+        var ellipsis = longString.Length > length ? "..." : "";
+        return new string(longString.Take(length).ToArray()) + ellipsis;
+    }
+
+    string ConvertBytes(long bytes)
+    {
+        return bytes switch
+        {
+            >= 1073741824 => Math.Round((double)bytes / 1024 / 1024 / 1024, 2) + " GB",
+            >= 1048576 => Math.Round((double)bytes / 1024 / 1024, 2) + " MB",
+            >= 1024 => Math.Round((double)bytes / 1024, 2) + " KB",
+            _ => bytes + " bytes"
+        };
+    }
+
+    async Task DownloadAttachment(Attachment attachment)
+    {
+        var currentAttachment = attachment.AttachmentId > 0 ? await AttachmentService.GetByIdAsync(attachment.AttachmentId) : attachment;
+        var fileStream = new MemoryStream(currentAttachment.FileData);
+        using var streamRef = new DotNetStreamReference(stream: fileStream);
+        await JSRuntime.InvokeVoidAsync("downloadFileFromStream", currentAttachment?.FileName, streamRef);
+
+        await OnDownloadClick.InvokeAsync(attachment);
+    }
+
+    async Task DeleteAttachment(List<Attachment> deletedAttachmentList)
+    {
+        var dp = new DialogParameters();
+        dp.Add("NumberOfItems", deletedAttachmentList.Count);
+        var dialog = DialogService.Show<DeleteDialog>("Delete", dp);
+        var result = await dialog.Result;
+        if (result.Data != null && (bool)result.Data)
+        {
+            foreach (var item in deletedAttachmentList)
+            {
+                AttachmentList?.Remove(item);
+            }
+            await OnDeleteClick.InvokeAsync(deletedAttachmentList);
+            _selectedItems = null;
+        }
+        if (AttachmentList == null || !AttachmentList.Any())
+        {
+            _singleFileAlert = false;
+        }
+        _fileTypeAlert = false;
+        _maxFileSizeAlert = false;
+    }
+    
+    void SetDragClass()
+    {
+        _dragClass = "border-2 border-dashed mud-border-primary";
+    }
+
+    void ClearDragClass()
+    {
+        _dragClass = "border-2 border-dashed";
+    }
+
+}
+
+<style>
+    .attachment-dialog {
+        min-width: 16rem;
+        min-height: 8rem;
+    }
+
+    .attachment-table {
+        max-height: 70vh;
+        overflow: scroll;
+    }
+
+    .hint-message {
+        font-size: 0.625rem;
+        font-style: italic;
+    }
+
+    .text-nowrap {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .attachment-dialog .mud-dialog-title,
+    .attachment-dialog .mud-dialog-title .mud-icon-button-label {
+        background-color: var(--mud-palette-primary);
+        color: #f5f5f5;
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    .text-right {
+        text-align: right;
+    }
+</style>

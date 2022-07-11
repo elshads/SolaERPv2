@@ -12,7 +12,8 @@
                   CurrentVendor="@currentVendor"
                   CurrentVendorChanged="@CurrentVendorChanged"
                   CurrentPageIndex="@currentPageIndex"
-                  CurrentPageIndexChanged="@CurrentPageIndexChangeHandler" />
+                  CurrentPageIndexChanged="@CurrentPageIndexChangeHandler" 
+                  OnAttachmentDelete="AttachmentDeleteHandler"/>
 }
 else if (showWaitForConfirmation)
 {
@@ -21,12 +22,13 @@ else if (showWaitForConfirmation)
 else
 {
     <h3>Dashboard Placeholder</h3>
-    <MudButton Variant="Variant.Filled" Color="Color.Success">Mud Button</MudButton>
-    <TelerikButton ThemeColor="success">Telerik Button</TelerikButton>
+    <AttachmentDialog WithButton="true"/>
 }
 
 @code {
     [CascadingParameter] public AppState? AppState { get; set; }
+
+    bool isAttachmentVisible = false;
 
     AppUser? currentPerson = new();
     Vendor? currentVendor = new() { BankList = new(), EvaluationForm = new() };
@@ -35,6 +37,8 @@ else
     bool showSupplierRegistration = false;
     bool showWaitForConfirmation = false;
     int currentPageIndex = 0; // total 3 pages
+
+    List<int>? _deletedAttachmentIdList = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -233,7 +237,7 @@ else
         if (AppState != null && isValid)
         {
             AppState.Loading = true;
-            var sqlResult = justSave ? await VendorService.SaveSupplier(currentVendor, currentPerson) : await VendorService.RegisterSupplier(currentVendor, currentPerson);
+            var sqlResult = justSave ? await VendorService.SaveSupplier(currentVendor, currentPerson, _deletedAttachmentIdList) : await VendorService.RegisterSupplier(currentVendor, currentPerson, _deletedAttachmentIdList);
             if (sqlResult != null && sqlResult.QueryResultMessage == null)
             {
                 if (!justSave) { SessionData.CurrentUser = await AppUserService.GetCurrentUserAsync(); }
@@ -245,6 +249,11 @@ else
             }
             AppState.Loading = false;
         }
+    }
+
+    void AttachmentDeleteHandler(List<int> deletedAttachmentIdList)
+    {
+        _deletedAttachmentIdList?.AddRange(deletedAttachmentIdList);
     }
 
     void AddClickHandler()

@@ -115,6 +115,7 @@ public class AppState
     bool mobileView;
 
 
+    public string? MudBreakpoint { get; set; } = "";
     public bool MobileView { get { return mobileView; } set { mobileView = value; OnMobileViewChanged?.Invoke(mobileView); Refresh(); } }
     public bool OpenDrawer { get { return openDrawer; } set { openDrawer = value; Refresh(); } }
     public bool Loading { get { return loading; } set { loading = value; Refresh(); } }

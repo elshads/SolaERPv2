@@ -11,7 +11,6 @@
     <TabStripTab Title="Waiting for Approval">
         <HeaderTemplate>
             <span class="k-mx-2">Waiting for Approval</span>
-            <MudChip Color="Color.Primary" Size="Size.Small">5</MudChip>
         </HeaderTemplate>
         <Content>
             <DataGrid Data="@vendorList"
@@ -91,13 +90,17 @@
                                     }
                                     else if (vendor is { StatusId: 1 })
                                     {
-                                        <MudIcon Icon="@Icons.Filled.Circle" Color="Color.Success" Size="Size.Small" />
+                                        <MudIcon Icon="@Icons.Filled.Circle" Color="Color.Info" Size="Size.Small" />
                                     }
                                     else if (vendor is { StatusId: 2 })
                                     {
-                                        <MudIcon Icon="@Icons.Filled.Circle" Color="Color.Default" Size="Size.Small" />
+                                        <MudIcon Icon="@Icons.Filled.Circle" Color="Color.Success" Size="Size.Small" />
                                     }
                                     else if (vendor is { StatusId: 3 })
+                                    {
+                                        <MudIcon Icon="@Icons.Filled.Circle" Color="Color.Default" Size="Size.Small" />
+                                    }
+                                    else if (vendor is { StatusId: 4 })
                                     {
                                         <MudIcon Icon="@Icons.Filled.Circle" Color="Color.Error" Size="Size.Small" />
                                     }
@@ -118,7 +121,6 @@
     <TabStripTab Title="All">
         <HeaderTemplate>
             <span class="k-mx-2">All</span>
-            <MudChip Color="Color.Primary" Size="Size.Small">5</MudChip>
         </HeaderTemplate>
         <Content>
             <DataGrid Data="@vendorList"
@@ -187,6 +189,7 @@
                             }
                         </Template>
                     </GridColumn>
+                    <GridColumn Field="@(nameof(Vendor.ApproveStatusName))" Title="Approve Status" Width="180px" />
                     <GridColumn Field="@(nameof(Vendor.StatusName))" Title="Status" Width="100px">
                         <Template Context="rowContext">
                             <div class="flex-center-y">
@@ -198,13 +201,17 @@
                                     }
                                     else if (vendor is { StatusId: 1 })
                                     {
-                                        <MudIcon Icon="@Icons.Filled.Circle" Color="Color.Success" Size="Size.Small" />
+                                        <MudIcon Icon="@Icons.Filled.Circle" Color="Color.Info" Size="Size.Small" />
                                     }
                                     else if (vendor is { StatusId: 2 })
                                     {
-                                        <MudIcon Icon="@Icons.Filled.Circle" Color="Color.Default" Size="Size.Small" />
+                                        <MudIcon Icon="@Icons.Filled.Circle" Color="Color.Success" Size="Size.Small" />
                                     }
                                     else if (vendor is { StatusId: 3 })
+                                    {
+                                        <MudIcon Icon="@Icons.Filled.Circle" Color="Color.Default" Size="Size.Small" />
+                                    }
+                                    else if (vendor is { StatusId: 4 })
                                     {
                                         <MudIcon Icon="@Icons.Filled.Circle" Color="Color.Error" Size="Size.Small" />
                                     }
@@ -224,7 +231,6 @@
     <TabStripTab Title="Draft">
         <HeaderTemplate>
             <span class="k-mx-2">Draft</span>
-            <MudChip Color="Color.Primary" Size="Size.Small">5</MudChip>
         </HeaderTemplate>
         <Content>
             <div class="k-pb-4">
@@ -316,19 +322,23 @@
                                     var vendor = rowContext as Vendor;
                                     if (vendor is { StatusId: 0 })
                                     {
-                                        <MudIcon Icon="@Icons.Filled.Circle" Color="Color.Warning" Size="Size.Small"/>
+                                        <MudIcon Icon="@Icons.Filled.Circle" Color="Color.Warning" Size="Size.Small" />
                                     }
                                     else if (vendor is { StatusId: 1 })
                                     {
-                                        <MudIcon Icon="@Icons.Filled.Circle" Color="Color.Success" Size="Size.Small"/>
+                                        <MudIcon Icon="@Icons.Filled.Circle" Color="Color.Info" Size="Size.Small" />
                                     }
                                     else if (vendor is { StatusId: 2 })
                                     {
-                                        <MudIcon Icon="@Icons.Filled.Circle" Color="Color.Default" Size="Size.Small"/>
+                                        <MudIcon Icon="@Icons.Filled.Circle" Color="Color.Success" Size="Size.Small" />
                                     }
                                     else if (vendor is { StatusId: 3 })
                                     {
-                                        <MudIcon Icon="@Icons.Filled.Circle" Color="Color.Error" Size="Size.Small"/>
+                                        <MudIcon Icon="@Icons.Filled.Circle" Color="Color.Default" Size="Size.Small" />
+                                    }
+                                    else if (vendor is { StatusId: 4 })
+                                    {
+                                        <MudIcon Icon="@Icons.Filled.Circle" Color="Color.Error" Size="Size.Small" />
                                     }
                                     else
                                     {
@@ -396,11 +406,10 @@
     bool isWaitingForApproval => activeTabIndex == 0 ? true : false;
 
     bool showApproveDialog = false;
-    string approveComment = "";
+    string? approveComment = "";
     bool approveSelected = false;
     TelerikDialog approveDialogRef;
-
-    //int menuButtonsVisibility => activeTabIndex == 0 ? (() => AppState.ApproveButtonVisible = true; AppState.RejectButtonVisible = true;}) : 0;
+    
 
     protected override async Task OnInitializedAsync()
     {
@@ -414,9 +423,11 @@
         AppState.SetDefaults();
         SetMenuButtonsVisibility();
         AppState.BackButtonVisible = true;
+        AppState.CustomButton01Title = "Send to approval";
         AppState.OnBackClick += BackClick;
         AppState.OnApproveClick += ApproveClick;
         AppState.OnRejectClick += RejectClick;
+        AppState.OnCustomButton01Click += SendToApproval;
     }
 
     void IDisposable.Dispose()
@@ -425,6 +436,7 @@
         AppState.OnBackClick -= BackClick;
         AppState.OnApproveClick -= ApproveClick;
         AppState.OnRejectClick -= RejectClick;
+        AppState.OnCustomButton01Click -= SendToApproval;
     }
 
     async Task LoadData()
@@ -452,16 +464,19 @@
         {
             AppState.ApproveButtonVisible = true;
             AppState.RejectButtonVisible = true;
+            AppState.CustomButton01Visible = false;
         }
         else if (activeTabIndex == 1)
         {
             AppState.ApproveButtonVisible = false;
             AppState.RejectButtonVisible = false;
+            AppState.CustomButton01Visible = false;
         }
         else
         {
             AppState.ApproveButtonVisible = false;
             AppState.RejectButtonVisible = false;
+            AppState.CustomButton01Visible = true;
         }
     }
 
@@ -570,5 +585,18 @@
     void ApproveStageChanged(ApproveStage approveStage)
     {
         selectedApproveStage = approveStage;
+    }
+
+    async void SendToApproval()
+    {
+        if (selectedApproveStage != null && selectedVendorList != null && selectedVendorList.Any())
+        {
+            var result = await VendorService.SendToApproval(selectedVendorList.ToList(), selectedApproveStage.ApproveStageMainId);
+            await LoadVendorList();
+        }
+        else
+        {
+            AppState.ShowAlert("Please select vendor(s) first",Severity.Warning);
+        }
     }
 }

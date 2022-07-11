@@ -49,13 +49,13 @@ public class MenuService : BaseModelService<Menu>
             ExportAccess = e.ExportAccess,
             UserId = e.UserId,
             HasChildren = e.HasChildren,
-            Icon = (e.Icon != null ? Icons.Filled.GetType().GetProperty(e.Icon)?.GetValue(Icons.Filled, null)?.ToString() : ""),
-            Children = GetCildren(flatList, e.MenuId)
+            Icon = e.Icon != null ? typeof(Icons.Filled).GetField(e.Icon)?.GetValue(new Icons.Filled())?.ToString() : "",
+            Children = GetChildren(flatList, e.MenuId)
         });
         return tempList;
     }
 
-    IEnumerable<Menu> GetCildren(IEnumerable<Menu> flatList, int parentId)
+    IEnumerable<Menu> GetChildren(IEnumerable<Menu> flatList, int parentId)
     {
         var tempList = flatList.Where(e => e.ParentId == parentId).Select(e => new Menu {
             MenuId = e.MenuId,
@@ -69,8 +69,8 @@ public class MenuService : BaseModelService<Menu>
             ExportAccess = e.ExportAccess,
             UserId = e.UserId,
             HasChildren = e.HasChildren,
-            Icon = (e.Icon != null ? Icons.Filled.GetType().GetProperty(e.Icon)?.GetValue(Icons.Filled, null)?.ToString() : ""),
-            Children = GetCildren(flatList, e.MenuId)
+            Icon = e.Icon != null ? typeof(Icons.Filled).GetField(e.Icon)?.GetValue(new Icons.Filled())?.ToString() : "",
+            Children = GetChildren(flatList, e.MenuId)
         });
         return tempList;
     }

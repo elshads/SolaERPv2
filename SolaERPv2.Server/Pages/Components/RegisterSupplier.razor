@@ -109,11 +109,7 @@
                             <Template>
                                 <label for="companylogo" class="k-label k-form-label">Company logo: </label>
                                 <div class="k-form-field-wrap">
-                                    <FileSelect HideList="true"
-                                            Multiple="false"
-                                            AllowedExtensions="@(new List<string> { ".png", ".jpg", ".jpeg" })"
-                                            AttachmentList="@logoAttachmentList"
-                                            AttachmentListChanged="@LogoListChanged" />
+                                    <AttachmentDialog WithButton="true" @bind-AttachmentList="CurrentVendor.CompanyLogo" OnDeleteClick="OnAttachmentDeleteHandler" SourceId="CurrentVendor.VendorId" SourceTypeName="VEN_LOGO" Multiple="false" AllowedFileSize="20971520" AllowedFileTypes=".png,.jpg,.jpeg"/>
                                     <TelerikValidationMessage For="@(() => CurrentVendor.CompanyLogo)" />
                                 </div>
                             </Template>
@@ -124,10 +120,7 @@
                             <Template>
                                 <label for="officialletter" class="k-label k-form-label">Attach Official Letter: </label>
                                 <div class="k-form-field-wrap">
-                                    <FileSelect HideList="true"
-                                            Multiple="false"
-                                            AttachmentList="@officialLetterList"
-                                            AttachmentListChanged="@OfficialLetterChanged" />
+                                    <AttachmentDialog WithButton="true" @bind-AttachmentList="CurrentVendor.OfficialLetter" OnDeleteClick="OnAttachmentDeleteHandler" SourceId="CurrentVendor.VendorId" SourceTypeName="VEN_OLET"/>
                                     <TelerikValidationMessage For="@(() => CurrentVendor.OfficialLetter)" />
                                 </div>
                             </Template>
@@ -219,10 +212,7 @@ else if (CurrentPageIndex == 1)
                         <Template>
                             <label for="bankletter" class="k-label k-form-label">Add bank letter head: </label>
                             <div class="k-form-field-wrap">
-                                <FileSelect HideList="true"
-                                    Multiple="false"
-                                    AttachmentList="@bankLetterList"
-                                    AttachmentListChanged="@BankLetterChanged" />
+                                <AttachmentDialog WithButton="true" @bind-AttachmentList="selectedBank.BankLetter" OnDeleteClick="OnAttachmentDeleteHandler" SourceId="selectedBank.BankId" SourceTypeName="VEN_BNK"/>
                                 <TelerikValidationMessage For="@(() => selectedBank.BankLetter)" />
                             </div>
                         </Template>
@@ -398,10 +388,7 @@ else if (CurrentPageIndex == 3)
                                                        Min="@(new DateTime(2022, 1, 1))"
                                                        Max="@(new DateTime(2050, 12, 31))" @bind-Value="@(CurrentVendor.EvaluationForm.ExpirationDate)" />
                                     </div>
-                                    <FileSelect HideList="true"
-                                            Multiple="false"
-                                            AttachmentList="@certificateList"
-                                            AttachmentListChanged="@CertificateListChanged" />
+                                    <AttachmentDialog WithButton="true" @bind-AttachmentList="CurrentVendor.EvaluationForm.CertificateAttachment" OnDeleteClick="OnAttachmentDeleteHandler" SourceId="CurrentVendor.VendorId" SourceTypeName="VEN_ISO"/>
                                 </div>
                             </label>
                             <div class="k-form-field-wrap">
@@ -529,8 +516,7 @@ else if (CurrentPageIndex == 3)
                         <Template>
                             <label for="planning3" class="k-label k-form-label k-mr-10">Other Attachments</label>
                             <div class="k-form-field-wrap">
-                                <FileSelect AttachmentList="@CurrentVendor.EvaluationForm.OtherAttachments"
-                                        AttachmentListChanged="@OtherAttachmentsChanged" />
+                                <AttachmentDialog WithButton="true" @bind-AttachmentList="CurrentVendor.EvaluationForm.OtherAttachments" OnDeleteClick="OnAttachmentDeleteHandler" SourceId="CurrentVendor.VendorId" SourceTypeName="VEN_OTH"/>
                                 <TelerikValidationMessage For="@(() => CurrentVendor.EvaluationForm.OtherAttachments)" />
                             </div>
                         </Template>
@@ -547,6 +533,7 @@ else
     <div>Supplier Registration - Empty Page (contact developers)</div>
 }
 
+
 @code {
     [CascadingParameter] public AppState? AppState { get; set; }
 
@@ -556,7 +543,8 @@ else
     [Parameter] public EventCallback<AppUser> CurrentPersonChanged { get; set; }
     [Parameter] public EventCallback<Vendor> CurrentVendorChanged { get; set; }
     [Parameter] public EventCallback<int> CurrentPageIndexChanged { get; set; }
-
+    [Parameter] public EventCallback<List<int>> OnAttachmentDelete { get; set; }
+    
     // ----- Page Init -----
 
     FluentValidationValidator? personValidator;
@@ -624,18 +612,7 @@ else
     {
         await LoadData();
     }
-
-    protected override void OnParametersSet()
-    {
-        // ----- Page Init -----
-        logoAttachmentList = new();
-        officialLetterList = new();
-        certificateList = new();
-        if (CurrentVendor != null && CurrentVendor.CompanyLogo != null) { logoAttachmentList.Add(CurrentVendor.CompanyLogo); }
-        if (CurrentVendor != null && CurrentVendor.OfficialLetter != null) { officialLetterList.Add(CurrentVendor.OfficialLetter); }
-        if (CurrentVendor != null && CurrentVendor.EvaluationForm != null && CurrentVendor.EvaluationForm.CertificateAttachment != null) { certificateList.Add(CurrentVendor.EvaluationForm.CertificateAttachment); }
-    }
-
+    
     async Task LoadData()
     {
         productList = await ProductService.GetAll();
@@ -645,9 +622,6 @@ else
 
         // ----- Page Bank -----
         currencyList = await CurrencyService.GetAll();
-
-        // ----- Page Eval -----
-        await Task.Run(SetCertificateAttachment);
     }
 
     // ----- Page Init -----
@@ -717,41 +691,7 @@ else
             CurrentVendor.Exists = false;
         }
     }
-
-    async void LogoListChanged(List<Attachment> files)
-    {
-        logoAttachmentList = files;
-        if (CurrentVendor != null && files != null && files.Any())
-        {
-            CurrentVendor.CompanyLogo = files?.FirstOrDefault();
-        }
-        else if (CurrentVendor != null)
-        {
-            CurrentVendor.CompanyLogo = null;
-        }
-        await CurrentVendorChanged.InvokeAsync(CurrentVendor);
-    }
-
-    async void OfficialLetterChanged(List<Attachment> files)
-    {
-        officialLetterList = files;
-        if (CurrentVendor != null && files != null && files.Any())
-        {
-            CurrentVendor.OfficialLetter = files?.FirstOrDefault();
-        }
-        else if (CurrentVendor != null)
-        {
-            CurrentVendor.OfficialLetter = null;
-        }
-        await CurrentVendorChanged.InvokeAsync(CurrentVendor);
-    }
-
-    async Task OnLogoRemove()
-    {
-        if (CurrentVendor != null) { CurrentVendor.CompanyLogo = null; }
-        await CurrentVendorChanged.InvokeAsync(CurrentVendor);
-    }
-
+    
     bool ValidatePerson()
     {
         if (personValidator != null) { return personValidator.Validate(options => options.IncludeRuleSets(nameof(AppUser.FullName))); }
@@ -800,8 +740,6 @@ else
             var argsItem = args.Item as Bank;
             argsItem.RowIndex = CurrentVendor.BankList.IndexOf(argsItem);
             selectedBank = new Bank().GetInstanceClone(argsItem);
-            bankLetterList = new();
-            if (selectedBank != null && selectedBank.BankLetter != null) { bankLetterList.Add(selectedBank.BankLetter); }
             showAddPanel = true;
         }
     }
@@ -860,21 +798,7 @@ else
         if (bankValidator != null) { return bankValidator.Validate(options => options.IncludeAllRuleSets()); }
         return false;
     }
-
-    async void BankLetterChanged(List<Attachment> files)
-    {
-        bankLetterList = files;
-        if (CurrentVendor != null && files != null && files.Any())
-        {
-            selectedBank.BankLetter = files?.FirstOrDefault();
-        }
-        else if (CurrentVendor != null)
-        {
-            selectedBank.BankLetter = null;
-        }
-        await CurrentVendorChanged.InvokeAsync(CurrentVendor);
-    }
-
+    
     bool ValidateCurrencyCodes()
     {
         var isAzerbaijan = CurrentVendor != null && CurrentVendor.CountryCode != null ? CurrentVendor.CountryCode == "AZ" : false;
@@ -910,43 +834,12 @@ else
         await CurrentVendorChanged.InvokeAsync(CurrentVendor);
         return isFormValid;
     }
-
-    void SetCertificateAttachment()
-    {
-        if (CurrentVendor != null && CurrentVendor.EvaluationForm != null && CurrentVendor.EvaluationForm.CertificateAttachment != null)
-        {
-            certificateList = new() { CurrentVendor.EvaluationForm.CertificateAttachment };
-        }
-    }
-
+    
     bool ValidateEvaluationForm()
     {
         return true;
     }
-
-    async Task CertificateListChanged(List<Attachment> files)
-    {
-        certificateList = files;
-        if (CurrentVendor != null && CurrentVendor.EvaluationForm != null && files != null && files.Any())
-        {
-            CurrentVendor.EvaluationForm.CertificateAttachment = files?.FirstOrDefault();
-        }
-        else if (CurrentVendor != null && CurrentVendor.EvaluationForm != null)
-        {
-            CurrentVendor.EvaluationForm.CertificateAttachment = null;
-        }
-        await CurrentVendorChanged.InvokeAsync(CurrentVendor);
-    }
-
-    async Task OtherAttachmentsChanged(List<Attachment> files)
-    {
-        if (CurrentVendor != null && CurrentVendor.EvaluationForm != null)
-        {
-            CurrentVendor.EvaluationForm.OtherAttachments = files;
-        }
-        await CurrentVendorChanged.InvokeAsync(CurrentVendor);
-    }
-
+    
     public class EvaluationOptions
     {
         public int Selection { get; set; }
@@ -1020,6 +913,15 @@ else
         {
             CurrentPageIndex = currentPageIndex;
             await CurrentPageIndexChanged.InvokeAsync(CurrentPageIndex);
+        }
+    }
+
+    async Task OnAttachmentDeleteHandler(List<Attachment> deletedAttachments)
+    {
+        var deletedIdList = deletedAttachments.Select(e => e.AttachmentId).Where(s => s > 0).ToList();
+        if (deletedIdList.Any())
+        {
+            await OnAttachmentDelete.InvokeAsync(deletedIdList);
         }
     }
 }

@@ -26,7 +26,7 @@
              OnRowDrop="@((GridRowDropEventArgs<TItem> args) => OnRowDropHandler(args))"
              OnRowClick="@OnRowClickHandler"
              OnRowDoubleClick="@OnRowDoubleClickHandler"
-             OnRowContextMenu="@(ShowContextMenu ? OnRowContextMenu : null)"
+             OnRowContextMenu="@(ShowContextMenu ? OnRowContextMenu : default)"
              OnRowRender="@OnRowRenderHandler"
              OnCreate="@OnCreateHandler"
              OnEdit="@OnEditHandler"

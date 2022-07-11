@@ -2,13 +2,14 @@
 @inherits LayoutComponentBase
 @implements IAsyncDisposable
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IBreakpointService BreakpointListener
 
 
 <HeadContent>
     <link rel="stylesheet" href="/css/kendo/@(_appState.IsDarkMode ? "dark" : "light").css">
 </HeadContent>
 
-@*<MudThemeProvider IsDarkMode="@(SessionData is {CurrentUser.Theme: "dark" })" />*@
+
 <MudThemeProvider DefaultScrollbar="false" Theme="Theme.DefaultTheme" @bind-IsDarkMode="_appState.IsDarkMode" />
 <MudSnackbarProvider />
 <MudDialogProvider FullWidth="false"
@@ -16,6 +17,7 @@
                    CloseButton="true"
                    DisableBackdropClick="true"
                    NoHeader="false"
+                   CloseOnEscapeKey="true"
                    Position="DialogPosition.Center" />
 
 
@@ -45,6 +47,7 @@
 
 @code {
     AppState? _appState = new();
+    Guid _breakpointSubscriptionId;
     
     protected override async Task OnInitializedAsync()
     {
@@ -57,6 +60,7 @@
 
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
+        await BreakpointListener.Unsubscribe(_breakpointSubscriptionId);
         if (_appState != null)
         {
             _appState.OnRefreshClick -= Refresh;
@@ -97,6 +101,18 @@
         if (firstRender)
         {
             await GetTheme();
+            var subscriptionResult = await BreakpointListener.Subscribe((breakpoint) =>
+            {
+                _appState.MudBreakpoint = breakpoint.ToString();
+                InvokeAsync(StateHasChanged);
+            }, new ResizeOptions
+            {
+                ReportRate = 250,
+                NotifyOnBreakpointOnly = true,
+            });
+            _appState.MudBreakpoint = subscriptionResult.Breakpoint.ToString();
+            _breakpointSubscriptionId = subscriptionResult.SubscriptionId;
+            await InvokeAsync(StateHasChanged);
         }
         switch (firstRender)
         {
@@ -107,6 +123,7 @@
                 NavigationManager.NavigateTo("Identity/Account/Login", true);
                 break;
         }
+        await base.OnAfterRenderAsync(firstRender);
     }
 
     void OnMobileViewChanged(bool mobileView)

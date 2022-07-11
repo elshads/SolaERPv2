@@ -642,7 +642,7 @@
 
     IEnumerable<Bank>? selectedBankList = new List<Bank>();
 
-    string? companyLogo => selectedVendor is { CompanyLogo.FileData: { } } ? string.Format($"data:image/png;base64," + Convert.ToBase64String(selectedVendor.CompanyLogo.FileData)) : null;
+    string? companyLogo => selectedVendor != null && selectedVendor.CompanyLogo != null && selectedVendor.CompanyLogo.Any() ? string.Format($"data:image/png;base64," + Convert.ToBase64String(selectedVendor.CompanyLogo.FirstOrDefault().FileData)) : null;
 
     protected override async Task OnInitializedAsync()
     {

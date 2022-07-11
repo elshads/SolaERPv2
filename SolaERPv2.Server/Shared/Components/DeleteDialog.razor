@@ -1,0 +1,33 @@
+﻿<MudDialog Class="delete-dialog">
+    <TitleContent>
+        <MudText Typo="Typo.h6">Delete</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudPaper Class="py-3" Elevation="0">
+            Are you sure you want to delete selected @(NumberOfItems > 1 ? NumberOfItems + " items" : "item")?
+        </MudPaper>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Error" OnClick="Delete">Delete</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+@code {
+    [CascadingParameter] MudDialogInstance? MudDialog { get; set; }
+
+    [Parameter] public int NumberOfItems { get; set; } = 0;
+
+    void Cancel() => MudDialog?.Cancel();
+    void Delete() => MudDialog?.Close<bool>(true);
+    
+}
+
+<style>
+    .delete-dialog .mud-dialog-title,
+    .delete-dialog .mud-dialog-title .mud-icon-button-label {
+        background-color: var(--mud-palette-error);
+        color: #f5f5f5;
+    }
+</style>
