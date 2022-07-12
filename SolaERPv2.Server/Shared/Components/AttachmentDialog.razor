@@ -3,7 +3,7 @@
 
 @if (WithButton && !IconButton)
 {
-    <MudBadge Visible="@(_isFileLoading || (AttachmentList != null && AttachmentList.Any()))" Content="AttachmentList?.Count" Color="@(_isFileLoading ? Color.Warning : Color.Primary)" Overlap="true" Bordered="true">
+    <MudBadge Visible="@(_isUpLoading || _isDownLoading || (AttachmentList != null && AttachmentList.Any()))" Content="AttachmentList?.Count" Color="@(_isUpLoading || _isDownLoading ? Color.Warning : Color.Primary)" Overlap="true" Bordered="true">
         <MudButton Disabled="@Disabled" Size="Size.Small" StartIcon="@Icons.Filled.CloudUpload" Variant="Variant.Filled" Color="Color.Secondary" OnClick="@(() => IsVisible = true)">@ButtonText</MudButton>
     </MudBadge>
 }
@@ -27,18 +27,23 @@ else if (WithButton && IconButton)
                            Class="mr-2"
                            Style="min-width: 9.625rem"
                            StartIcon="@Icons.Filled.CloudUpload"
-                           Disabled="_isFileLoading || !CanUpload"
+                           Disabled="_isUpLoading || _isDownLoading || !CanUpload"
                            for="fileInput">
                     Upload Files
                 </MudButton>
                 <MudPaper @ondragenter="@SetDragClass" @ondragleave="@ClearDragClass" @ondragend="@ClearDragClass" Height="100%" Outlined="true" Class="@($"{_dragClass} rounded-lg mud-width-full mud-height-full")">
-                    <InputFile accept="@AllowedFileTypes" disabled="@(_isFileLoading || !CanUpload)" OnChange="OnInputFileChange" id="fileInput" multiple="@Multiple" class="mud-width-full z-2" style="opacity: 0; height: 2rem;" />
+                    <InputFile accept="@AllowedFileTypes" disabled="@(_isUpLoading || _isDownLoading || !CanUpload)" OnChange="OnInputFileChange" id="fileInput" multiple="@Multiple" class="mud-width-full z-2" style="opacity: 0; height: 2rem;" />
                 </MudPaper>
             </div>
-            @if (_isFileLoading && _selectedFile != null)
+            @if (_isUpLoading && _selectedFile != null)
             {
                 <div class="hint-message">@(_selectedFile.Name + " - " + ConvertBytes(_selectedFile.Size))</div>
-                <MudAlert Severity="Severity.Warning" Class="mb-2">Do not reload browser during file upload</MudAlert>
+                <MudAlert Severity="Severity.Warning" Class="mb-2">Do not reload the browser while uploading a file</MudAlert>
+            }
+            @if (_isDownLoading && _selectedAttachment != null)
+            {
+                <div class="hint-message">@(_selectedAttachment.FileName + " - " + ConvertBytes(_selectedAttachment.Size))</div>
+                <MudAlert Severity="Severity.Warning" Class="mb-2">Do not reload the browser while downloading a file</MudAlert>
             }
             @if (_singleFileAlert)
             {
@@ -52,7 +57,15 @@ else if (WithButton && IconButton)
             {
                 <MudAlert Severity="Severity.Error" Class="mb-2">Upload only allowed file types: @AllowedFileTypes</MudAlert>
             }
-            <MudTable MultiSelection="true" @bind-SelectedItems="_selectedItems" Items="@AttachmentList" Hover="true" Class="attachment-table" Breakpoint="Breakpoint.Xs" Dense="true" Loading="@_isFileLoading" LoadingProgressColor="Color.Info">
+            <MudTable MultiSelection="true" 
+                      @bind-SelectedItems="_selectedItems" 
+                      Items="@AttachmentList" 
+                      Hover="true" 
+                      Class="attachment-table" 
+                      Breakpoint="Breakpoint.Xs" 
+                      Dense="true" 
+                      Loading="@(_isUpLoading || _isDownLoading)" 
+                      LoadingProgressColor="Color.Info">
                 <HeaderContent>
                     <MudTh>Name</MudTh>
                     <MudTh>Type</MudTh>
@@ -66,14 +79,14 @@ else if (WithButton && IconButton)
                     <MudTd DataLabel="Type">@context.ExtensionType</MudTd>
                     <MudTd DataLabel="Size" Class="text-right">@ConvertBytes(context.Size)</MudTd>
                     <MudTd DataLabel="Uploaded" Class="text-right">@context.UploadDateTime.ToString("yyyy-MM-dd HH:mm")</MudTd>
-                    <MudTd DataLabel="Download" Class="text-center"><MudIconButton Icon="@Icons.Filled.Download" OnClick="@(() => DownloadAttachment(context))" Size="Size.Small" Color="Color.Success" Disabled="_isFileLoading || !CanDownload" /></MudTd>
-                    <MudTd DataLabel="Delete" Class="text-center"><MudIconButton Icon="@Icons.Filled.DeleteForever" OnClick="@(() => DeleteAttachment(new List<Attachment>() {context}))" Size="Size.Small" Color="Color.Error" Disabled="_isFileLoading || !CanDelete" /></MudTd>
+                    <MudTd DataLabel="Download" Class="text-center"><MudIconButton Icon="@Icons.Filled.Download" OnClick="@(() => DownloadAttachment(context))" Size="Size.Small" Color="Color.Success" Disabled="_isUpLoading || !CanDownload" /></MudTd>
+                    <MudTd DataLabel="Delete" Class="text-center"><MudIconButton Icon="@Icons.Filled.DeleteForever" OnClick="@(() => DeleteAttachment(new List<Attachment>() {context}))" Size="Size.Small" Color="Color.Error" Disabled="_isUpLoading || !CanDelete" /></MudTd>
                 </RowTemplate>
             </MudTable>
         </MudPaper>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="@(() => DeleteAttachment(_selectedItems.ToList()))" Class="mr-2" Color="Color.Error" Disabled="_isFileLoading || !CanDelete || _selectedItems == null || !_selectedItems.Any()">Delete Selection</MudButton>
+        <MudButton OnClick="@(() => DeleteAttachment(_selectedItems.ToList()))" Class="mr-2" Color="Color.Error" Disabled="_isUpLoading || _isDownLoading || !CanDelete || _selectedItems == null || !_selectedItems.Any()">Delete Selection</MudButton>
         <MudButton OnClick="CloseDialog" Class="mr-2">Close</MudButton>
     </DialogActions>
 </MudDialog>
@@ -111,8 +124,10 @@ else if (WithButton && IconButton)
 
     IReadOnlyList<IBrowserFile>? _selectedFiles = new List<IBrowserFile>();
     IBrowserFile? _selectedFile;
+    Attachment? _selectedAttachment = new();
     
-    bool _isFileLoading = false;
+    bool _isUpLoading = false;
+    bool _isDownLoading = false;
     string? _dragClass = "border-2 border-dashed";
     HashSet<Attachment>? _selectedItems;
 
@@ -132,6 +147,7 @@ else if (WithButton && IconButton)
             _singleFileAlert = false;
             _fileTypeAlert = false;
             _maxFileSizeAlert = false;
+            _selectedItems = null;
         }
         IsVisible = isVisible;
         await IsVisibleChanged.InvokeAsync(IsVisible);
@@ -148,7 +164,7 @@ else if (WithButton && IconButton)
             return;
         }
         _selectedFiles = args.GetMultipleFiles();
-        _isFileLoading = true;
+        _isUpLoading = true;
         using var ms = new MemoryStream();
         foreach (var file in _selectedFiles)
         {
@@ -157,13 +173,13 @@ else if (WithButton && IconButton)
             if (AllowedFileTypes != "*" && !AllowedFileTypes.Contains(fileExtension))
             {
                 _fileTypeAlert = true;
-                _isFileLoading = false;
+                _isUpLoading = false;
                 return;
             }
             if (_selectedFile.Size > AllowedFileSize)
             {
                 _maxFileSizeAlert = true;
-                _isFileLoading = false;
+                _isUpLoading = false;
                 return;
             }
             await file.OpenReadStream(AllowedFileSize).CopyToAsync(ms);
@@ -191,7 +207,7 @@ else if (WithButton && IconButton)
             AttachmentList?.Add(attachment);
             await InvokeAsync(StateHasChanged);
         }
-        _isFileLoading = false;
+        _isUpLoading = false;
         await AttachmentListChanged.InvokeAsync(AttachmentList);
     }
 
@@ -218,14 +234,16 @@ else if (WithButton && IconButton)
             _ => bytes + " bytes"
         };
     }
-
+    
     async Task DownloadAttachment(Attachment attachment)
     {
+        _selectedAttachment = attachment;
+        _isDownLoading = true;
         var currentAttachment = attachment.AttachmentId > 0 ? await AttachmentService.GetByIdAsync(attachment.AttachmentId) : attachment;
         var fileStream = new MemoryStream(currentAttachment.FileData);
         using var streamRef = new DotNetStreamReference(stream: fileStream);
         await JSRuntime.InvokeVoidAsync("downloadFileFromStream", currentAttachment?.FileName, streamRef);
-
+        _isDownLoading = false;
         await OnDownloadClick.InvokeAsync(attachment);
     }
 
