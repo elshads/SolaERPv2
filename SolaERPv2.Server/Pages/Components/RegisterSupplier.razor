@@ -563,6 +563,7 @@ else
     // ----- Page Bank -----
 
     Bank? selectedBank = new();
+    Bank? originalBank = new();
     IEnumerable<Bank>? selectedBankList = new List<Bank>();
     IEnumerable<Currency>? currencyList = new List<Currency>();
     TelerikGrid<Bank>? gridRef;
@@ -727,6 +728,7 @@ else
         if (!showAddPanel)
         {
             selectedBank = new() { IsNewItem = true, CurrencyCode = "AZN" };
+            originalBank = new();
             bankLetterList = new();
             showAddPanel = true;
             AppState.Refresh();
@@ -738,8 +740,9 @@ else
         if (!showAddPanel)
         {
             var argsItem = args.Item as Bank;
-            argsItem.RowIndex = CurrentVendor.BankList.IndexOf(argsItem);
+            //argsItem.RowIndex = CurrentVendor.BankList.IndexOf(argsItem);
             selectedBank = new Bank().GetInstanceClone(argsItem);
+            originalBank = argsItem;
             showAddPanel = true;
         }
     }
@@ -757,16 +760,12 @@ else
         var isValid = ValidateBank();
         if (isValid)
         {
-            if (selectedBank.IsNewItem)
+            var index = CurrentVendor?.BankList?.IndexOf(originalBank);
+            if (index > -1)
             {
-                if (CurrentVendor != null && CurrentVendor.BankList == null) { CurrentVendor.BankList = new(); }
-                selectedBank.IsNewItem = false;
-                CurrentVendor.BankList.Add(selectedBank);
+                CurrentVendor?.BankList.Remove(originalBank);
             }
-            else
-            {
-                CurrentVendor.BankList[selectedBank.RowIndex] = selectedBank;
-            }
+            CurrentVendor?.BankList?.Add(selectedBank);
             showAddPanel = false;
             selectedBank = new();
             selectedBankList = new List<Bank>();
@@ -783,6 +782,7 @@ else
     {
         showAddPanel = false;
         selectedBank = new();
+        originalBank = new();
         selectedBankList = new List<Bank>();
     }
 
