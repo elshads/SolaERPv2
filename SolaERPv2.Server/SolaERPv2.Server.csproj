@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\docs\" />
+    <Folder Include="wwwroot\templates\" />
   </ItemGroup>
 
 </Project>
