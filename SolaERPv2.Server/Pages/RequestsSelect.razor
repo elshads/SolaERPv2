@@ -1,0 +1,225 @@
+﻿@page "/requests/select"
+@implements IDisposable
+@inject RequestService RequestService
+
+<div>@_selectedRequestMainList.Count()</div>
+<div>@_selectedRequestDetailsList.Count()</div>
+<div class="k-pb-4">
+    <label for="bu_list">Business Unit:</label>
+    <ItemDropDownList Id="bu_list"
+                      Data="@_businessUnitList"
+                      Item="@_selectedBusinessUnit"
+                      ItemChanged="@BusinessUnitChanged"
+                      UniqueField="BusinessUnitId"
+                      TextField="BusinessUnitCode"
+                      TValue="int"
+                      TItem="BusinessUnit"
+                      SearchFields="@(new List<string> { "BusinessUnitCode", "BusinessUnitName"})"
+                      Width="300px"
+                      PopupWidth="100%"
+                      PopupMaxWidth="500px" />
+</div>
+
+<div class="k-pb-4">
+    <label for="rt_list">Request Type:</label>
+    <ItemDropDownList Id="rt_list"
+                      Data="@_requestTypeList"
+                      Item="@_selectedRequestType"
+                      ItemChanged="@RequestTypeChanged"
+                      UniqueField="RequestTypeId"
+                      TextField="RequestTypeName"
+                      TValue="int"
+                      TItem="RequestType"
+                      SearchFields="@(new List<string> { "RequestTypeId", "RequestTypeName"})"
+                      Width="300px"
+                      PopupWidth="100%"
+                      PopupMaxWidth="500px" />
+</div>
+
+<DataGrid Data="@_requestList"
+                      CanExport="true"
+                      Height="calc(100vh - 240px)"
+                      SearchFields="@(new List<string> { "RequestNumber" })"
+                      SelectedItems="@_selectedRequestMainList"
+                      SelectedItemsChanged="@((IEnumerable<RequestMain> mainList) => SelectedMainItemsChanged(mainList))"
+                      HierarchyDetailsField="RequestDetailsList"
+                      Pageable="false"
+                      CheckBoxOnlySelection="true"
+                      CustomAdd="true"
+                      CanAdd="true"
+                      AddButtonText="Generate RFQ"
+                      OnAdd="@GenerateRfq">
+                <HierarchyContent>
+                    @{
+                        var requestMain = context as RequestMain;
+                        <TelerikGrid Data="@requestMain.RequestDetailsList"
+                                 Resizable="true"
+                                 SelectionMode="GridSelectionMode.Multiple"
+                                 SelectedItems="@_selectedRequestDetailsList"
+                                 SelectedItemsChanged="@((IEnumerable<RequestDetails> detailsList) => SelectedDetailsItemsChanged(detailsList))">
+                            <GridColumns>
+                                <GridCheckboxColumn CheckBoxOnlySelection="true" ShowColumnMenu="false" VisibleInColumnChooser="false" Reorderable="false" Locked="true" Width="42px" />
+                                <GridColumn Field="@(nameof(RequestDetails.RequestLine))" Title="Line" Width="65px" />
+                                <GridColumn Field="@(nameof(RequestDetails.ItemCode))" Title="Item Code" Width="125px" />
+                                <GridColumn Field="@(nameof(RequestDetails.ItemName))" Title="Item Name" Width="260px" />
+                                <GridColumn Field="@(nameof(RequestDetails.LineComment))" Title="Comment" Width="260px" />
+                                <GridColumn Field="@(nameof(RequestDetails.QTYOrdered))" Title="Ordered QTY" Width="130px" />
+                                <GridColumn Field="@(nameof(RequestDetails.UOM))" Title="UOM" Width="70px" />
+                                <GridColumn Field="@(nameof(RequestDetails.DueDate))" Title="Due Date" Width="140px">
+                                    <Template Context="detailsContext">
+                                        @{
+                                            var rowContext = detailsContext as RequestDetails;
+                                            <text>@rowContext.DueDate.ToString("dd.MM.yyyy")</text>
+                                        }
+                                    </Template>
+                                </GridColumn>
+                                <GridColumn Field="@(nameof(RequestDetails.Warehouse))" Title="Warehouse" Width="220px" />
+                            </GridColumns>
+                        </TelerikGrid>
+                    }
+                </HierarchyContent>
+                <DataGridColumns>
+                    <GridColumn Field="@(nameof(RequestMain.RequestId))" Title="Id" Width="70px" Editable="false" TextAlign="ColumnTextAlign.Right" Visible="false" />
+                    <GridColumn Field="@(nameof(RequestMain.RequestNumber))" Title="Request Number" Width="160px" />
+                    <GridColumn Field="@(nameof(RequestMain.RequestDate))" Title="Request Date" Width="140px">
+                        <Template>
+                            @{
+                                var rowContext = context as RequestMain;
+                                <text>@rowContext.RequestDate.ToString("dd.MM.yyyy")</text>
+                            }
+                        </Template>
+                    </GridColumn>
+                    <GridColumn Field="@(nameof(RequestMain.Approver))" Title="Approver" Width="220px" />
+                    <GridColumn Field="@(nameof(RequestMain.Requester))" Title="Requester" Width="220px" />
+                    <GridColumn Field="@(nameof(RequestMain.Comment))" Title="Comment" Width="300px" />
+                </DataGridColumns>
+            </DataGrid>
+
+@code {
+    [CascadingParameter] AppState? AppState { get; set; }
+
+    
+    List<RequestMain>? _requestList = new();
+    IEnumerable<RequestMain>? _selectedRequestMainList = new List<RequestMain>();
+    IEnumerable<RequestDetails>? _selectedRequestDetailsList = new List<RequestDetails>();
+    IEnumerable<BusinessUnit>? _businessUnitList = new List<BusinessUnit>();
+    BusinessUnit? _selectedBusinessUnit = new();
+    IEnumerable<RequestType>? _requestTypeList = new List<RequestType>();
+    RequestType? _selectedRequestType = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        OnAppStateInitialized();
+        await LoadData();
+    }
+
+    void OnAppStateInitialized()
+    {
+        if (AppState == null) return;
+        AppState.SetDefaults();
+        AppState.BackButtonVisible = true;
+        AppState.OnBackClick += BackClick;
+    }
+
+    void IDisposable.Dispose()
+    {
+        if (AppState == null) return;
+        AppState.OnBackClick -= BackClick;
+    }
+
+    async Task LoadData()
+    {
+        AppState.Loading = true;
+        _requestTypeList = RequestService.GetAllRequestTypes();
+        _selectedRequestType = _requestTypeList.FirstOrDefault();
+        _businessUnitList = await BusinessUnitService.GetAllAsync();
+        _selectedBusinessUnit = _businessUnitList?.FirstOrDefault();
+        await LoadRequestList();
+
+        AppState.Loading = false;
+    }
+
+    async Task LoadRequestList()
+    {
+        AppState.Loading = true;
+        var requestList = await RequestService.GetAllFromSytelineAsync(_selectedBusinessUnit.BusinessUnitId, _selectedRequestType.RequestTypeId);
+        _requestList = requestList?.ToList();
+        AppState.Loading = false;
+    }
+
+    void BackClick()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+
+    void GoToCard(int id)
+    {
+        NavigationManager.NavigateTo($"/requests/card?id={id}");
+    }
+    
+    async Task BusinessUnitChanged(BusinessUnit businessUnit)
+    {
+        _selectedBusinessUnit = businessUnit;
+        _selectedRequestMainList = new List<RequestMain>();
+        await LoadRequestList();
+    }
+
+    async Task RequestTypeChanged(RequestType requestType)
+    {
+        _selectedRequestType = requestType;
+        _selectedRequestDetailsList = new List<RequestDetails>();
+        await LoadRequestList();
+    }
+
+    void SelectedMainItemsChanged(IEnumerable<RequestMain> selectedMain)
+    {
+        _selectedRequestMainList = selectedMain;
+        
+        var allDetailsInMain = new List<RequestDetails>();
+
+        foreach (var item in _requestList)
+        {
+            var range = item.RequestDetailsList.Where(e => _selectedRequestMainList.Select(s => s.RequestNumber).Contains(e.RequestNumber));
+            allDetailsInMain.AddRange(range);
+        }
+
+        var selectedRequestDetailsList = _selectedRequestDetailsList.ToList();
+        foreach (var main in _selectedRequestMainList)
+        {
+            // Select or Unselect all details of the Main
+        }
+
+        _selectedRequestDetailsList = selectedRequestDetailsList;
+    }
+
+    void SelectedDetailsItemsChanged(IEnumerable<RequestDetails> selectedDetails)
+    {
+        _selectedRequestDetailsList = selectedDetails;
+        
+        foreach (var item in _selectedRequestDetailsList)
+        {
+            if (_selectedRequestMainList != null && !_selectedRequestMainList.Any(e => e.RequestNumber == item.RequestNumber))
+            {
+                var mainIndex = _requestList.FindIndex(e => e.RequestNumber == item.RequestNumber);
+                var selectedRequestMainList = _selectedRequestMainList.ToList();
+                selectedRequestMainList.Add(_requestList[mainIndex]);
+                _selectedRequestMainList = selectedRequestMainList;
+            }
+        }
+
+        if (_selectedRequestMainList != null && _selectedRequestMainList.Any())
+        {
+            _selectedRequestMainList = _selectedRequestMainList.Where(e => _selectedRequestDetailsList.Select(s => s.RequestNumber).Contains(e.RequestNumber));
+        }
+    }
+
+    void CollectSelectedItems()
+    {
+        //
+    }
+
+    void GenerateRfq(GridCommandEventArgs args)
+    {
+        //
+    }
+}

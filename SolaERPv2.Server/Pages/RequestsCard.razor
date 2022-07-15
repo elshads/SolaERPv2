@@ -1,0 +1,39 @@
+﻿@page "/requests/card"
+@implements IDisposable
+
+
+<h3>RequestsCard</h3>
+
+@code {
+    [CascadingParameter] AppState? AppState { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        OnAppStateInitialized();
+        await LoadData();
+    }
+
+    void OnAppStateInitialized()
+    {
+        if (AppState == null) return;
+        AppState.SetDefaults();
+        AppState.BackButtonVisible = true;
+        AppState.OnBackClick += BackClick;
+    }
+
+    void IDisposable.Dispose()
+    {
+        if (AppState == null) return;
+        AppState.OnBackClick -= BackClick;
+    }
+
+    async Task LoadData()
+    {
+        //
+    }
+
+    void BackClick()
+    {
+        NavigationManager.NavigateTo("/requests");
+    }
+}

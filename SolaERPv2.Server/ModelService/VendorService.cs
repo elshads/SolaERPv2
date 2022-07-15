@@ -251,6 +251,11 @@ public class VendorService : BaseModelService<Vendor>
             var registerResult = await _sqlDataAccess.ExecuteSql("dbo.SP_VendorsChangeStatus", p, "Vendor-ChangeStatus");
 
             if (registerResult != null && registerResult.QueryResultMessage != null) { saveResult.QueryResultMessage = registerResult.QueryResultMessage; }
+
+            if (registerResult != null && registerResult.QueryResultMessage == null)
+            {
+                
+            }
         }
 
         return saveResult;

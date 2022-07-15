@@ -1,0 +1,150 @@
+﻿@page "/requests"
+@implements IDisposable
+@inject RequestService RequestService
+
+
+<TelerikTabStrip ActiveTabIndex="@_activeTabIndex" ActiveTabIndexChanged="@ActiveTabIndexChanged">
+    <TabStripTab Title="Waiting for Approval">
+        <HeaderTemplate>
+            <span class="k-mx-2">Waiting for Approval</span>
+        </HeaderTemplate>
+        <Content>
+            <DataGrid Data="@_requestList"
+                      CanExport="true"
+                      Height="calc(100vh - 240px)"
+                      OnRowDoubleClick="@OnRowDoubleClickHandler"
+                      SearchFields="@(new List<string> { "RequestNumber" })"
+                      SelectedItems="@_selectedRequestMainList"
+                      SelectedItemsChanged="@((IEnumerable<RequestMain> mainList) => SelectedMainItemsChanged(mainList))"
+                      HierarchyDetailsField="RequestDetailsList"
+                      Pageable="false">
+                <HierarchyContent>
+                    @{
+                        var requestMain = context as RequestMain;
+                        <TelerikGrid Data="@requestMain.RequestDetailsList"
+                                 Resizable="true"
+                                 SelectionMode="GridSelectionMode.Multiple"
+                                 SelectedItems="@_selectedRequestDetailsList"
+                                 SelectedItemsChanged="@((IEnumerable<RequestDetails> detailsList) => SelectedDetailsItemsChanged(detailsList))">
+                            <GridColumns>
+                                <GridCheckboxColumn CheckBoxOnlySelection="false" ShowColumnMenu="false" VisibleInColumnChooser="false" Reorderable="false" Locked="true" Width="42px" />
+                                <GridColumn Field="@(nameof(RequestDetails.RequestLine))" Title="Line" Width="65px" />
+                                <GridColumn Field="@(nameof(RequestDetails.ItemCode))" Title="Item Code" Width="125px" />
+                                <GridColumn Field="@(nameof(RequestDetails.ItemName))" Title="Item Name" Width="260px" />
+                                <GridColumn Field="@(nameof(RequestDetails.LineComment))" Title="Comment" Width="260px" />
+                                <GridColumn Field="@(nameof(RequestDetails.QTYOrdered))" Title="Ordered QTY" Width="130px" />
+                                <GridColumn Field="@(nameof(RequestDetails.UOM))" Title="UOM" Width="70px" />
+                                <GridColumn Field="@(nameof(RequestDetails.DueDate))" Title="Due Date" Width="140px">
+                                    <Template Context="detailsContext">
+                                        @{
+                                            var rowContext = detailsContext as RequestDetails;
+                                            <text>@rowContext.DueDate.ToString("yyyy-MM-dd")</text>
+                                        }
+                                    </Template>
+                                </GridColumn>
+                                <GridColumn Field="@(nameof(RequestDetails.Warehouse))" Title="Warehouse" Width="220px" />
+                            </GridColumns>
+                        </TelerikGrid>
+                    }
+                </HierarchyContent>
+                <DataGridColumns>
+                    <GridColumn Field="@(nameof(RequestMain.RequestId))" Title="Id" Width="70px" Editable="false" TextAlign="ColumnTextAlign.Right" Visible="false" />
+                    <GridColumn Field="@(nameof(RequestMain.RequestNumber))" Title="Request Number" Width="160px" />
+                    <GridColumn Field="@(nameof(RequestMain.RequestDate))" Title="Request Date" Width="140px">
+                        <Template>
+                            @{
+                                var rowContext = context as RequestMain;
+                                <text>@rowContext.RequestDate.ToString("yyyy-MM-dd")</text>
+                            }
+                        </Template>
+                    </GridColumn>
+                    <GridColumn Field="@(nameof(RequestMain.Approver))" Title="Approver" Width="220px" />
+                    <GridColumn Field="@(nameof(RequestMain.Requester))" Title="Requester" Width="220px" />
+                    <GridColumn Field="@(nameof(RequestMain.Comment))" Title="Comment" Width="300px" />
+                </DataGridColumns>
+            </DataGrid>
+        </Content>
+    </TabStripTab>
+</TelerikTabStrip>
+
+
+@code {
+    [CascadingParameter] AppState? AppState { get; set; }
+
+
+    int _activeTabIndex = 0;
+    List<RequestMain>? _requestList = new();
+    IEnumerable<RequestMain>? _selectedRequestMainList = new List<RequestMain>();
+    IEnumerable<RequestDetails>? _selectedRequestDetailsList = new List<RequestDetails>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        OnAppStateInitialized();
+        await LoadData();
+    }
+
+    void OnAppStateInitialized()
+    {
+        if (AppState == null) return;
+        AppState.SetDefaults();
+        AppState.BackButtonVisible = true;
+        AppState.AddButtonVisible = true;
+        AppState.OnBackClick += BackClick;
+        AppState.OnAddClick += AddClick;
+    }
+
+    void IDisposable.Dispose()
+    {
+        if (AppState == null) return;
+        AppState.OnBackClick -= BackClick;
+        AppState.OnAddClick -= AddClick;
+    }
+
+    async Task LoadData()
+    {
+        var rl = await RequestService.GetAllFromSytelineAsync(1, 1);
+        _requestList = rl?.ToList();
+    }
+
+    void BackClick()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+
+    void GoToCard(int id)
+    {
+        NavigationManager.NavigateTo($"/requests/card?id={id}");
+    }
+
+    async Task ActiveTabIndexChanged(int tabIndex)
+    {
+        if (AppState == null) return;
+
+        AppState.Loading = true;
+        _activeTabIndex = tabIndex;
+        _selectedRequestMainList = new List<RequestMain>();
+        //SetMenuButtonsVisibility();
+        //await LoadRequestList();
+        AppState.Loading = false;
+    }
+
+    void OnRowDoubleClickHandler(GridRowClickEventArgs args)
+    {
+        if (args.Item is RequestMain argsItem) { GoToCard(argsItem.RequestId); }
+    }
+
+    void SelectedMainItemsChanged(IEnumerable<RequestMain> selectedMain)
+    {
+        _selectedRequestMainList = selectedMain;
+    }
+
+    void SelectedDetailsItemsChanged(IEnumerable<RequestDetails> selectedDetails)
+    {
+        _selectedRequestDetailsList = selectedDetails;
+    }
+
+    void AddClick()
+    {
+        NavigationManager.NavigateTo("requests/select");
+    }
+}
