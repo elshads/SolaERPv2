@@ -2,8 +2,7 @@
 @implements IDisposable
 @inject RequestService RequestService
 
-<div>@_selectedRequestMainList.Count()</div>
-<div>@_selectedRequestDetailsList.Count()</div>
+
 <div class="k-pb-4">
     <label for="bu_list">Business Unit:</label>
     <ItemDropDownList Id="bu_list"
@@ -45,10 +44,10 @@
                       HierarchyDetailsField="RequestDetailsList"
                       Pageable="false"
                       CheckBoxOnlySelection="true"
-                      CustomAdd="true"
-                      CanAdd="true"
-                      AddButtonText="Generate RFQ"
-                      OnAdd="@GenerateRfq">
+                      CustomButtonVisible="true"
+                      CustomButtonEnabled="@_generateButtonEnabled"
+                      CustomButtonText="Generate RFQ"
+                      OnCustomClick="@GenerateRfq">
                 <HierarchyContent>
                     @{
                         var requestMain = context as RequestMain;
@@ -58,7 +57,7 @@
                                  SelectedItems="@_selectedRequestDetailsList"
                                  SelectedItemsChanged="@((IEnumerable<RequestDetails> detailsList) => SelectedDetailsItemsChanged(detailsList))">
                             <GridColumns>
-                                <GridCheckboxColumn CheckBoxOnlySelection="true" ShowColumnMenu="false" VisibleInColumnChooser="false" Reorderable="false" Locked="true" Width="42px" />
+                                <GridCheckboxColumn CheckBoxOnlySelection="true" ShowColumnMenu="false" VisibleInColumnChooser="false" Reorderable="false" Locked="true" Width="42px"/>
                                 <GridColumn Field="@(nameof(RequestDetails.RequestLine))" Title="Line" Width="65px" />
                                 <GridColumn Field="@(nameof(RequestDetails.ItemCode))" Title="Item Code" Width="125px" />
                                 <GridColumn Field="@(nameof(RequestDetails.ItemName))" Title="Item Name" Width="260px" />
@@ -106,6 +105,8 @@
     BusinessUnit? _selectedBusinessUnit = new();
     IEnumerable<RequestType>? _requestTypeList = new List<RequestType>();
     RequestType? _selectedRequestType = new();
+
+    bool _generateButtonEnabled => _selectedRequestMainList != null && _selectedRequestMainList.Any();
 
     protected override async Task OnInitializedAsync()
     {
@@ -184,9 +185,17 @@
         }
 
         var selectedRequestDetailsList = _selectedRequestDetailsList.ToList();
-        foreach (var main in _selectedRequestMainList)
+        var itemsToRemove = _selectedRequestDetailsList.Where(e => !_selectedRequestMainList.Select(s => s.RequestNumber).Contains(e.RequestNumber));
+        foreach (var item in itemsToRemove)
         {
-            // Select or Unselect all details of the Main
+            selectedRequestDetailsList.Remove(item);
+        }
+        
+        var lastMain = _selectedRequestMainList.Any() ? _selectedRequestMainList.LastOrDefault() : default;
+        var detailsOfLastMain = allDetailsInMain.Where(e => e.RequestNumber == lastMain.RequestNumber);
+        if (detailsOfLastMain.Any())
+        {
+            selectedRequestDetailsList.AddRange(detailsOfLastMain);
         }
 
         _selectedRequestDetailsList = selectedRequestDetailsList;
@@ -212,14 +221,19 @@
             _selectedRequestMainList = _selectedRequestMainList.Where(e => _selectedRequestDetailsList.Select(s => s.RequestNumber).Contains(e.RequestNumber));
         }
     }
-
-    void CollectSelectedItems()
+    
+    void GenerateRfq()
     {
-        //
-    }
-
-    void GenerateRfq(GridCommandEventArgs args)
-    {
-        //
+        if (_selectedRequestMainList != null && _selectedRequestMainList.Any() && _selectedRequestDetailsList != null && _selectedRequestDetailsList.Any())
+        {
+            var selectedRequests = _selectedRequestMainList.ToList();
+            selectedRequests.ForEach(e => e.RequestDetailsList = _selectedRequestDetailsList.Where(p => p.RequestNumber == e.RequestNumber).ToList());
+            SessionData.RequestMainList = selectedRequests;
+            NavigationManager.NavigateTo($"/requests/card");
+        }
+        else
+        {
+            AppState.ShowAlert("Error from GenerateRfq method",Severity.Error);
+        }
     }
 }

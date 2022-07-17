@@ -1,0 +1,100 @@
+﻿<div class="@(LabelPosition == InputLabelPosition.Horizontal ? "horizontal-label" : "")">
+    @if (LabelPosition != InputLabelPosition.NoLabel)
+    {
+        <label for="@Id"
+           class="k-text-nowrap k-mr-2 @(LabelPosition == InputLabelPosition.Vertical ? "k-mb-1" : "k-pt-1 k-text-right")"
+           style="width: @LabelWidth">
+            @LabelText
+        </label>
+    }
+    <div style="width: @TextBoxWidth">
+        <TelerikTextBox Id="@Id"
+                        Value="@Value"
+                        ValueChanged="@ValueChangedHandler"
+                        ValueExpression="() => Value"
+                        Class="@(TextBoxAlign == TextAlign.Right ? "custom-text-right" : TextBoxAlign == TextAlign.Center ? "custom-text-center" : "custom-text-left")"
+                        InputMode="@InputMode"
+                        Enabled="@Enabled"
+                        FillMode="@FillMode"
+                        MaxLength="@MaxLength"
+                        Password="@Password"
+                        PlaceHolder="@PlaceHolder"
+                        OnBlur="@OnBlurHandler"
+                        OnChange="@OnChangeHandler"
+                        Rounded="@Rounded"
+                        Size="@Size"
+                        TabIndex="@TabIndex" />
+        <TelerikValidationMessage For="@(() => Value)" />
+    </div>
+</div>
+
+@code {
+    [Parameter] public string? Id { get; set; } = Guid.NewGuid().ToString();
+    [Parameter] public string? Value { get; set; }
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    [Parameter] public InputLabelPosition LabelPosition { get; set; } = InputLabelPosition.Vertical;
+    [Parameter] public string? LabelText { get; set; } = "";
+    [Parameter] public string? InputMode { get; set; } = "text";
+    [Parameter] public bool Enabled { get; set; } = true;
+    [Parameter] public string? FillMode { get; set; } = ThemeConstants.TextBox.FillMode.Solid;
+    [Parameter] public string? Rounded { get; set; } = ThemeConstants.TextBox.Rounded.Medium;
+    [Parameter] public string? Size { get; set; } = ThemeConstants.TextBox.Size.Medium;
+    [Parameter] public int? MaxLength { get; set; }
+    [Parameter] public int? TabIndex { get; set; }
+    [Parameter] public bool Password { get; set; } = false;
+    [Parameter] public string? PlaceHolder { get; set; } = "";
+    [Parameter] public string? TextBoxWidth { get; set; } = "100%";
+    [Parameter] public string? LabelWidth { get; set; } = "auto";
+    [Parameter] public TextAlign TextBoxAlign { get; set; } = TextAlign.Left;
+    [Parameter] public EventCallback OnBlur { get; set; }
+    [Parameter] public EventCallback<object> OnChange { get; set; }
+
+    async Task ValueChangedHandler(string value)
+    {
+        Value = value;
+        await ValueChanged.InvokeAsync(Value);
+    }
+
+    async Task OnBlurHandler()
+    {
+        await OnBlur.InvokeAsync();
+    }
+
+    async Task OnChangeHandler(object value)
+    {
+        await OnChange.InvokeAsync(value);
+    }
+
+    public enum InputLabelPosition
+    {
+        Vertical,
+        Horizontal,
+        NoLabel
+    }
+
+    public enum TextAlign
+    {
+        Left,
+        Right,
+        Center
+    }
+}
+
+<style>
+    .horizontal-label {
+        display: flex;
+        flex-wrap: nowrap;
+    }
+
+    .custom-text-right .k-input-inner { 
+        text-align: right;
+    }
+
+    .custom-text-center .k-input-inner { 
+        text-align: center;
+    }
+
+    .custom-text-left .k-input-inner { 
+        text-align: left;
+    }
+</style>

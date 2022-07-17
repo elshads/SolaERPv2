@@ -1,5 +1,5 @@
 <!DOCTYPE html
-          PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+    PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 
 <head>
@@ -25,9 +25,9 @@
             color: #3869D4;
         }
 
-            a img {
-                border: none;
-            }
+        a img {
+            border: none;
+        }
 
         td {
             word-break: break-word;
@@ -91,9 +91,9 @@
             line-height: 1.625;
         }
 
-            p.sub {
-                font-size: 13px;
-            }
+        p.sub {
+            font-size: 13px;
+        }
 
         /* Utilities ------------------------------ */
 
@@ -226,10 +226,10 @@
             width: auto;
         }
 
-            .social td {
-                padding: 0;
-                width: auto;
-            }
+        .social td {
+            padding: 0;
+            width: auto;
+        }
 
         .social_icon {
             height: 20px;
@@ -269,11 +269,11 @@
             border-bottom: 1px solid #EAEAEC;
         }
 
-            .purchase_heading p {
-                margin: 0;
-                color: #85878E;
-                font-size: 12px;
-            }
+        .purchase_heading p {
+            margin: 0;
+            color: #85878E;
+            font-size: 12px;
+        }
 
         .purchase_footer {
             padding-top: 15px;
@@ -300,9 +300,9 @@
             color: #51545E;
         }
 
-            p.sub {
-                color: #6B6E76;
-            }
+        p.sub {
+            color: #6B6E76;
+        }
 
         .email-wrapper {
             width: 100%;
@@ -373,9 +373,9 @@
             text-align: center;
         }
 
-            .email-footer p {
-                color: #6B6E76;
-            }
+        .email-footer p {
+            color: #6B6E76;
+        }
 
         .body-action {
             width: 100%;
@@ -407,39 +407,6 @@
             }
         }
 
-        @media (prefers-color-scheme: dark) {
-
-            body,
-            .email-body,
-            .email-body_inner,
-            .email-content,
-            .email-wrapper,
-            .email-masthead,
-            .email-footer {
-                background-color: #FFF !important;
-                color: #FFF !important;
-            }
-
-            p,
-            ul,
-            ol,
-            blockquote,
-            h1,
-            h2,
-            h3 {
-                color: #FFF !important;
-            }
-
-            .attributes_content,
-            .discount {
-                background-color: #222 !important;
-            }
-
-            .email-masthead_name {
-                text-shadow: none !important;
-            }
-        }
-
         :root {
             color-scheme: light dark;
             supported-color-schemes: light dark;
@@ -467,14 +434,12 @@
                     <tr>
                         <td class="email-body" width="100%" cellpadding="0" cellspacing="0">
                             <table class="email-body_inner" align="center" width="570" cellpadding="0" cellspacing="0"
-                                   role="presentation">
+                                role="presentation">
                                 <!-- Body content -->
                                 <tr>
                                     <td class="content-cell">
                                         <div class="f-fallback">
-                                            <h1 style="color: #000;">
-                                                Registration is Pending
-                                            </h1>
+                                            <h1 style="color: #00f314;">Evaluation form is Successfully Confirmed</h1>
                                             <p>
                                                 <span style="font-weight: 700; font-size: 16px; color: #949494;">
                                                     This
@@ -483,15 +448,18 @@
                                                 <br />
                                                 <strong>Dear {fullname}.</strong>
                                                 <br />
-                                                SOLA ERP Supplier Registration is pending for company Approvals. 
+                                                SOLA ERP Evaluation form for Supplier  <a href="{suppliernamelink}" target="_blank"
+                                                    style="color:#039edc;font-weight: bold;">{suppliername}</a> is Approved.
                                                 <br />
-                                                Please wait for the company decision or contact with company contact person
-                                                <br />
-                                                <br />
-                                                <strong>{companyname} Team.</strong>
-                                                <br />
-                                                Developed by Apertech Team. 
-                                               
+
+                                                Now you can login to <a href="{solaerplink}" target="_blank"
+                                                    style="color:#039edc;font-weight: bold;">Sola ERP</a> and see the related Request(s). 
+                                            </p>
+                                            <br />
+                                            <strong>{companyname} Team.</strong>
+                                            <br />
+                                            Developed by Apertech Team.
+
 
                                             </p>
                                             <h6 class="f-fallback sub" style="font-weight:300;">

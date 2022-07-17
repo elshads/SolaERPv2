@@ -1,14 +1,22 @@
 ﻿
+using System.Net;
+using System.Net.Mail;
+using Attachment = SolaERPv2.Server.Models.Attachment;
+
 namespace SolaERPv2.Server.ModelService;
 
 public class VendorService : BaseModelService<Vendor>
 {
     AppUserService _appUserService;
     SqlDataAccess _sqlDataAccess;
-    public VendorService(AppUserService appUserService, SqlDataAccess sqlDataAccess)
+    MailService _mailService;
+    IWebHostEnvironment _env;
+    public VendorService(AppUserService appUserService, SqlDataAccess sqlDataAccess, MailService mailService, IWebHostEnvironment env)
     {
         _appUserService = appUserService;
         _sqlDataAccess = sqlDataAccess;
+        _mailService = mailService;
+        _env = env;
     }
 
     public async Task<IEnumerable<Vendor>?> GetAllAsync(int businessUnitId)
@@ -70,7 +78,7 @@ public class VendorService : BaseModelService<Vendor>
 
         return result.Values;
     }
-    
+
     public async Task<Vendor?> GetByIdAsync(int vendorId)
     {
         Dictionary<int, Vendor> result = new();
@@ -210,7 +218,7 @@ public class VendorService : BaseModelService<Vendor>
 
         return vendor;
     }
-    
+
     public async Task<bool> IsVendorUniqueAsync(string taxId)
     {
         var p = new DynamicParameters();
@@ -250,11 +258,24 @@ public class VendorService : BaseModelService<Vendor>
             p.Add("@Status", 1, DbType.Int32, ParameterDirection.Input);
             var registerResult = await _sqlDataAccess.ExecuteSql("dbo.SP_VendorsChangeStatus", p, "Vendor-ChangeStatus");
 
-            if (registerResult != null && registerResult.QueryResultMessage != null) { saveResult.QueryResultMessage = registerResult.QueryResultMessage; }
-
-            if (registerResult != null && registerResult.QueryResultMessage == null)
+            if (registerResult != null && registerResult.QueryResultMessage != null)
             {
-                
+                saveResult.QueryResultMessage = registerResult.QueryResultMessage;
+            }
+            else if (registerResult != null && registerResult.QueryResultMessage == null)
+            {
+                var htmlContent = "";
+                using StreamReader reader = new StreamReader(Path.Combine(_env.ContentRootPath, "Assets", "EmailTemplates", "1RegistrationPending.html"));
+                htmlContent = await reader.ReadToEndAsync();
+
+                var htmlBody = htmlContent.Replace("{comparisonurl}", $"replaceIt")
+                .Replace("{comparisonnumber}", $"replaceIt")
+                .Replace("{poreference}", $"replaceIt")
+                .Replace("{buyer}", $"replaceIt");
+
+                var addressList = new List<string>() {"elshad82@gmail.com"};
+                var subject = $"BID Comparison Chart Approved - Comparison №";
+                await _mailService.SendHtmlMailAsync(addressList, subject, htmlBody, subject);
             }
         }
 
@@ -292,7 +313,7 @@ public class VendorService : BaseModelService<Vendor>
         p.Add("@OtherProducts", vendor.OtherProducts, DbType.String, ParameterDirection.Input);
         p.Add("@NewVendorId", DbType.Int32, direction: ParameterDirection.Output);
         supplierResult = await _sqlDataAccess.ExecuteSql("dbo.SP_Vendors_IUD", p, "Vendor-Save");
-        
+
         if (supplierResult != null && supplierResult.QueryResultMessage == null)
         {
             vendor.VendorId = p.Get<int>("@NewVendorId");
@@ -313,7 +334,7 @@ public class VendorService : BaseModelService<Vendor>
                     if (productsResult != null && productsResult.QueryResultMessage != null) { supplierResult.QueryResultMessage = productsResult.QueryResultMessage; return supplierResult; }
                 }
             }
-            
+
             if (vendor.BankList != null && vendor.BankList.Any())
             {
                 foreach (var item in vendor.BankList)
@@ -357,7 +378,7 @@ public class VendorService : BaseModelService<Vendor>
                     }
                 }
             }
-            
+
             if (vendor.EvaluationForm != null)
             {
                 var ep = new DynamicParameters();
@@ -375,7 +396,7 @@ public class VendorService : BaseModelService<Vendor>
                 var evaluationResult = await _sqlDataAccess.ExecuteSql("dbo.SP_VendorEvaluationForm_IUD", ep, "Vendor-SaveEvaluation");
                 if (evaluationResult != null && evaluationResult.QueryResultMessage != null) { supplierResult.QueryResultMessage = evaluationResult.QueryResultMessage; return supplierResult; }
             }
-            
+
             if (vendor.CompanyLogo != null && vendor.CompanyLogo.Any())
             {
                 foreach (var file in vendor.CompanyLogo)
@@ -396,7 +417,7 @@ public class VendorService : BaseModelService<Vendor>
                     if (logoResult != null && logoResult.QueryResultMessage != null) { supplierResult.QueryResultMessage = logoResult.QueryResultMessage; return supplierResult; }
                 }
             }
-            
+
             if (vendor.OfficialLetter != null && vendor.OfficialLetter.Any())
             {
                 foreach (var ofletAtt in vendor.OfficialLetter)
@@ -417,7 +438,7 @@ public class VendorService : BaseModelService<Vendor>
                     if (officialLetterResult != null && officialLetterResult.QueryResultMessage != null) { supplierResult.QueryResultMessage = officialLetterResult.QueryResultMessage; return supplierResult; }
                 }
             }
-            
+
             if (vendor.EvaluationForm != null && vendor.EvaluationForm.CertificateAttachment != null && vendor.EvaluationForm.CertificateAttachment.Any())
             {
                 foreach (var certAtt in vendor.EvaluationForm.CertificateAttachment)
@@ -438,7 +459,7 @@ public class VendorService : BaseModelService<Vendor>
                     if (certResult != null && certResult.QueryResultMessage != null) { supplierResult.QueryResultMessage = certResult.QueryResultMessage; return supplierResult; }
                 }
             }
-            
+
             if (vendor.EvaluationForm != null && vendor.EvaluationForm.OtherAttachments != null && vendor.EvaluationForm.OtherAttachments.Any())
             {
                 foreach (var item in vendor.EvaluationForm.OtherAttachments)
@@ -459,7 +480,7 @@ public class VendorService : BaseModelService<Vendor>
                     if (otherResult != null && otherResult.QueryResultMessage != null) { supplierResult.QueryResultMessage = otherResult.QueryResultMessage; return supplierResult; }
                 }
             }
-            
+
         }
         return supplierResult;
     }

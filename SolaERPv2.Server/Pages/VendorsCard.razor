@@ -386,10 +386,6 @@
                                                                Min="@(new DateTime(2022, 1, 1))"
                                                                Max="@(new DateTime(2050, 12, 31))" @bind-Value="@(selectedVendor.EvaluationForm.ExpirationDate)" />
                                         </div>
-                                        @*<FileSelect HideList="true"
-                                            Multiple="false"
-                                            AttachmentList="@certificateList"
-                                            AttachmentListChanged="@CertificateListChanged" />*@
                                     </div>
                                 </label>
                                 <div class="k-form-field-wrap">
@@ -513,16 +509,6 @@
                                 </div>
                             </Template>
                         </FormItem>
-                        @*<FormItem Field="@nameof(EvaluationForm.OtherAttachments)" Enabled="true">
-                            <Template>
-                            <label for="planning3" class="k-label k-form-label k-mr-10">Other Attachments</label>
-                            <div class="k-form-field-wrap">
-                            <FileSelect AttachmentList="@selectedVendor.EvaluationForm.OtherAttachments"
-                            AttachmentListChanged="@OtherAttachmentsChanged" />
-                            <TelerikValidationMessage For="@(() => selectedVendor.EvaluationForm.OtherAttachments)" />
-                            </div>
-                            </Template>
-                            </FormItem>*@
                     </FormGroup>
                     <TelerikValidationSummary />
                 </FormItems>

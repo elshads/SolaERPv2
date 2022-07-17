@@ -86,16 +86,16 @@
     async Task SendEmail()
     {
         // loader start
-        var mailSent = await MailService.SendContactForm(ToAddressList, messageDefinition);
+        //var mailSent = await MailService.SendHtmlMailAsync();
         //loader end
-        if (mailSent)
-        {
-            AppState.ShowAlert("Email successfully sent", Severity.Success);
-        }
-        else
-        {
-            AppState.ShowAlert("Could not send an email", Severity.Error);
-        }
+        //if (mailSent)
+        //{
+        //    AppState.ShowAlert("Email successfully sent", Severity.Success);
+        //}
+        //else
+        //{
+        //    AppState.ShowAlert("Could not send an email", Severity.Error);
+        //}
     }
 }
 

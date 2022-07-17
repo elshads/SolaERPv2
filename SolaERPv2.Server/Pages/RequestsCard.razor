@@ -2,10 +2,50 @@
 @implements IDisposable
 
 
-<h3>RequestsCard</h3>
+<EditForm Model="@_selectedRequestMain">
+    <FluentValidationValidator />
+    <MudCard>
+        <MudCardContent>
+            <MudGrid Spacing="2">
+                <MudItem xs="12" sm="6" md="6" lg="4" xl="3">
+                    <div>
+                        <label for="reqnum" class="k-label k-form-label k-mb-2">Request Number: </label>
+                        <div class="k-form-field-wrap">
+                            <TelerikTextBox Id="reqnum" @bind-Value="@_selectedRequestMain.RequestNumber" />
+                            <TelerikValidationMessage For="@(() => _selectedRequestMain.RequestNumber)" />
+                        </div>
+                    </div>
+                </MudItem>
+                <MudItem xs="12" sm="6" md="6" lg="4" xl="3">
+                    <label for="requester" class="k-label k-form-label k-mb-2">Requester: </label>
+                    <div class="k-form-field-wrap">
+                        <TelerikTextBox Id="requester" @bind-Value="@_selectedRequestMain.Requester" />
+                        <TelerikValidationMessage For="@(() => _selectedRequestMain.Requester)" />
+                    </div>
+                </MudItem>
+                <MudItem xs="12" sm="6" md="6" lg="4" xl="3">
+                    <CustomTelerikNumericBox TValue="int" Value="345" LabelText="Numeric:" TextBoxAlign="CustomTelerikNumericBox<int>.TextAlign.Left"/>
+                </MudItem>
+                <MudItem xs="12" sm="6" md="6" lg="4" xl="3">
+                    
+                </MudItem>
+                <MudItem xs="12" sm="6" md="6" lg="4" xl="3">
+                    <CustomTelerikDatePicker Value="@(new DateTime())" LabelText="Date: " LabelPosition="CustomTelerikDatePicker.InputLabelPosition.Horizontal" DisabledDates="new List<DateTime>() { DateTime.Now, DateTime.Now.AddDays(1) }"/>
+                </MudItem>
+                <MudItem xs="12" sm="6" md="6" lg="4" xl="3">
+                    <CustomTelerikTextBox @bind-Value="_selectedRequestMain.RequestNumber" LabelText="Request Number:" />
+                </MudItem>
+            </MudGrid>
+        </MudCardContent>
+    </MudCard>
+</EditForm>
+
 
 @code {
     [CascadingParameter] AppState? AppState { get; set; }
+
+    List<RequestMain>? _selectedRequestList = new();
+    RequestMain? _selectedRequestMain = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -29,7 +69,9 @@
 
     async Task LoadData()
     {
-        //
+        _selectedRequestList = SessionData.RequestMainList;
+        SessionData.RequestMainList = null;
+        _selectedRequestMain = _selectedRequestList != null && _selectedRequestList.Any() ? _selectedRequestList?.FirstOrDefault() : new();
     }
 
     void BackClick()

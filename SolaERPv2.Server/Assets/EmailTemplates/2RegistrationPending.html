@@ -407,39 +407,6 @@
             }
         }
 
-        @media (prefers-color-scheme: dark) {
-
-            body,
-            .email-body,
-            .email-body_inner,
-            .email-content,
-            .email-wrapper,
-            .email-masthead,
-            .email-footer {
-                background-color: #FFF !important;
-                color: #FFF !important;
-            }
-
-            p,
-            ul,
-            ol,
-            blockquote,
-            h1,
-            h2,
-            h3 {
-                color: #FFF !important;
-            }
-
-            .attributes_content,
-            .discount {
-                background-color: #222 !important;
-            }
-
-            .email-masthead_name {
-                text-shadow: none !important;
-            }
-        }
-
         :root {
             color-scheme: light dark;
             supported-color-schemes: light dark;
@@ -481,13 +448,11 @@
                                                     is an automatically generated email - please do not reply
                                                 </span>
                                                 <br />
-                                                <strong>Dear Administrator.</strong>
+                                                <strong>Dear {fullname}.</strong>
                                                 <br />
-                                                SOLA ERP User Registration is pending for your Approvals. 
+                                                SOLA ERP Supplier Registration is pending for company Approvals. 
                                                 <br />
-                                                Please login
-                                                to <a href="{carnumberurl}" target="_blank"
-                                                               style="color:#039edc;font-weight: bold;"> Client Portal </a> using your email address and password and make your decision.
+                                                Please wait for the company decision or contact with company contact person
                                                 <br />
                                                 <br />
                                                 <strong>{companyname} Team.</strong>

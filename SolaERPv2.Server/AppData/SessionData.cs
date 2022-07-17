@@ -8,4 +8,5 @@ public class SessionData
     }
     public AppUser? CurrentUser { get; set; } = new();
     public PaymentDocumentMain? PaymentDocumentMain { get; set; }
+    public List<RequestMain>? RequestMainList { get; set; }
 }

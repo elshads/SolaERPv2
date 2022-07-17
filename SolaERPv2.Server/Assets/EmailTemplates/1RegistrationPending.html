@@ -407,39 +407,6 @@
             }
         }
 
-        @media (prefers-color-scheme: dark) {
-
-            body,
-            .email-body,
-            .email-body_inner,
-            .email-content,
-            .email-wrapper,
-            .email-masthead,
-            .email-footer {
-                background-color: #FFF !important;
-                color: #FFF !important;
-            }
-
-            p,
-            ul,
-            ol,
-            blockquote,
-            h1,
-            h2,
-            h3 {
-                color: #FFF !important;
-            }
-
-            .attributes_content,
-            .discount {
-                background-color: #222 !important;
-            }
-
-            .email-masthead_name {
-                text-shadow: none !important;
-            }
-        }
-
         :root {
             color-scheme: light dark;
             supported-color-schemes: light dark;
@@ -472,32 +439,34 @@
                                 <tr>
                                     <td class="content-cell">
                                         <div class="f-fallback">
-                                            <h1 style="color: #0edf31;">SOLA ERP RFQ Registration is Successfully Confirmed</h1>
+                                            <h1 style="color: #000;">
+                                                Registration is Pending
+                                            </h1>
                                             <p>
                                                 <span style="font-weight: 700; font-size: 16px; color: #949494;">
                                                     This
                                                     is an automatically generated email - please do not reply
                                                 </span>
                                                 <br />
-                                                <strong>Dear {fullname}.</strong>
+                                                <strong>Dear Administrator.</strong>
                                                 <br />
-                                                SOLA ERP RFP Registration is Successfully Confirmed.
+                                                SOLA ERP Supplier Registration is pending for your Approvals.
                                                 <br />
-                                                Please login to <a href="{carnumberurl}" target="_blank"
-                                                                   style="color:#039edc;font-weight: bold;">Client Portal</a> using your email address and your password.
+                                                Please login
+                                                to <a href="{clientportalurl}" target="_blank"
+                                                               style="color:#039edc;font-weight: bold;"> Client Portal </a> using your email address and password and make your decision.
+                                                <br />
+                                                <br />
+                                                <strong>{companyname} Team.</strong>
+                                                <br />
+                                                Developed by Apertech Team. 
+                                               
 
                                             </p>
-                                            <br />
-                                            <strong>{companyname} Team.</strong>
-                                            <br />
-                                            Developed by Apertech Team. 
-                                           
-
-                                        </p>
-                                        <h6 class="f-fallback sub" style="font-weight:300;">
-                                            &copy; {currentyear} Sola ERP {companyname} All rights reserved.
-                                            .
-                                        </h6>
+                                            <h6 class="f-fallback sub" style="font-weight:300;">
+                                                &copy; {currentyear} Sola ERP {companyname} All rights reserved.
+                                                .
+                                            </h6>
                                         </div>
                                     </td>
                                 </tr>

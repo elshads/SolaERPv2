@@ -55,7 +55,7 @@
             }
             @if (CanAdd)
             {
-                <GridCommandButton Command="Add" Icon="add" Enabled="@(!inEditMode)" OnClick="OnAddHandler">@AddButtonText</GridCommandButton>
+                <GridCommandButton Command="Add" Icon="add" Enabled="@(!inEditMode)" OnClick="@OnAddHandler">@AddButtonText</GridCommandButton>
             }
             @if (CanDelete)
             {
@@ -64,6 +64,10 @@
             @if (CanReset)
             {
                 <GridCommandButton Icon="reset" Enabled="@(!inEditMode && SelectedItems.Any())" OnClick="@OnResetSelectedItemsHandler">@ResetButtonText</GridCommandButton>
+            }
+            @if (CustomButtonVisible)
+            {
+                <GridCommandButton Icon="@CustomButtonIcon" Enabled="@(!inEditMode && CustomButtonEnabled)" OnClick="@OnCustomClickHandler">@CustomButtonText</GridCommandButton>
             }
 
         }
@@ -213,6 +217,8 @@
     [Parameter] public EventCallback<GridCommandEventArgs> OnMoveUp { get; set; }
     [Parameter] public EventCallback<GridCommandEventArgs> OnMoveDown { get; set; }
 
+    [Parameter] public EventCallback OnCustomClick { get; set; }
+
     [Parameter] public string? Title { get; set; }
     [Parameter] public bool CheckBoxOnlySelection { get; set; } = false;
     [Parameter] public string? HierarchyDetailsField { get; set; }
@@ -235,10 +241,16 @@
     [Parameter] public bool CanMoveRight { get; set; } = false;
     [Parameter] public bool CanMoveUp { get; set; } = false;
     [Parameter] public bool CanMoveDown { get; set; } = false;
+    
 
     [Parameter] public string? AddButtonText { get; set; } = "Add";
     [Parameter] public string? DeleteButtonText { get; set; } = "Delete";
     [Parameter] public string? ResetButtonText { get; set; } = "Reset";
+    
+    [Parameter] public bool CustomButtonVisible { get; set; } = false;
+    [Parameter] public bool CustomButtonEnabled { get; set; } = true;
+    [Parameter] public string? CustomButtonText { get; set; } = "CustomClick";
+    [Parameter] public string? CustomButtonIcon { get; set; } = "plus-outline";
 
     [Parameter] public bool CustomAdd { get; set; } = false;
     [Parameter] public bool CustomCreate { get; set; } = false;
@@ -419,6 +431,10 @@
         var argsItem = (TItem)args.Item;
         await DeleteFromContextMenu(argsItem);
         await OnDelete.InvokeAsync(deletedItems);
+    }
+    async Task OnCustomClickHandler(GridCommandEventArgs args)
+    {
+        await OnCustomClick.InvokeAsync();
     }
 
     // CRUD event handlers - end
