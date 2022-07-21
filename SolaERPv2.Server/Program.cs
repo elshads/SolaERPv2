@@ -67,6 +67,7 @@ builder.Services.AddScoped<MenuService>();
 builder.Services.AddScoped<PaymentDocumentService>();
 builder.Services.AddScoped<VendorService>();
 builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<PrequalificationCategoryService>();
 builder.Services.AddScoped<CountryService>();
 builder.Services.AddScoped<CurrencyService>();
 builder.Services.AddScoped<RequestService>();

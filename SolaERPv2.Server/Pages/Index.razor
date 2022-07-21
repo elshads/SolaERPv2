@@ -1,283 +1,40 @@
 ﻿@page "/"
-@implements IDisposable
 @using Model = BaseModel
-@inject VendorService VendorService
 
 <PageTitle>Index</PageTitle>
 
-@if (showSupplierRegistration)
+@if (_showDashboard)
 {
-    <RegisterSupplier @ref="@registerSupplier"
-                  @bind-CurrentPerson="@currentPerson"
-                  CurrentVendor="@currentVendor"
-                  CurrentVendorChanged="@CurrentVendorChanged"
-                  CurrentPageIndex="@currentPageIndex"
-                  CurrentPageIndexChanged="@CurrentPageIndexChangeHandler" 
-                  OnAttachmentDelete="AttachmentDeleteHandler"/>
-}
-else if (showWaitForConfirmation)
-{
-    <h3>Wait for Confirmation</h3>
+    <h3>Dashboard Placeholder</h3>
 }
 else
 {
-    <h3>Dashboard Placeholder</h3>
+    
 }
 
 @code {
     [CascadingParameter] public AppState? AppState { get; set; }
+    
+    bool _showDashboard = false;
 
-    bool isAttachmentVisible = false;
-
-    AppUser? currentPerson = new();
-    Vendor? currentVendor = new() { BankList = new(), EvaluationForm = new() };
-
-    RegisterSupplier? registerSupplier;
-    bool showSupplierRegistration = false;
-    bool showWaitForConfirmation = false;
-    int currentPageIndex = 0; // total 3 pages
-
-    List<int>? _deletedAttachmentIdList = new();
-
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        OnAppStateInitialized();
-        ShowSupplierRegistrationPage();
-        currentPerson = SessionData.CurrentUser;
-        await LoadData();
-    }
-
-    async Task LoadData()
-    {
-        if (SessionData.CurrentUser != null && SessionData.CurrentUser.StatusId == 0)
+        if (SessionData.CurrentUser != null && (SessionData.CurrentUser.StatusId == 0 || SessionData.CurrentUser.StatusId == 3) && SessionData.CurrentUser.UserTypeId == 1)
         {
-            var _currentVendor = await VendorService.GetByUserIdAsync();
-            if (_currentVendor != null) { SetModelNewInstance(_currentVendor); }
-        }
-    }
-
-    void SetModelNewInstance(Vendor vendor)
-    {
-        currentVendor.VendorId = vendor.VendorId;
-        currentVendor.BusinessUnitId = vendor.BusinessUnitId;
-        currentVendor.VendorCode = vendor.VendorCode;
-        currentVendor.VendorName = vendor.VendorName;
-        currentVendor.TaxId = vendor.TaxId;
-        currentVendor.CompanyLocation = vendor.CompanyLocation;
-        currentVendor.CompanyWebsite = vendor.CompanyWebsite;
-        currentVendor.CompanyLogo = vendor.CompanyLogo;
-        currentVendor.OfficialLetter = vendor.OfficialLetter;
-        currentVendor.CreditDays = vendor.CreditDays;
-        currentVendor.PaymentTermsCode = vendor.PaymentTermsCode;
-        currentVendor.CountryCode = vendor.CountryCode;
-        currentVendor.PaymentTerms = vendor.PaymentTerms;
-        currentVendor.ProvidedProductIdList = vendor.ProvidedProductIdList;
-        currentVendor.BankList = vendor.BankList;
-        currentVendor.EvaluationForm = vendor.EvaluationForm;
-        currentVendor.OtherProducts = vendor.OtherProducts;
-        currentVendor.RepresentedProducts = vendor.RepresentedProducts;
-        currentVendor.RepresentedCompanies = vendor.RepresentedCompanies;
-        currentVendor.AgreeWithDefaultDays = vendor.AgreeWithDefaultDays;
-        currentVendor.Exists = vendor.Exists;
-        currentVendor.StatusId = vendor.StatusId;
-    }
-
-    void ShowSupplierRegistrationPage()
-    {
-        if (SessionData.CurrentUser != null && SessionData.CurrentUser.StatusId == 0 && SessionData.CurrentUser.UserTypeId == 1)
-        {
-            if (AppState != null)
-            {
-                AppState.BackButtonVisible = true;
-                AppState.NextButtonVisible = true;
-            }
-            showSupplierRegistration = true;
-            showWaitForConfirmation = false;
-        }
-        else if (SessionData.CurrentUser != null && SessionData.CurrentUser.StatusId == 3 && SessionData.CurrentUser.UserTypeId == 1)
-        {
-            if (AppState != null)
-            {
-                AppState.BackButtonVisible = false;
-                AppState.NextButtonVisible = false;
-            }
-            showSupplierRegistration = false;
-            showWaitForConfirmation = true;
+            _showDashboard = false;
         }
         else
         {
-            if (AppState != null)
-            {
-                AppState.BackButtonVisible = false;
-                AppState.NextButtonVisible = false;
-            }
-            showSupplierRegistration = false;
-            showWaitForConfirmation = false;
+            _showDashboard = true;
         }
     }
 
-    void OnAppStateInitialized()
+    protected override void OnAfterRender(bool firstRender)
     {
-        if (AppState != null)
+        if (firstRender && SessionData.CurrentUser != null && (SessionData.CurrentUser.StatusId == 0 || SessionData.CurrentUser.StatusId == 3) && SessionData.CurrentUser.UserTypeId == 1)
         {
-            AppState.SetDefaults();
-            AppState.CustomButton04Icon = "check";
-            AppState.CustomButton04Title = "Submit";
-            SetButtonsAbility();
-            AppState.OnBackClick += BackClickHandler;
-            AppState.OnNextClick += NextClickHandler;
-            AppState.OnAddClick += AddClickHandler;
-            AppState.OnSaveClick += SaveClickHandler;
-            AppState.OnCustomButton04Click += SubmitClickHandler;
+            NavigationManager.NavigateTo("/vendorevaluation");
         }
     }
-
-    void IDisposable.Dispose()
-    {
-        if (AppState != null)
-        {
-            AppState.OnBackClick -= BackClickHandler;
-            AppState.OnNextClick -= NextClickHandler;
-            AppState.OnAddClick -= AddClickHandler;
-            AppState.OnSaveClick -= SaveClickHandler;
-            AppState.OnCustomButton04Click -= SubmitClickHandler;
-        }
-    }
-
-    void BackClickHandler()
-    {
-        currentPageIndex -= 1;
-        SetButtonsAbility();
-    }
-
-    async void NextClickHandler()
-    {
-        var isVendorValid = registerSupplier != null ? await registerSupplier.NextClickValid() : false;
-        if (isVendorValid)
-        {
-            currentPageIndex += 1;
-        }
-        SetButtonsAbility();
-    }
-
-    void SetButtonsAbility()
-    {
-        if (currentPageIndex == 0)
-        {
-            if (AppState != null)
-            {
-                AppState.BackButtonEnabled = false;
-                AppState.NextButtonEnabled = true;
-                AppState.AddButtonVisible = false;
-                AppState.SaveButtonVisible = false;
-                AppState.CustomButton04Visible = false;
-            }
-        }
-        else if (currentPageIndex == 1)
-        {
-            if (AppState != null)
-            {
-                AppState.BackButtonEnabled = true;
-                AppState.NextButtonEnabled = true;
-                AppState.AddButtonVisible = true;
-                AppState.SaveButtonVisible = false;
-                AppState.CustomButton04Visible = false;
-            }
-        }
-        else if (currentPageIndex == 2)
-        {
-            if (AppState != null)
-            {
-                AppState.BackButtonEnabled = true;
-                AppState.NextButtonEnabled = true;
-                AppState.AddButtonVisible = false;
-                AppState.SaveButtonVisible = false;
-                AppState.CustomButton04Visible = false;
-            }
-        }
-        else if (currentPageIndex == 3)
-        {
-            if (AppState != null)
-            {
-                AppState.BackButtonEnabled = true;
-                AppState.NextButtonEnabled = false;
-                AppState.AddButtonVisible = false;
-                AppState.SaveButtonVisible = true;
-                AppState.CustomButton04Visible = true;
-            }
-        }
-        else
-        {
-            if (AppState != null)
-            {
-                AppState.BackButtonEnabled = false;
-                AppState.NextButtonEnabled = false;
-                AppState.AddButtonVisible = false;
-                AppState.SaveButtonVisible = false;
-                AppState.CustomButton04Visible = false;
-            }
-        }
-        AppState?.Refresh();
-    }
-
-    async void SaveClickHandler()
-    {
-        await RegisterSupplier(true);
-    }
-
-    async void SubmitClickHandler()
-    {
-        await RegisterSupplier(false);
-    }
-
-    async Task RegisterSupplier(bool justSave)
-    {
-        var isValid = registerSupplier != null ? await registerSupplier.SaveValid() : false;
-        if (AppState != null && isValid)
-        {
-            AppState.Loading = true;
-            var sqlResult = justSave ? await VendorService.SaveSupplier(currentVendor, currentPerson, _deletedAttachmentIdList) : await VendorService.RegisterSupplier(currentVendor, currentPerson, _deletedAttachmentIdList);
-            if (sqlResult != null && sqlResult.QueryResultMessage == null)
-            {
-                if (!justSave) { SessionData.CurrentUser = await AppUserService.GetCurrentUserAsync(); }
-                NavigationManager.NavigateTo("/", true);
-            }
-            else if (sqlResult != null && sqlResult.QueryResultMessage != null)
-            {
-                AppState.ShowAlert(sqlResult.QueryResultMessage, Severity.Error);
-            }
-            AppState.Loading = false;
-        }
-    }
-
-    void AttachmentDeleteHandler(List<int> deletedAttachmentIdList)
-    {
-        _deletedAttachmentIdList?.AddRange(deletedAttachmentIdList);
-    }
-
-    void AddClickHandler()
-    {
-        registerSupplier?.AddClickHandler();
-    }
-
-    void CurrentPageIndexChangeHandler(int pageIndex)
-    {
-        currentPageIndex = pageIndex;
-        SetButtonsAbility();
-    }
-
-    void CurrentVendorChanged(Vendor vendor)
-    {
-        currentVendor = vendor;
-        if (AppState != null && currentVendor.Exists)
-        {
-            AppState.AddButtonEnabled = false;
-        }
-        else if (AppState != null)
-        {
-            AppState.AddButtonEnabled = true;
-        }
-        AppState?.Refresh();
-    }
-
+    
 }

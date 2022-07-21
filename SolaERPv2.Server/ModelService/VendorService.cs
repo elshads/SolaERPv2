@@ -86,8 +86,8 @@ public class VendorService : BaseModelService<Vendor>
         p.Add("@VendorId", vendorId, DbType.Int32, ParameterDirection.Input);
 
         using IDbConnection cn = new SqlConnection(_sqlDataAccess.ConnectionString);
-        _ = await cn.QueryAsync<Vendor, AppUser, Bank, EvaluationForm, ApproveStage, Vendor>("dbo.SP_Vendor_Load",
-            (vendor, user, bank, eval, approve) =>
+        _ = await cn.QueryAsync<Vendor, AppUser, Bank, ApproveStage, Vendor>("dbo.SP_Vendor_Load",
+            (vendor, user, bank, approve) =>
             {
                 if (!result.ContainsKey(vendor.VendorId))
                 {
@@ -100,7 +100,6 @@ public class VendorService : BaseModelService<Vendor>
                 if (user != null && !currentVendor.CompanyUsers.Select(e => e.Id).Contains(user.Id)) { currentVendor.CompanyUsers.Add(user); }
                 if (bank != null && !currentVendor.BankList.Select(e => e.BankId).Contains(bank.BankId)) { currentVendor.BankList.Add(bank); }
                 if (approve != null && !currentVendor.ApproveStageList.Select(e => e.ApprovalId).Contains(approve.ApprovalId)) { currentVendor.ApproveStageList.Add(approve); }
-                currentVendor.EvaluationForm = eval;
                 return vendor;
             },
             param: p,
@@ -132,12 +131,7 @@ public class VendorService : BaseModelService<Vendor>
             {
                 vendor.BankList = bankList.ToList();
             }
-
-            var evaluation = await _sqlDataAccess.QuerySingle<EvaluationForm>("dbo.SP_VendorEvaluation_Load", rp, "Vendor-GetByTaxId4");
-            if (evaluation != null)
-            {
-                vendor.EvaluationForm = evaluation;
-            }
+            
         }
 
         return vendor;
@@ -195,25 +189,7 @@ public class VendorService : BaseModelService<Vendor>
                 }
             }
 
-            var evaluation = await _sqlDataAccess.QuerySingle<EvaluationForm>("dbo.SP_VendorEvaluation_Load", rp, "Vendor-GetByUserId4");
-            if (evaluation != null)
-            {
-                vendor.EvaluationForm = evaluation;
-
-                var ap41 = new DynamicParameters();
-                ap41.Add("@SourceId", vendor.VendorId, DbType.Int32, ParameterDirection.Input);
-                ap41.Add("@Reference", null, DbType.String, ParameterDirection.Input);
-                ap41.Add("@SourceType", "VEN_ISO", DbType.String, ParameterDirection.Input);
-                var attIso = await _sqlDataAccess.QueryAll<Attachment>("dbo.SP_AttachmentList_Load", ap41, "Vendor-GetByUserId4-1");
-                if (attIso != null) { vendor.EvaluationForm.CertificateAttachment = attIso.ToList(); }
-
-                var ap42 = new DynamicParameters();
-                ap42.Add("@SourceId", vendor.VendorId, DbType.Int32, ParameterDirection.Input);
-                ap42.Add("@Reference", null, DbType.String, ParameterDirection.Input);
-                ap42.Add("@SourceType", "VEN_OTH", DbType.String, ParameterDirection.Input);
-                var attOthers = await _sqlDataAccess.QueryAll<Attachment>("dbo.SP_AttachmentList_Load", ap42, "Vendor-GetByUserId4-2");
-                if (attOthers != null) { vendor.EvaluationForm.OtherAttachments = attOthers.ToList(); }
-            }
+            
         }
 
         return vendor;
@@ -303,8 +279,8 @@ public class VendorService : BaseModelService<Vendor>
         p.Add("@TaxId", vendor.TaxId, DbType.String, ParameterDirection.Input);
         p.Add("@Location", vendor.CompanyLocation, DbType.String, ParameterDirection.Input);
         p.Add("@Website", vendor.CompanyWebsite, DbType.String, ParameterDirection.Input);
-        p.Add("@RepresentedProducts", vendor.RepresentedProducts, DbType.String, ParameterDirection.Input);
-        p.Add("@RepresentedCompanies", vendor.RepresentedCompanies, DbType.String, ParameterDirection.Input);
+        //p.Add("@RepresentedProducts", vendor.RepresentedProducts, DbType.String, ParameterDirection.Input);
+        //p.Add("@RepresentedCompanies", vendor.RepresentedCompanies, DbType.String, ParameterDirection.Input);
         p.Add("@PaymentTerms", vendor.PaymentTermsCode, DbType.String, ParameterDirection.Input);
         p.Add("@CreditDays", vendor.CreditDays, DbType.Int32, ParameterDirection.Input);
         p.Add("@_0DaysPayment", vendor.AgreeWithDefaultDays, DbType.Boolean, ParameterDirection.Input);
@@ -378,25 +354,7 @@ public class VendorService : BaseModelService<Vendor>
                     }
                 }
             }
-
-            if (vendor.EvaluationForm != null)
-            {
-                var ep = new DynamicParameters();
-                ep.Add("@VendorEvaluationFormId", vendor.EvaluationForm.VendorEvaluationFormId, DbType.Int32, ParameterDirection.Input);
-                ep.Add("@VendorId", vendor.VendorId, DbType.Int32, ParameterDirection.Input);
-                ep.Add("@ContextOfTheOrganization1", vendor.EvaluationForm.ContextOfTheOrganization1, DbType.Int32, ParameterDirection.Input);
-                ep.Add("@ContextOfTheOrganization2", vendor.EvaluationForm.ContextOfTheOrganization2, DbType.Int32, ParameterDirection.Input);
-                ep.Add("@ContextOfTheOrganization3", vendor.EvaluationForm.ContextOfTheOrganization3, DbType.Int32, ParameterDirection.Input);
-                ep.Add("@ExpirationDate", vendor.EvaluationForm.ExpirationDate, DbType.DateTime, ParameterDirection.Input);
-                ep.Add("@Leadership1", vendor.EvaluationForm.Leadership1, DbType.Int32, ParameterDirection.Input);
-                ep.Add("@Leadership2", vendor.EvaluationForm.Leadership2, DbType.Int32, ParameterDirection.Input);
-                ep.Add("@Planning1", vendor.EvaluationForm.Planning1, DbType.Int32, ParameterDirection.Input);
-                ep.Add("@Planning2", vendor.EvaluationForm.Planning2, DbType.Int32, ParameterDirection.Input);
-                ep.Add("@Planning3", vendor.EvaluationForm.Planning3, DbType.Int32, ParameterDirection.Input);
-                var evaluationResult = await _sqlDataAccess.ExecuteSql("dbo.SP_VendorEvaluationForm_IUD", ep, "Vendor-SaveEvaluation");
-                if (evaluationResult != null && evaluationResult.QueryResultMessage != null) { supplierResult.QueryResultMessage = evaluationResult.QueryResultMessage; return supplierResult; }
-            }
-
+            
             if (vendor.CompanyLogo != null && vendor.CompanyLogo.Any())
             {
                 foreach (var file in vendor.CompanyLogo)
@@ -438,49 +396,7 @@ public class VendorService : BaseModelService<Vendor>
                     if (officialLetterResult != null && officialLetterResult.QueryResultMessage != null) { supplierResult.QueryResultMessage = officialLetterResult.QueryResultMessage; return supplierResult; }
                 }
             }
-
-            if (vendor.EvaluationForm != null && vendor.EvaluationForm.CertificateAttachment != null && vendor.EvaluationForm.CertificateAttachment.Any())
-            {
-                foreach (var certAtt in vendor.EvaluationForm.CertificateAttachment)
-                {
-                    var cp = new DynamicParameters();
-                    cp.Add("@AttachmentId", certAtt.AttachmentId, DbType.Int32, ParameterDirection.Input);
-                    cp.Add("@FileName", certAtt.FileName, DbType.String, ParameterDirection.Input);
-                    cp.Add("@FileData", certAtt.FileData, DbType.Binary, ParameterDirection.Input);
-                    cp.Add("@SourceId", vendor.VendorId, DbType.Int32, ParameterDirection.Input);
-                    cp.Add("@SourceType", "VEN_ISO", DbType.String, ParameterDirection.Input);
-                    cp.Add("@Reference", certAtt.Reference, DbType.String, ParameterDirection.Input);
-                    cp.Add("@ExtensionType", certAtt.ExtensionType, DbType.String, ParameterDirection.Input);
-                    cp.Add("@AttachmentTypeId", certAtt.AttachmentTypeId, DbType.Int32, ParameterDirection.Input);
-                    cp.Add("@AttachmentSubTypeId", certAtt.AttachmentSubTypeId, DbType.Int32, ParameterDirection.Input);
-                    cp.Add("@UploadDateTime", certAtt.UploadDateTime, DbType.DateTime, ParameterDirection.Input);
-                    cp.Add("@Size", certAtt.Size, DbType.Int32, ParameterDirection.Input);
-                    var certResult = await _sqlDataAccess.ExecuteSql("dbo.SP_Attachments_IUD", cp, "Vendor-SaveVendorCert");
-                    if (certResult != null && certResult.QueryResultMessage != null) { supplierResult.QueryResultMessage = certResult.QueryResultMessage; return supplierResult; }
-                }
-            }
-
-            if (vendor.EvaluationForm != null && vendor.EvaluationForm.OtherAttachments != null && vendor.EvaluationForm.OtherAttachments.Any())
-            {
-                foreach (var item in vendor.EvaluationForm.OtherAttachments)
-                {
-                    var ot = new DynamicParameters();
-                    ot.Add("@AttachmentId", item.AttachmentId, DbType.Int32, ParameterDirection.Input);
-                    ot.Add("@FileName", item.FileName, DbType.String, ParameterDirection.Input);
-                    ot.Add("@FileData", item.FileData, DbType.Binary, ParameterDirection.Input);
-                    ot.Add("@SourceId", vendor.VendorId, DbType.Int32, ParameterDirection.Input);
-                    ot.Add("@SourceType", "VEN_OTH", DbType.String, ParameterDirection.Input);
-                    ot.Add("@Reference", item.Reference, DbType.String, ParameterDirection.Input);
-                    ot.Add("@ExtensionType", item.ExtensionType, DbType.String, ParameterDirection.Input);
-                    ot.Add("@AttachmentTypeId", item.AttachmentTypeId, DbType.Int32, ParameterDirection.Input);
-                    ot.Add("@AttachmentSubTypeId", item.AttachmentSubTypeId, DbType.Int32, ParameterDirection.Input);
-                    ot.Add("@UploadDateTime", item.UploadDateTime, DbType.DateTime, ParameterDirection.Input);
-                    ot.Add("@Size", item.Size, DbType.Int32, ParameterDirection.Input);
-                    var otherResult = await _sqlDataAccess.ExecuteSql("dbo.SP_Attachments_IUD", ot, "Vendor-SaveEvalOther");
-                    if (otherResult != null && otherResult.QueryResultMessage != null) { supplierResult.QueryResultMessage = otherResult.QueryResultMessage; return supplierResult; }
-                }
-            }
-
+            
         }
         return supplierResult;
     }

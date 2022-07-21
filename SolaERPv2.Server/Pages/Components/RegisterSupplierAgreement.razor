@@ -1,7 +1,12 @@
-﻿<div class="div-gen">
-    <p class="p-line">This Confidentiality Agreement (<strong>“Agreement”</strong>) is made the @(DateTime.Now.ToString("yyyy-MM-dd"))</p>
+﻿
+<div class="div-gen">
+    <p class="p-line">This Confidentiality Agreement (<strong>“Agreement”</strong>) is made on [effectiveDate] (the “Effective Date”)</p>
+    <p class="p-line">BETWEEN:</p>
+    <p class="p-line"><span class="list-ident">(1)</span><strong>[businessUnitName]</strong>, (company number [businessUnitTaxId]) organized and existing under the laws of Azerbaijan and having its principal place of business at [businessUnitAddress] (<strong>“Disclosing Party”</strong>); and</p>
+    <p class="p-line"><span class="list-ident">(2)</span>[companyName], (company number [companyTaxId]) organized and existing under the laws of [companyCountry] and having its registered address at [companyAddress] (<strong>“Recipient”</strong>).</p>
+    <p class="p-line">The Disclosing Party and the Recipient shall hereinafter be collectively referred to as the “Parties” or individually as a “Party”.</p>
     <p class="p-line">WHEREAS:</p>
-    <p class="p-line">The <strong>@BusinessUnitName</strong> Disclosing Party wishes to discuss with and disclose to the <strong>@VendorName</strong> Recipient certain information in relation to GL Group’s current and future oil field operation in Azerbaijan in order to engage the services of the Recipient. (the <strong>“Permitted Purpose”</strong>).</p>
+    <p class="p-line">The Disclosing Party wishes to discuss with and disclose to the Recipient certain information in relation to the Disclosing party’s and its subsidiaries current and future operations in [businessUnitCountry] in order to engage the services of the Recipient (the <strong>“Permitted Purpose”</strong>).</p>
     <p class="p-line">IT IS HEREBY AGREED AS FOLLOWS:</p>
     <p class="p-line"><span class="list-ident">1.</span>The following definitions shall apply for the purposes of this Agreement:</p>
     <p class="p-line"><strong>“Affiliate”</strong> means in relation to the Disclosing Party:</p>
@@ -23,30 +28,29 @@
     <p class="p-line"><span class="list-ident">7.</span>The return or destruction of Confidential Information and the ability to retain certain data pursuant to clause 6 shall not release the Recipient from any of its obligations under this Agreement.</p>
     <p class="p-line"><span class="list-ident">8.</span>This Agreement shall remain in force for:</p>
     <p class="p-line"><span class="list-ident">(a)</span>three (3) years from the Effective Date; or</p>
-    <p class="p-line"><span class="list-ident">(b)</span>three (3) years from the termination of the agreement for services between the Parties, whichever occurs last.</p>
+    <p class="p-line"><span class="list-ident">(b)</span>three (3) years from the date that the Confidential Information is last disclosed to the Recipient under the Agreement; or</p>
+    <p class="p-line"><span class="list-ident">(c)</span>three (3) years from the termination of the agreement for services, as may be executed, between the Parties, whichever occurs last.</p>
     <p class="p-line"><span class="list-ident">9.</span>All notices to be given hereunder by either Party shall be in writing and sent by registered post or courier to the other Party at its respective address set forth in this Agreement or such other address as may be notified from time to time by either Party to the other.  A notice shall only be effective upon actual receipt at the appropriate address.</p>
-    <p class="p-line"><span class="list-ident">10.</span>No amendment, changes or modification to this Agreement shall be valid unless the same are in writing and signed by a duly authorised representative of each of the Parties.</p>
+    <p class="p-line"><span class="list-ident">10.</span>No amendment, changes or modification to this Agreement shall be valid unless the same are in writing and signed by a duly authorized representative of each of the Parties.</p>
     <p class="p-line"><span class="list-ident">11.</span>Any provision of this Agreement which is found to be invalid or otherwise unenforceable shall not affect the validity or enforceability of the remaining provisions.</p>
     <p class="p-line"><span class="list-ident">12.</span>This Agreement comprises the complete agreement between the Parties in relation to the disclosure of the Confidential Information and supersedes all prior communications and agreements between the Parties relating thereto whether written or oral.</p>
     <p class="p-line"><span class="list-ident">13.</span>This Agreement may be executed by the Parties hereto in counterpart with the same effect as if the Parties hereto had signed the same document. All counterparts of this Agreement shall be construed together and shall constitute one and the same instrument.</p>
-    <p class="p-line"><span class="list-ident">14.</span>This Agreement shall be governed by and construed in accordance with the laws of the Republic of Azerbaijan and each Party hereby submits to the exclusive jurisdiction of the courts of the Republic of Azerbaijan.</p>
-    <p class="p-line"><span class="list-ident">15.</span>This Agreement may be entered into by way of exchange of e-mails.</p>
-    <p class="p-line"><strong>IN WITNESS WHEREOF</strong> the Parties have entered into this Agreement on the day and year first written above.</p>
-    <p class="p-line">Signed for and on behalf of</p>
-    <hr class="hr-line"/>
+    <p class="p-line"><span class="list-ident">14.</span>This Agreement shall not create a binding commitment for the Disclosing Party to engage the services of the Recipient, and that no such commitment shall exist until the Parties enter into definitive agreement in that respect.</p>
+    <p class="p-line"><span class="list-ident">15.</span>This Agreement shall be governed by and construed in accordance with the laws of the Republic of Azerbaijan and each Party hereby submits to the exclusive jurisdiction of the courts of the Republic of Azerbaijan.</p>
+    <p class="p-line"><span class="list-ident">16.</span>This Agreement may be entered into by way of exchange of e-mails.</p>
 </div>
 
 
 @code {
-    [Parameter] public string? BusinessUnitName { get; set; }
-    [Parameter] public string? VendorName { get; set; } = "";
+
+    [Parameter] public BusinessUnit? CurrentBusinessUnit { get; set; } = new();
+    [Parameter] public Vendor? CurrentVendor { get; set; } = new();
 
 }
 
 <style>
-    .div-gen {
+    .div-gen {}
 
-    }
     .p-line {
         line-height: 1.5;
         padding: 0.5rem 1rem 0.5rem 1rem;

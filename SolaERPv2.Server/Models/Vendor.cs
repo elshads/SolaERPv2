@@ -8,6 +8,8 @@ public class Vendor : BaseModel
     public string? VendorName { get; set; }
     public string? TaxId { get; set; }
     public string? CompanyLocation { get; set; }
+    public string? CompanyAddress { get; set; }
+    public DateTime CompanyRegistrationDate{ get; set; }
     public string? CompanyWebsite { get; set; }
     public List<Attachment>? CompanyLogo { get; set; }
     public int CompanyLogoId { get; set; }
@@ -24,11 +26,12 @@ public class Vendor : BaseModel
     public List<Bank>? BankList { get; set; }
     public List<AppUser>? CompanyUsers { get; set; }
     public List<ApproveStage>? ApproveStageList { get; set; }
+    public List<PrequalificationCategory>? PrequalificationCategoryList { get; set; }
+    public List<int>? PrequalificationCategoryIdList { get; set; }
     public int NumberOfUsers { get; set; }
-    public EvaluationForm? EvaluationForm { get; set; }
     public string? OtherProducts { get; set; }
-    public string? RepresentedProducts { get; set; }
-    public string? RepresentedCompanies { get; set; }
+    public List<string>? RepresentedProductList { get; set; }
+    public List<string>? RepresentedCompanyList { get; set; }
     public bool AgreeWithDefaultDays { get; set; } = true;
     public bool Exists { get; set; }
     public int StatusId { get; set; }

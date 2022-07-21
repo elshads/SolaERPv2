@@ -1,4 +1,4 @@
-﻿@if (readAccess)
+﻿@if (_readAccess)
 {
     <div>
         @ChildContent
@@ -18,8 +18,15 @@ else
 @code {
     [Parameter] public RenderFragment ChildContent { get; set; }
 
-    bool readAccess = true;
-    string? pageCode = "";
+    bool _readAccess = true;
+    string? _pageCode = "";
+
+    List<string>? _commonPages = new List<string>()
+    {
+        "",
+        "profile",
+        "vendorevaluation"
+    };
 
     protected override void OnParametersSet()
     {
@@ -28,11 +35,11 @@ else
 
     void SetReadAccess()
     {
-        pageCode = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        _pageCode = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
         if (SessionData?.CurrentUser?.UserMenuList != null)
         {
-            var _readAccess = SessionData?.CurrentUser?.UserMenuList.FirstOrDefault(e => pageCode.Contains(e.MenuCode));
-            readAccess = pageCode == "" || pageCode == "profile" ? true : _readAccess != null ? (_readAccess.ExportAccess || _readAccess.CreateAccess || _readAccess.EditAccess || _readAccess.DeleteAccess) : false;
+            var readAccess = SessionData?.CurrentUser?.UserMenuList.FirstOrDefault(e => _pageCode.Contains(e.MenuCode));
+            _readAccess = _commonPages.Contains(_pageCode) || (readAccess != null && (readAccess.ExportAccess || readAccess.CreateAccess || readAccess.EditAccess || readAccess.DeleteAccess));
         }
     }
 }

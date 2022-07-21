@@ -1,0 +1,198 @@
+﻿
+<div class="apex-tag-container" id="@Id">
+    <div class="apex-tag-list">
+        @if (TagList != null && TagList.Any())
+        {
+            @foreach (var tag in TagList)
+            {
+                <MudChip Class="@(CanDelete ? "" : "apex-tag-close-hidden")"
+                 Size="@Size"
+                 Color="@Color"
+                 Variant="@Variant"
+                 Icon="@Icon"
+                 CloseIcon="@CloseIcon"
+                 IconColor="@IconColor"
+                 Label="@IsRectangle"
+                 OnClose="(chip) => OnTagCloseHandler(tag)"
+                 OnClick="(args) => OnTagClickHandler(tag)">
+                    @tag
+                </MudChip>
+            }
+        }
+        @if (CanAdd)
+        {
+            <input class="apex-tag-input"
+               type="text"
+               placeholder="@Placeholder"
+               @bind-value="_currentInputValue"
+               @onkeyup="OnKeyUp"
+               @oninput="OnInput"
+               @onkeydown="OnKeyDown"
+               @attributes="InputAttributes" />
+        }
+    </div>
+</div>
+
+@if (ShowValidationErrors)
+{
+    @foreach (string validationError in _validationErrors)
+    {
+        <label class="apex-tag-validation-message">
+            @validationError
+        </label>
+    }
+}
+
+
+@code {
+
+    [Parameter] public List<string> TagList { get; set; } = new List<string>();
+    [Parameter] public EventCallback<List<string>> TagListChanged { get; set; }
+
+    [Parameter] public EventCallback<string> OnTagClose { get; set; }
+    [Parameter] public EventCallback<string> OnTagClick { get; set; }
+
+    [Parameter] public MudBlazor.Size Size { get; set; } = MudBlazor.Size.Small;
+    [Parameter] public MudBlazor.Color Color { get; set; } = MudBlazor.Color.Default;
+    [Parameter] public MudBlazor.Color IconColor { get; set; } = MudBlazor.Color.Default;
+    [Parameter] public MudBlazor.Variant Variant { get; set; } = MudBlazor.Variant.Filled;
+    [Parameter] public string? Id { get; set; } = "";
+    [Parameter] public string? Icon { get; set; } = "";
+    [Parameter] public string? CloseIcon { get; set; } = "";
+    [Parameter] public bool IsRectangle { get; set; } = false;
+    [Parameter] public bool CanAdd { get; set; } = true;
+    [Parameter] public bool CanDelete { get; set; } = true;
+    [Parameter] public string Placeholder { get; set; } = "Type...";
+    [Parameter] public Dictionary<string, object> InputAttributes { get; set; } = new Dictionary<string, object>();
+
+    [Parameter] public List<string>? AllowedValues { get; set; } = null;
+    [Parameter] public string AllowedValueValidationMessage { get; set; } = "The value is not present in the allowed values list";
+    [Parameter] public bool EnableBackspaceRemove { get; set; } = true;
+    [Parameter] public bool AllowDeleteOfReadonlyItems { get; set; } = false;
+    [Parameter] public bool ShowValidationErrors { get; set; } = true;
+    [Parameter] public string EmptyValueValidationMessage { get; set; } = "An empty input is not allowed";
+    [Parameter] public string DuplicateValueValidationMessage { get; set; } = "This tag already exists";
+    [Parameter] public int? MaxValueCount { get; set; } = null;
+    [Parameter] public string MaxValueCountValidationMessage { get; set; } = $"The max amount of tag values has been reached";
+    [Parameter] public int? MinValueLength { get; set; } = null;
+    [Parameter] public string MinValueLengthValidationMessage { get; set; } = $"The tag value doesn't meet the min length requirements";
+    [Parameter] public int? MaxValueLength { get; set; } = null;
+    [Parameter] public string MaxValueLengthValidationMessage { get; set; } = $"The tag value exceeds the max length requirements";
+
+    private string _currentInputValue = "";
+    private string _prevInputValue = "";
+    private List<string> _validationErrors = new List<string>();
+
+    private void OnInput(ChangeEventArgs args)
+    {
+        _prevInputValue = _currentInputValue;
+        _currentInputValue = args.Value.ToString();
+    }
+
+    private void OnKeyDown(KeyboardEventArgs args)
+    {
+        if (_currentInputValue.Length == 0 && args.Key == "Backspace")
+        {
+            _prevInputValue = _currentInputValue;
+        }
+    }
+
+    private async Task OnKeyUp(KeyboardEventArgs args)
+    {
+        _validationErrors.Clear();
+        TagList ??= new List<string>();
+
+        if (EnableBackspaceRemove && args.Key == "Backspace" && TagList.Any() && _prevInputValue.Length == 0 && CanDelete) await RemoveTag(TagList.Last());
+        if (args.Key != "Enter" || TagList.Contains(_currentInputValue, StringComparer.OrdinalIgnoreCase)) return;
+        if (string.IsNullOrEmpty(_currentInputValue) || _currentInputValue == " ") _validationErrors.Add(EmptyValueValidationMessage);
+        if (MaxValueCount != null && TagList.Count == MaxValueCount) _validationErrors.Add(MaxValueCountValidationMessage);
+        if (MaxValueLength != null && _currentInputValue.Length > MaxValueLength) _validationErrors.Add(MaxValueLengthValidationMessage);
+        if (MinValueLength != null && _currentInputValue.Length < MinValueLength) _validationErrors.Add(MinValueLengthValidationMessage);
+        if (AllowedValues != null && AllowedValues.Any() && !AllowedValues.Contains(_currentInputValue, StringComparer.OrdinalIgnoreCase)) _validationErrors.Add(AllowedValueValidationMessage);
+        if (_validationErrors.Any()) return;
+
+        TagList?.Add(_currentInputValue);
+        _currentInputValue = "";
+        await TagListChanged.InvokeAsync(TagList);
+    }
+
+    private async Task RemoveTag(string tag)
+    {
+        if (CanDelete)
+        {
+            TagList.Remove(tag);
+            await TagListChanged.InvokeAsync(TagList);
+        }
+    }
+
+    private async Task OnTagCloseHandler(string tag)
+    {
+        if (CanDelete)
+        {
+            await RemoveTag(tag);
+            await OnTagClose.InvokeAsync(tag);
+        }
+    }
+
+    private async Task OnTagClickHandler(string tag)
+    {
+        await OnTagClick.InvokeAsync(tag);
+    }
+}
+
+<style>
+    .apex-tag-container {
+        display: flex;
+        flex-wrap: wrap;
+        outline: 1px solid var(--mud-palette-lines-inputs);
+        border-radius: var(--mud-default-borderradius);
+        transition: outline-width,outline-color 200ms cubic-bezier(.4,0,.2,1) 0ms;
+    }
+
+        .apex-tag-container:focus-within {
+            margin: 0;
+            outline-width: 2px;
+            outline-color: var(--mud-palette-primary);
+        }
+
+    .apex-tag-list {
+        display: inline-flex;
+        flex-wrap: wrap;
+        width: 100%;
+        margin: 0;
+        list-style: none;
+    }
+
+    .apex-tag-close-hidden .mud-chip-close-button {
+        display: none;
+    }
+
+    .apex-tag-input {
+        min-width: 46px;
+        width: 100%;
+        border: 0;
+        outline: 0;
+        padding: 4px 8px;
+        background: none;
+        color: var(--mud-palette-text-primary);
+        flex: 1;
+        position: relative;
+        z-index: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        -webkit-appearance: none;
+    }
+
+    .apex-tag-validation-message {
+        color: var(--mud-palette-error);
+        font-size: 0.75rem;
+        font-style: italic;
+        margin-top: 0.25rem;
+        width: 100%;
+    }
+    
+    .mud-chip-content *:not(button) {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>
