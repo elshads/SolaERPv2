@@ -140,6 +140,40 @@ public class VendorService : BaseModelService<Vendor>
     public async Task<Vendor?> GetByUserIdAsync()
     {
         var currentUser = await _appUserService.GetCurrentUserAsync();
+        Dictionary<int, Vendor> result = new();
+        var p = new DynamicParameters();
+        p.Add("@UserId", currentUser.Id, DbType.Int32, ParameterDirection.Input);
+
+        using IDbConnection cn = new SqlConnection(_sqlDataAccess.ConnectionString);
+        _ = await cn.QueryAsync<Vendor, Bank, string, string, int, Vendor>("dbo.SP_ZZZTest",
+            (vendor, bank, repComp, repProd, product) =>
+            {
+                if (!result.ContainsKey(vendor.VendorId))
+                {
+                    vendor.BankList = new();
+                    vendor.RepresentedCompanyList = new();
+                    vendor.RepresentedProductList = new();
+                    vendor.ProvidedProductIdList = new();
+                    result.Add(vendor.VendorId, vendor);
+                }
+                var currentVendor = result[vendor.VendorId];
+                if (bank != null && !currentVendor.BankList.Select(e => e.BankId).Contains(bank.BankId)) { currentVendor.BankList.Add(bank); }
+                if (repComp != null && !currentVendor.RepresentedCompanyList.Contains(repComp)) { currentVendor.RepresentedCompanyList.Add(repComp); }
+                if (repProd != null && !currentVendor.RepresentedProductList.Contains(repProd)) { currentVendor.RepresentedProductList.Add(repProd); }
+                if (product != null && !currentVendor.ProvidedProductIdList.Contains(product)) { currentVendor.ProvidedProductIdList.Add(product); }
+                return vendor;
+            },
+            param: p,
+            splitOn: "VendorId,BankId,RepresentedCompanyName,RepresentedProductName,ProductServiceId",
+            commandType: CommandType.StoredProcedure);
+
+        return result.Values.FirstOrDefault();
+    }
+
+
+    public async Task<Vendor?> GetByUserIdAsyncOld()
+    {
+        var currentUser = await _appUserService.GetCurrentUserAsync();
 
         var p = new DynamicParameters();
         p.Add("@UserId", currentUser.Id, DbType.Int32, ParameterDirection.Input);
@@ -189,7 +223,7 @@ public class VendorService : BaseModelService<Vendor>
                 }
             }
 
-            
+
         }
 
         return vendor;

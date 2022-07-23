@@ -71,6 +71,7 @@ builder.Services.AddScoped<PrequalificationCategoryService>();
 builder.Services.AddScoped<CountryService>();
 builder.Services.AddScoped<CurrencyService>();
 builder.Services.AddScoped<RequestService>();
+builder.Services.AddScoped<FormCategoryService>();
 
 builder.Services.AddTransient<IValidator<AppUser>, AppUserValidator>();
 builder.Services.AddTransient<IValidator<Vendor>, VendorValidator>();

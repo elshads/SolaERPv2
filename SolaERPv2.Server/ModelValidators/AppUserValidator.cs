@@ -8,12 +8,12 @@ public class AppUserValidator : AbstractValidator<Model>
     {
         _appUserService = appUserService;
 
-        RuleSet(nameof(Model.FullName), () =>
-        {
-            RuleFor(p => p.FullName)
-                .NotEmpty().WithMessage("You must enter your name")
-                .MaximumLength(50).WithMessage("Max length 50 characters");
-        });
+        //RuleSet(nameof(Model.FullName), () =>
+        //{
+        //    RuleFor(p => p.FullName)
+        //        .NotEmpty().WithMessage("You must enter your name")
+        //        .MaximumLength(50).WithMessage("Max length 50 characters");
+        //});
 
         //RuleSet(nameof(Model.Email), () =>
         //{

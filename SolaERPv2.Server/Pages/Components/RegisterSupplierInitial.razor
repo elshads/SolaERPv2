@@ -1,0 +1,302 @@
+﻿@inject VendorService VendorService
+
+<MudCard Class="k-p-8" Style="max-width:600px; margin:auto">
+    <div>
+        <h3 class="k-mb-4">INITIAL REGISTRATION FORM</h3>
+
+        <TelerikForm Model="@CurrentPerson" Orientation="FormOrientation.Horizontal">
+            <FormValidation>
+                <FluentValidationValidator @ref="_personValidator" DisableAssemblyScanning="true" />
+            </FormValidation>
+            <FormItems>
+                <FormGroup LabelText="Contact Person">
+                    <FormItem LabelText="Email: " Field="@nameof(AppUser.Email)" Enabled="false" />
+                    <FormItem LabelText="Full Name: " Field="@nameof(AppUser.FullName)" />
+                    <FormItem LabelText="Position: " Field="@nameof(AppUser.Position)" />
+                    <FormItem LabelText="Phone Number: " Field="@nameof(AppUser.PhoneNumber)" />
+                </FormGroup>
+                <TelerikValidationSummary />
+            </FormItems>
+            <FormButtons />
+        </TelerikForm>
+
+        <TelerikForm @ref="_vendorEditForm" Model="@CurrentVendor" Orientation="FormOrientation.Horizontal">
+            <FormValidation>
+                <FluentValidationValidator @ref="_vendorValidator" DisableAssemblyScanning="true" />
+            </FormValidation>
+            <FormItems>
+                <FormGroup LabelText="Company Information">
+                    <FormItem LabelText="Tax ID / VÖEN: " Field="@nameof(Vendor.TaxId)">
+                        <Template>
+                            <label for="taxid" class="k-label k-form-label">Tax ID / VÖEN: </label>
+                            <div class="k-form-field-wrap">
+                                <TelerikTextBox Id="taxid" @bind-Value="@(CurrentVendor.TaxId)" OnBlur="@(() => TaxIdBlured(CurrentVendor.TaxId))" />
+                                <TelerikValidationMessage For="@(() => CurrentVendor.TaxId)" />
+                            </div>
+                        </Template>
+                    </FormItem>
+                    <FormItem LabelText="Company Name: " Field="@nameof(Vendor.VendorName)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)" />
+                    <FormItem LabelText="Company Address: " Field="@nameof(Vendor.CompanyAddress)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)" />
+                    <FormItem LabelText="Company Registration Date: " Field="@nameof(Vendor.CompanyRegistrationDate)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)" />
+                    <FormItem LabelText="Country: " Field="@nameof(Vendor.CountryCode)">
+                        <Template>
+                            <label for="countrylist" class="k-label k-form-label">Country: </label>
+                            <div class="k-form-field-wrap">
+                                <TelerikComboBox Id="countrylist"
+                                                 Data="@CountryList"
+                                                 @bind-Value="@CurrentVendor.CountryCode"
+                                                 TextField="@nameof(Country.CountryName)"
+                                                 ValueField="@nameof(Country.CountryCode)"
+                                                 Placeholder="Select ..."
+                                                 Filterable="true"
+                                                 FilterOperator="StringFilterOperator.Contains"
+                                                 Width="100%" />
+                                <TelerikValidationMessage For="@(() => CurrentVendor.CountryCode)" />
+                            </div>
+                        </Template>
+                    </FormItem>
+                    <FormItem LabelText="Location: " Field="@nameof(Vendor.CompanyLocation)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)" />
+                    <FormItem LabelText="Website: " Field="@nameof(Vendor.CompanyWebsite)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)" />
+                    <FormItem LabelText="Prequalification Category: " Field="@nameof(Vendor.PrequalificationCategoryIdList)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)">
+                        <Template>
+                            <label for="prequalificationcategory" class="k-label k-form-label">Prequalification Category: </label>
+                            <div class="k-form-field-wrap">
+                                <TelerikMultiSelect Id="prequalificationcategory"
+                                                    Data="@PrequalificationCategoryList"
+                                                    Value="@CurrentVendor?.PrequalificationCategoryIdList"
+                                                    ValueChanged="@((List<int> selectedList) => PrequalificationCategoryListChanged(selectedList))"
+                                                    TItem="PrequalificationCategory"
+                                                    TValue="int"
+                                                    ValueExpression="@(() => CurrentVendor.PrequalificationCategoryIdList)"
+                                                    TextField="@nameof(PrequalificationCategory.PrequalificationCategoryName)"
+                                                    ValueField="@nameof(PrequalificationCategory.PrequalificationCategoryId)"
+                                                    Placeholder="Select ..."
+                                                    Filterable="true"
+                                                    FilterOperator="StringFilterOperator.Contains"
+                                                    Width="100%" />
+                                <TelerikValidationMessage For="@(() => CurrentVendor.PrequalificationCategoryIdList)" />
+                            </div>
+                        </Template>
+                    </FormItem>
+                    <FormItem LabelText="Products / Services provided: " Field="@nameof(Vendor.ProvidedProductIdList)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)">
+                        <Template>
+                            <label for="productlist" class="k-label k-form-label">Products / Services provided: </label>
+                            <div class="k-form-field-wrap">
+                                <TelerikMultiSelect Id="productlist"
+                                                    Data="@ProductList"
+                                                    Value="@CurrentVendor?.ProvidedProductIdList"
+                                                    ValueChanged="@((List<int> selectedList) => ProvidedProductsChanged(selectedList))"
+                                                    TItem="Product"
+                                                    TValue="int"
+                                                    ValueExpression="@(() => CurrentVendor.ProvidedProductIdList)"
+                                                    TextField="@nameof(Product.ProductServiceName)"
+                                                    ValueField="@nameof(Product.ProductServiceId)"
+                                                    Placeholder="Select ..."
+                                                    Filterable="true"
+                                                    FilterOperator="StringFilterOperator.Contains"
+                                                    Width="100%" />
+                                <TelerikValidationMessage For="@(() => CurrentVendor.ProvidedProductIdList)" />
+                            </div>
+                        </Template>
+                    </FormItem>
+                    @if (_otherProductsVisible)
+                    {
+                        <FormItem LabelText="Other Products: " Field="@nameof(Vendor.OtherProducts)">
+                            <Template>
+                                <label for="otherproducts" class="k-label k-form-label">Other Products: </label>
+                                <div class="k-form-field-wrap">
+                                    <TelerikTextArea Id="otherproducts" @bind-Value="@(CurrentVendor.OtherProducts)" />
+                                    <TelerikValidationMessage For="@(() => CurrentVendor.OtherProducts)" />
+                                </div>
+                            </Template>
+                        </FormItem>
+                    }
+                    <FormItem LabelText="Company logo: " Field="@nameof(Vendor.CompanyLogo)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)">
+                        <Template>
+                            <label for="companylogo" class="k-label k-form-label">Company logo: </label>
+                            <div class="k-form-field-wrap">
+                                <AttachmentDialog WithButton="true" @bind-AttachmentList="CurrentVendor.CompanyLogo" OnDeleteClick="OnAttachmentDeleteHandler" SourceId="CurrentVendor.VendorId" SourceTypeName="VEN_LOGO" Multiple="false" AllowedFileSize="20971520" AllowedFileTypes=".png,.jpg,.jpeg" />
+                                <TelerikValidationMessage For="@(() => CurrentVendor.CompanyLogo)" />
+                            </div>
+                        </Template>
+                    </FormItem>
+                    <FormItem LabelText="Represented Products: " Field="@nameof(Vendor.RepresentedProductList)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)">
+                        <Template>
+                            <label for="representedproduts" class="k-label k-form-label">Represented Products: </label>
+                            <div class="k-form-field-wrap">
+                                <TagInput Id="representedproduts" @bind-TagList="@CurrentVendor.RepresentedProductList" />
+                                <TelerikValidationMessage For="@(() => CurrentVendor.RepresentedProductList)" />
+                            </div>
+                        </Template>
+                    </FormItem>
+                    <FormItem LabelText="Represented Companies: " Field="@nameof(Vendor.RepresentedCompanyList)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)">
+                        <Template>
+                            <label for="representedcompanies" class="k-label k-form-label">Represented Companies: </label>
+                            <div class="k-form-field-wrap">
+                                <TagInput Id="representedcompanies" @bind-TagList="@CurrentVendor.RepresentedCompanyList" />
+                                <TelerikValidationMessage For="@(() => CurrentVendor.RepresentedCompanyList)" />
+                            </div>
+                        </Template>
+                    </FormItem>
+                    <FormItem LabelText="Attach Official Letter: " Field="@nameof(Vendor.OfficialLetter)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)">
+                        <Template>
+                            <label for="officialletter" class="k-label k-form-label">Attach Official Letter: </label>
+                            <div class="k-form-field-wrap">
+                                <AttachmentDialog WithButton="true" @bind-AttachmentList="CurrentVendor.OfficialLetter" OnDeleteClick="OnAttachmentDeleteHandler" SourceId="CurrentVendor.VendorId" SourceTypeName="VEN_OLET" />
+                                <TelerikValidationMessage For="@(() => CurrentVendor.OfficialLetter)" />
+                            </div>
+                        </Template>
+                    </FormItem>
+                    <FormItem LabelText="Payment Terms: " Field="@nameof(Vendor.PaymentTermsCode)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)">
+                        <Template>
+                            <label for="paymentterms" class="k-label k-form-label">Payment Terms: </label>
+                            <div class="k-form-field-wrap">
+                                <GridDropDownList Data="@PaymentTermsList"
+                                                  Id="paymentterms"
+                                                  @bind-Value="@CurrentVendor.PaymentTermsCode"
+                                                  TextField="@nameof(Analysis.AnalysisCode)"
+                                                  ValueField="@nameof(Analysis.AnalysisCode)"
+                                                  OnChange="@((string paymentTermCode) => ValidateVendor())"
+                                                  SearchFields="@(new List<string>() {"AnalysisCode", "AnalysisName"})"
+                                                  HeaderNames="@(new List<string>() {"Code", "Name"})" />
+                                <label class="k-form-hint">@_paymentTermsName</label>
+                                <TelerikValidationMessage For="@(() => CurrentVendor.PaymentTermsCode)" />
+                            </div>
+                        </Template>
+                    </FormItem>
+                    <FormItem LabelText="Please confirm that you agree with the 60-days payment" Field="@nameof(Vendor.AgreeWithDefaultDays)" Class="k-pb-4" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)">
+                        <Template>
+                            <label for="agreement" class="k-label k-form-label">Please confirm that you agree with the 60-days payment </label>
+                            <div class="k-form-field-wrap">
+                                <TelerikRadioGroup Id="agreement"
+                                                   Data="@BooleanModel.BooleanModelList"
+                                                   Value="@CurrentVendor.AgreeWithDefaultDays"
+                                                   ValueChanged="@((bool isAgree) => AgreeWithDefaultDaysChanged(isAgree))"
+                                                   ValueExpression="@(() => CurrentVendor.AgreeWithDefaultDays)"
+                                                   TextField="Name"
+                                                   ValueField="Value" />
+                            </div>
+                        </Template>
+                    </FormItem>
+                    <FormItem LabelText="Credit Days: " Field="@nameof(Vendor.CreditDays)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists && !CurrentVendor.AgreeWithDefaultDays)">
+                        <Template>
+                            <label for="creditdays" class="k-label k-form-label">Credit Days: </label>
+                            <div class="k-form-field-wrap">
+                                <TelerikNumericTextBox Id="creditdays" T="int" Min="0" @bind-Value="@(CurrentVendor.CreditDays)" />
+                                <TelerikValidationMessage For="@(() => CurrentVendor.CreditDays)" />
+                            </div>
+                        </Template>
+                    </FormItem>
+                </FormGroup>
+                <TelerikValidationSummary />
+            </FormItems>
+            <FormButtons />
+        </TelerikForm>
+    </div>
+</MudCard>
+
+
+@code {
+    [CascadingParameter] public AppState? AppState { get; set; }
+
+    [Parameter] public AppUser? CurrentPerson { get; set; } = new();
+    [Parameter] public EventCallback<AppUser> CurrentPersonChanged { get; set; }
+    [Parameter] public Vendor? CurrentVendor { get; set; } = new();
+    [Parameter] public EventCallback<Vendor> CurrentVendorChanged { get; set; }
+    [Parameter] public List<int> DeletedAttachmentIdList { get; set; } = new();
+    [Parameter] public EventCallback<List<int>> DeletedAttachmentIdListChanged { get; set; }
+
+    [Parameter] public IEnumerable<Product>? ProductList { get; set; } = new List<Product>();
+    [Parameter] public IEnumerable<Country>? CountryList { get; set; } = new List<Country>();
+    [Parameter] public IEnumerable<Analysis>? PaymentTermsList { get; set; } = new List<Analysis>();
+    [Parameter] public IEnumerable<PrequalificationCategory>? PrequalificationCategoryList { get; set; } = new List<PrequalificationCategory>();
+    
+    bool _otherProductsVisible => CurrentVendor != null && CurrentVendor.ProvidedProductIdList != null && ProductList != null && CurrentVendor.ProvidedProductIdList.Any(p => ProductList.Where(e => e.Other == 1).Select(s => s.ProductServiceId).Contains(p));
+    string? _paymentTermsName => PaymentTermsList?.FirstOrDefault(e => e.AnalysisCode == CurrentVendor?.PaymentTermsCode)?.AnalysisName;
+
+    FluentValidationValidator? _personValidator;
+    FluentValidationValidator? _vendorValidator;
+    TelerikForm? _vendorEditForm;
+    
+    bool ValidatePerson()
+    {
+        return _personValidator != null && _personValidator.Validate(options => options.IncludeAllRuleSets());
+    }
+
+    bool ValidateVendor()
+    {
+        return _vendorValidator != null && _vendorValidator.Validate(options => options.IncludeAllRuleSets());
+    }
+
+    public async Task<bool> Validate()
+    {
+        await CurrentPersonChanged.InvokeAsync(CurrentPerson);
+        await CurrentVendorChanged.InvokeAsync(CurrentVendor);
+        return ValidatePerson() && ValidateVendor();
+    }
+
+    async Task OnAttachmentDeleteHandler(List<Attachment> deletedAttachments)
+    {
+        var idList = deletedAttachments.Select(e => e.AttachmentId);
+        DeletedAttachmentIdList.AddRange(idList);
+        await DeletedAttachmentIdListChanged.InvokeAsync(DeletedAttachmentIdList);
+    }
+
+    void CurrentPersonChangedHandler(AppUser currentPerson)
+    {
+        CurrentPerson = currentPerson;
+    }
+
+    void CurrentVendorChangedHandler(Vendor currentVendor)
+    {
+        CurrentVendor = currentVendor;
+    }
+
+    void ProvidedProductsChanged(List<int> selectedList)
+    {
+        if (CurrentVendor != null)
+        {
+            CurrentVendor.ProvidedProductIdList = selectedList;
+            if (!_otherProductsVisible) { CurrentVendor.OtherProducts = null; }
+        }
+    }
+
+    void PrequalificationCategoryListChanged(List<int> selectedList)
+    {
+        if (CurrentVendor != null)
+        {
+            CurrentVendor.PrequalificationCategoryIdList = selectedList;
+        }
+    }
+
+    void AgreeWithDefaultDaysChanged(bool isAgree)
+    {
+        if (CurrentVendor != null)
+        {
+            CurrentVendor.AgreeWithDefaultDays = isAgree;
+            if (isAgree) { CurrentVendor.CreditDays = 60; }
+        }
+    }
+
+    async Task TaxIdBlured(string taxId)
+    {
+        Vendor? vendor = new();
+        if (CurrentVendor != null && CurrentVendor.TaxId != null) { vendor = await VendorService.GetByTaxIdAsync(CurrentVendor.TaxId); }
+        if (vendor != null && vendor.TaxId != null && vendor.TaxId.Length > 0)
+        {
+            CurrentVendor = vendor;
+            if (CurrentVendor.StatusId > 0)
+            {
+                CurrentVendor.Exists = true;
+            }
+            else
+            {
+                CurrentVendor.Exists = false;
+            }
+        }
+        else
+        {
+            CurrentVendor.Exists = false;
+        }
+    }
+}

@@ -2,9 +2,9 @@
 
 @implements IDisposable
 @inject VendorService VendorService
+@inject CurrencyService CurrencyService
 @inject ProductService ProductService
 @inject CountryService CountryService
-@inject CurrencyService CurrencyService
 @inject PrequalificationCategoryService PrequalificationCategoryService
 
 
@@ -22,402 +22,43 @@
 
 @if (_currentStep == "initial")
 {
-    <MudCard Class="k-p-8" Style="max-width:600px; margin:auto">
-        <div>
-            <h3 class="k-mb-4">INITIAL REGISTRATION FORM</h3>
-
-            <TelerikForm Model="@_currentPerson" Orientation="FormOrientation.Horizontal">
-                <FormValidation>
-                    <FluentValidationValidator @ref="_personValidator" DisableAssemblyScanning="true" />
-                </FormValidation>
-                <FormItems>
-                    <FormGroup LabelText="Contact Person">
-                        <FormItem LabelText="Email: " Field="@nameof(AppUser.Email)" Enabled="false" />
-                        <FormItem LabelText="Full Name: " Field="@nameof(AppUser.FullName)" />
-                        <FormItem LabelText="Position: " Field="@nameof(AppUser.Position)" />
-                        <FormItem LabelText="Phone Number: " Field="@nameof(AppUser.PhoneNumber)" />
-                    </FormGroup>
-                    <TelerikValidationSummary />
-                </FormItems>
-                <FormButtons />
-            </TelerikForm>
-
-            <TelerikForm @ref="_vendorEditForm1" Model="@_currentVendor" Orientation="FormOrientation.Horizontal">
-                <FormValidation>
-                    <FluentValidationValidator @ref="_vendorValidator" DisableAssemblyScanning="true" />
-                </FormValidation>
-                <FormItems>
-                    <FormGroup LabelText="Company Information">
-                        <FormItem LabelText="Tax ID / VÖEN: " Field="@nameof(Vendor.TaxId)">
-                            <Template>
-                                <label for="taxid" class="k-label k-form-label">Tax ID / VÖEN: </label>
-                                <div class="k-form-field-wrap">
-                                    <TelerikTextBox Id="taxid" @bind-Value="@(_currentVendor.TaxId)" OnBlur="@(() => TaxIdBlured(_currentVendor.TaxId))" />
-                                    <TelerikValidationMessage For="@(() => _currentVendor.TaxId)" />
-                                </div>
-                            </Template>
-                        </FormItem>
-                        <FormItem LabelText="Company Name: " Field="@nameof(Vendor.VendorName)" Enabled="@(_currentVendor != null ? !_currentVendor.Exists : true)" />
-                        <FormItem LabelText="Country: " Field="@nameof(Vendor.CountryCode)">
-                            <Template>
-                                <label for="countrylist" class="k-label k-form-label">Country: </label>
-                                <div class="k-form-field-wrap">
-                                    <TelerikComboBox Id="countrylist"
-                                                 Data="@_countryList"
-                                                 @bind-Value="@_currentVendor.CountryCode"
-                                                 TextField="@nameof(Country.CountryName)"
-                                                 ValueField="@nameof(Country.CountryCode)"
-                                                 Placeholder="Select ..."
-                                                 Filterable="true"
-                                                 FilterOperator="StringFilterOperator.Contains"
-                                                 Width="100%" />
-                                    <TelerikValidationMessage For="@(() => _currentVendor.CountryCode)" />
-                                </div>
-                            </Template>
-                        </FormItem>
-                        <FormItem LabelText="Location: " Field="@nameof(Vendor.CompanyLocation)" Enabled="@(_currentVendor != null ? !_currentVendor.Exists : true)" />
-                        <FormItem LabelText="Website: " Field="@nameof(Vendor.CompanyWebsite)" Enabled="@(_currentVendor != null ? !_currentVendor.Exists : true)" />
-                        <FormItem LabelText="Prequalification Category: " Field="@nameof(Vendor.PrequalificationCategoryIdList)" Enabled="@(_currentVendor != null ? !_currentVendor.Exists : true)">
-                            <Template>
-                                <label for="prequalificationcategory" class="k-label k-form-label">Prequalification Category: </label>
-                                <div class="k-form-field-wrap">
-                                    <TelerikMultiSelect Id="prequalificationcategory"
-                                                        Data="@_prequalificationCategoryList"
-                                                        Value="@_currentVendor?.PrequalificationCategoryIdList"
-                                                        ValueChanged="@((List<int> selectedList) => PrequalificationCategoryListChanged(selectedList))"
-                                                        TItem="PrequalificationCategory"
-                                                        TValue="int"
-                                                        ValueExpression="@(() => _currentVendor.PrequalificationCategoryIdList)"
-                                                        TextField="@nameof(PrequalificationCategory.PrequalificationCategoryName)"
-                                                        ValueField="@nameof(PrequalificationCategory.PrequalificationCategoryId)"
-                                                        Placeholder="Select ..."
-                                                        Filterable="true"
-                                                        FilterOperator="StringFilterOperator.Contains"
-                                                        Width="100%" />
-                                    <TelerikValidationMessage For="@(() => _currentVendor.PrequalificationCategoryIdList)" />
-                                </div>
-                            </Template>
-                        </FormItem>
-                        <FormItem LabelText="Products / Services provided: " Field="@nameof(Vendor.ProvidedProductIdList)" Enabled="@(_currentVendor != null ? !_currentVendor.Exists : true)">
-                            <Template>
-                                <label for="productlist" class="k-label k-form-label">Products / Services provided: </label>
-                                <div class="k-form-field-wrap">
-                                    <TelerikMultiSelect Id="productlist"
-                                                    Data="@_productList"
-                                                    Value="@_currentVendor?.ProvidedProductIdList"
-                                                    ValueChanged="@((List<int> selectedList) => ProvidedProductsChanged(selectedList))"
-                                                    TItem="Product"
-                                                    TValue="int"
-                                                    ValueExpression="@(() => _currentVendor.ProvidedProductIdList)"
-                                                    TextField="@nameof(Product.ProductServiceName)"
-                                                    ValueField="@nameof(Product.ProductServiceId)"
-                                                    Placeholder="Select ..."
-                                                    Filterable="true"
-                                                    FilterOperator="StringFilterOperator.Contains"
-                                                    Width="100%" />
-                                    <TelerikValidationMessage For="@(() => _currentVendor.ProvidedProductIdList)" />
-                                </div>
-                            </Template>
-                        </FormItem>
-                        @if (_otherProductsVisible)
-                        {
-                            <FormItem LabelText="Other Products: " Field="@nameof(Vendor.OtherProducts)">
-                                <Template>
-                                    <label for="otherproducts" class="k-label k-form-label">Other Products: </label>
-                                    <div class="k-form-field-wrap">
-                                        <TelerikTextArea Id="otherproducts" @bind-Value="@(_currentVendor.OtherProducts)" />
-                                        <TelerikValidationMessage For="@(() => _currentVendor.OtherProducts)" />
-                                    </div>
-                                </Template>
-                            </FormItem>
-                        }
-                        <FormItem LabelText="Company logo: " Field="@nameof(Vendor.CompanyLogo)" Enabled="@(_currentVendor != null ? !_currentVendor.Exists : true)">
-                            <Template>
-                                <label for="companylogo" class="k-label k-form-label">Company logo: </label>
-                                <div class="k-form-field-wrap">
-                                    <AttachmentDialog WithButton="true" @bind-AttachmentList="_currentVendor.CompanyLogo" OnDeleteClick="OnAttachmentDeleteHandler" SourceId="_currentVendor.VendorId" SourceTypeName="VEN_LOGO" Multiple="false" AllowedFileSize="20971520" AllowedFileTypes=".png,.jpg,.jpeg" />
-                                    <TelerikValidationMessage For="@(() => _currentVendor.CompanyLogo)" />
-                                </div>
-                            </Template>
-                        </FormItem>
-                        <FormItem LabelText="Represented Products: " Field="@nameof(Vendor.RepresentedProductList)" Enabled="@(_currentVendor != null ? !_currentVendor.Exists : true)">
-                            <Template>
-                                <label for="representedproduts" class="k-label k-form-label">Represented Products: </label>
-                                <div class="k-form-field-wrap">
-                                    <TagInput Id="representedproduts" @bind-TagList="@_currentVendor.RepresentedProductList"/>
-                                    <TelerikValidationMessage For="@(() => _currentVendor.RepresentedProductList)" />
-                                </div>
-                            </Template>
-                        </FormItem>
-                        <FormItem LabelText="Represented Companies: " Field="@nameof(Vendor.RepresentedCompanyList)" Enabled="@(_currentVendor != null ? !_currentVendor.Exists : true)">
-                            <Template>
-                                <label for="representedcompanies" class="k-label k-form-label">Represented Companies: </label>
-                                <div class="k-form-field-wrap">
-                                    <TagInput Id="representedcompanies" @bind-TagList="@_currentVendor.RepresentedCompanyList"/>
-                                    <TelerikValidationMessage For="@(() => _currentVendor.RepresentedCompanyList)" />
-                                </div>
-                            </Template>
-                        </FormItem>
-                        <FormItem LabelText="Attach Official Letter: " Field="@nameof(Vendor.OfficialLetter)" Enabled="@(_currentVendor != null ? !_currentVendor.Exists : true)">
-                            <Template>
-                                <label for="officialletter" class="k-label k-form-label">Attach Official Letter: </label>
-                                <div class="k-form-field-wrap">
-                                    <AttachmentDialog WithButton="true" @bind-AttachmentList="_currentVendor.OfficialLetter" OnDeleteClick="OnAttachmentDeleteHandler" SourceId="_currentVendor.VendorId" SourceTypeName="VEN_OLET" />
-                                    <TelerikValidationMessage For="@(() => _currentVendor.OfficialLetter)" />
-                                </div>
-                            </Template>
-                        </FormItem>
-                        <FormItem LabelText="Payment Terms: " Field="@nameof(Vendor.PaymentTermsCode)" Enabled="@(_currentVendor != null ? !_currentVendor.Exists : true)">
-                            <Template>
-                                <label for="paymentterms" class="k-label k-form-label">Payment Terms: </label>
-                                <div class="k-form-field-wrap">
-                                    <GridDropDownList Data="@_paymentTermsList"
-                                                  Id="paymentterms"
-                                                  @bind-Value="@_currentVendor.PaymentTermsCode"
-                                                  TextField="@nameof(Analysis.AnalysisCode)"
-                                                  ValueField="@nameof(Analysis.AnalysisCode)"
-                                                  OnChange="@((string paymentTermCode) => ValidateVendor())"
-                                                  SearchFields="@(new List<string>() {"AnalysisCode", "AnalysisName"})"
-                                                  HeaderNames="@(new List<string>() {"Code", "Name"})" />
-                                    <label class="k-form-hint">@_paymentTermsName</label>
-                                    <TelerikValidationMessage For="@(() => _currentVendor.PaymentTermsCode)" />
-                                </div>
-                            </Template>
-                        </FormItem>
-                        <FormItem LabelText="Credit Days: " Field="@nameof(Vendor.CreditDays)" Enabled="@(_currentVendor != null && !_currentVendor.Exists && !_currentVendor.AgreeWithDefaultDays)">
-                            <Template>
-                                <label for="creditdays" class="k-label k-form-label">Credit Days: </label>
-                                <div class="k-form-field-wrap">
-                                    <TelerikNumericTextBox Id="creditdays" T="int" Min="0" @bind-Value="@(_currentVendor.CreditDays)" />
-                                    <TelerikValidationMessage For="@(() => _currentVendor.CreditDays)" />
-                                </div>
-                            </Template>
-                        </FormItem>
-                        <FormItem LabelText="Please confirm that you agree with the 60-days payment" Field="@nameof(Vendor.AgreeWithDefaultDays)" Class="k-pb-4" Enabled="@(_currentVendor != null ? !_currentVendor.Exists : true)">
-                            <Template>
-                                <label for="agreement" class="k-label k-form-label">Please confirm that you agree with the 60-days payment </label>
-                                <div class="k-form-field-wrap">
-                                    <TelerikRadioGroup Id="agreement"
-                                                   Data="@BooleanModel.BooleanModelList"
-                                                   Value="@_currentVendor.AgreeWithDefaultDays"
-                                                   ValueChanged="@((bool isAgree) => AgreeWithDefaultDaysChanged(isAgree))"
-                                                   ValueExpression="@(() => _currentVendor.AgreeWithDefaultDays)"
-                                                   TextField="Name"
-                                                   ValueField="Value" />
-                                </div>
-                            </Template>
-                        </FormItem>
-                    </FormGroup>
-                    <TelerikValidationSummary />
-                </FormItems>
-                <FormButtons />
-            </TelerikForm>
-        </div>
-    </MudCard>
+    <RegisterSupplierInitial @ref="_registerSupplierInitial"
+                         @bind-CurrentPerson="_currentPerson"
+                         @bind-CurrentVendor="_currentVendor"
+                         @bind-DeletedAttachmentIdList="_deletedAttachmentIdList" 
+                         ProductList="@_productList" 
+                         CountryList="@_countryList" 
+                         PaymentTermsList="@_paymentTermsList" 
+                         PrequalificationCategoryList="@_prequalificationCategoryList" />
 }
 else if (_currentStep == "nda")
 {
-    <MudCard Class="k-p-8" Style="max-width:1280px; margin:auto">
-        <h3 class="k-mb-4">CONFIDENTIALITY AGREEMENT</h3>
-
-        <RegisterSupplierAgreement CurrentBusinessUnit="new BusinessUnit()" CurrentVendor="@(_currentVendor)" />
-        <div class="k-px-4">
-            <TelerikGridLayout ColumnSpacing="16px">
-                <GridLayoutRows>
-                    <GridLayoutRow Height="52px"></GridLayoutRow>
-                    <GridLayoutRow></GridLayoutRow>
-                </GridLayoutRows>
-                <GridLayoutItems>
-                    <GridLayoutItem Row="1" Column="1">
-                        <strong>SOCAR-STP</strong>
-                    </GridLayoutItem>
-                    <GridLayoutItem Row="1" Column="2">
-                        <strong>@(_currentVendor.VendorName)</strong>
-                        <div class="k-my-2">@(SessionData.CurrentUser.FullName)</div>
-                    </GridLayoutItem>
-                    <GridLayoutItem Row="2" Column="1" ColumnSpan="2">
-                        <div class="k-px-4 k-py-2" style="background: var(--checkbox-background)">
-                            <TelerikCheckBox Id="cbxAgree" Size="lg" @bind-Value="@(_currentVendor.IsAgree)" />
-                            <span class="k-pl-2">I agree</span>
-                        </div>
-                    </GridLayoutItem>
-                </GridLayoutItems>
-            </TelerikGridLayout>
-        </div>
-    </MudCard>
+    <RegisterSupplierNda @ref="_registerSupplierNda"
+                     @bind-CurrentPerson="_currentPerson"
+                     @bind-CurrentVendor="_currentVendor"
+                     @bind-DeletedAttachmentIdList="_deletedAttachmentIdList" />
 }
 else if (_currentStep == "bank")
 {
-    <MudCard Class="k-p-8">
-        <h3 class="k-mb-4">BANK DETAILS</h3>
-
-        @if (_showAddBankPanel)
-        {
-            <TelerikForm Class="k-pb-4" Model="_selectedBank" Orientation="FormOrientation.Horizontal" ColumnSpacing="16px" Columns="@(AppState.MobileView ? 1 : 2)">
-                <FormValidation>
-                    <FluentValidationValidator @ref="_bankValidator" DisableAssemblyScanning="true" />
-                </FormValidation>
-                <FormItems>
-                    <FormItem LabelText="Bank Account Number: " Field="@nameof(Bank.BankAccountNumber)" Enabled="@(_currentVendor != null && !_currentVendor.Exists)">
-                        <Template>
-                            <label for="accountnumber" class="k-label k-form-label">Bank Account Number: </label>
-                            <div class="k-form-field-wrap">
-                                <TelerikTextBox Id="accountnumber" @bind-Value="@_selectedBank.BankAccountNumber" />
-                                <TelerikValidationMessage For="@(() => _selectedBank.BankAccountNumber)" />
-                            </div>
-                        </Template>
-                    </FormItem>
-                    <FormItem LabelText="Currency Code: " Field="@nameof(Bank.CurrencyCode)" Enabled="@(_currentVendor != null && _currentVendor.CountryCode != "AZ" && !_currentVendor.Exists)">
-                        <Template>
-                            <label for="currencycode" class="k-label k-form-label">Currency Code: </label>
-                            <div class="k-form-field-wrap">
-                                <GridDropDownList Data="@_currencyList"
-                                          Id="currencycode"
-                                          @bind-Value="@_selectedBank.CurrencyCode"
-                                          TextField="@nameof(Currency.CurrencyCode)"
-                                          ValueField="@nameof(Currency.CurrencyCode)"
-                                          SearchFields="@(new List<string>() {"CurrencyCode", "CurrencyName"})"
-                                          HeaderNames="@(new List<string>() {"Code", "Name"})" />
-                                <TelerikValidationMessage For="@(() => _selectedBank.CurrencyCode)" />
-                            </div>
-                        </Template>
-                    </FormItem>
-                    <FormItem LabelText="Add bank letter head: " Field="@nameof(Bank.BankLetter)" Enabled="@(_currentVendor != null ? !_currentVendor.Exists : true)">
-                        <Template>
-                            <label for="bankletter" class="k-label k-form-label">Add bank letter head: </label>
-                            <div class="k-form-field-wrap">
-                                <AttachmentDialog WithButton="true" @bind-AttachmentList="_selectedBank.BankLetter" OnDeleteClick="OnAttachmentDeleteHandler" SourceId="_selectedBank.BankId" SourceTypeName="VEN_BNK" />
-                                <TelerikValidationMessage For="@(() => _selectedBank.BankLetter)" />
-                            </div>
-                        </Template>
-                    </FormItem>
-                    <FormItem LabelText="Beneficiary Full Name: " Field="@nameof(Bank.BeneficiaryFullName)" Enabled="@(_currentVendor != null && !_currentVendor.Exists)">
-                        <Template>
-                            <label for="fullname" class="k-label k-form-label">Beneficiary Full Name: </label>
-                            <div class="k-form-field-wrap">
-                                <TelerikTextBox Id="fullname" @bind-Value="@_selectedBank.BeneficiaryFullName" />
-                                <TelerikValidationMessage For="@(() => _selectedBank.BeneficiaryFullName)" />
-                            </div>
-                        </Template>
-                    </FormItem>
-                    <FormItem LabelText="Beneficiary Address: " Field="@nameof(Bank.BeneficiaryAddress)" Enabled="@(_currentVendor != null && !_currentVendor.Exists)">
-                        <Template>
-                            <label for="beneficiaryaddress" class="k-label k-form-label">Beneficiary Address: </label>
-                            <div class="k-form-field-wrap">
-                                <TelerikTextBox Id="beneficiaryaddress" @bind-Value="@_selectedBank.BeneficiaryAddress" />
-                                <TelerikValidationMessage For="@(() => _selectedBank.BeneficiaryAddress)" />
-                            </div>
-                        </Template>
-                    </FormItem>
-                    <FormItem LabelText="Beneficiary Address 1: " Field="@nameof(Bank.BeneficiaryAddress1)" Enabled="@(_currentVendor != null && !_currentVendor.Exists)">
-                        <Template>
-                            <label for="beneficiaryaddress1" class="k-label k-form-label">Beneficiary Address 1: </label>
-                            <div class="k-form-field-wrap">
-                                <TelerikTextBox Id="beneficiaryaddress1" @bind-Value="@_selectedBank.BeneficiaryAddress1" />
-                                <TelerikValidationMessage For="@(() => _selectedBank.BeneficiaryAddress1)" />
-                            </div>
-                        </Template>
-                    </FormItem>
-                    <FormItem LabelText="Beneficiary Bank Name: " Field="@nameof(Bank.BeneficiaryBankName)" Enabled="@(_currentVendor != null && !_currentVendor.Exists)">
-                        <Template>
-                            <label for="beneficiarybankname" class="k-label k-form-label">Beneficiary Bank Name: </label>
-                            <div class="k-form-field-wrap">
-                                <TelerikTextBox Id="beneficiarybankname" @bind-Value="@_selectedBank.BeneficiaryBankName" />
-                                <TelerikValidationMessage For="@(() => _selectedBank.BeneficiaryBankName)" />
-                            </div>
-                        </Template>
-                    </FormItem>
-                    <FormItem LabelText="Beneficiary Bank Address: " Field="@nameof(Bank.BeneficiaryBankAddress)" Enabled="@(_currentVendor != null && !_currentVendor.Exists)">
-                        <Template>
-                            <label for="beneficiarybankaddress" class="k-label k-form-label">Beneficiary Bank Address: </label>
-                            <div class="k-form-field-wrap">
-                                <TelerikTextBox Id="beneficiarybankaddress" @bind-Value="@_selectedBank.BeneficiaryBankAddress" />
-                                <TelerikValidationMessage For="@(() => _selectedBank.BeneficiaryBankAddress)" />
-                            </div>
-                        </Template>
-                    </FormItem>
-                    <FormItem LabelText="Beneficiary Bank Address 1: " Field="@nameof(Bank.BeneficiaryBankAddress1)" Enabled="@(_currentVendor != null && !_currentVendor.Exists)">
-                        <Template>
-                            <label for="beneficiarybankaddress1" class="k-label k-form-label">Beneficiary Bank Address 1: </label>
-                            <div class="k-form-field-wrap">
-                                <TelerikTextBox Id="beneficiarybankaddress1" @bind-Value="@_selectedBank.BeneficiaryBankAddress1" />
-                                <TelerikValidationMessage For="@(() => _selectedBank.BeneficiaryBankAddress1)" />
-                            </div>
-                        </Template>
-                    </FormItem>
-                    <FormItem LabelText="Beneficiary Bank Code: " Field="@nameof(Bank.BeneficiaryBankCode)" Enabled="@(_currentVendor != null && !_currentVendor.Exists)">
-                        <Template>
-                            <label for="beneficiarybankcode" class="k-label k-form-label">Beneficiary Bank Code: </label>
-                            <div class="k-form-field-wrap">
-                                <TelerikTextBox Id="beneficiarybankcode" @bind-Value="@_selectedBank.BeneficiaryBankCode" />
-                                <TelerikValidationMessage For="@(() => _selectedBank.BeneficiaryBankCode)" />
-                            </div>
-                        </Template>
-                    </FormItem>
-                    <FormItem LabelText="Intermediary Bank Code Number: " Field="@nameof(Bank.IntermediaryBankCodeNumber)" Enabled="@(_currentVendor != null && !_currentVendor.Exists)">
-                        <Template>
-                            <label for="intermediarybankcodenumber" class="k-label k-form-label">Intermediary Bank Code Number: </label>
-                            <div class="k-form-field-wrap">
-                                <TelerikTextBox Id="intermediarybankcodenumber" @bind-Value="@_selectedBank.IntermediaryBankCodeNumber" />
-                                <TelerikValidationMessage For="@(() => _selectedBank.IntermediaryBankCodeNumber)" />
-                            </div>
-                        </Template>
-                    </FormItem>
-                    <FormItem LabelText="Intermediary Bank Code Type: " Field="@nameof(Bank.IntermediaryBankCodeType)" Enabled="@(_currentVendor != null && !_currentVendor.Exists)">
-                        <Template>
-                            <label for="intermediarybankcodetype" class="k-label k-form-label">Intermediary Bank Code Type: </label>
-                            <div class="k-form-field-wrap">
-                                <TelerikTextBox Id="intermediarybankcodetype" @bind-Value="@_selectedBank.IntermediaryBankCodeType" />
-                                <TelerikValidationMessage For="@(() => _selectedBank.IntermediaryBankCodeType)" />
-                            </div>
-                        </Template>
-                    </FormItem>
-                    <TelerikValidationSummary Class="k-my-4" />
-                </FormItems>
-                <FormButtons>
-                    <TelerikButton Rounded="@Telerik.Blazor.ThemeConstants.Button.Rounded.Small" OnClick="@BankSaveHandler" ThemeColor="primary" Enabled="@(_currentVendor != null && !_currentVendor.Exists)">Save</TelerikButton>
-                    <TelerikButton Rounded="@Telerik.Blazor.ThemeConstants.Button.Rounded.Small" OnClick="@BankCancelHandler" Enabled="@(_currentVendor != null && !_currentVendor.Exists)">Cancel</TelerikButton>
-                </FormButtons>
-            </TelerikForm>
-        }
-
-
-        <TelerikGrid @ref="_gridRef"
-                 Data="@(_currentVendor.BankList)"
-                 EditMode="@GridEditMode.None"
-                 Pageable="true"
-                 PageSize="20"
-                 OnDelete=@DeleteBank
-                 SelectionMode="GridSelectionMode.Single"
-                 SelectedItems="@_selectedBankList"
-                 SelectedItemsChanged="@((IEnumerable<Bank> bankList) => SelectedBankListChanged(bankList))"
-                 OnRowClick="@OnRowClick">
-            <GridColumns>
-                <GridCommandColumn Width="50px">
-                    <GridCommandButton Command="Delete" Icon="delete" ShowInEdit="false" Enabled="!_showAddBankPanel && !_currentVendor.Exists" />
-                </GridCommandColumn>
-                <GridColumn Field=@nameof(Bank.BankAccountNumber) />
-                <GridColumn Field=@nameof(Bank.CurrencyCode) />
-                <GridColumn Field=@nameof(Bank.BeneficiaryFullName) />
-            </GridColumns>
-        </TelerikGrid>
-    </MudCard>
-}
-else if (_currentStep == "prequalification")
-{
-    <MudCard Class="k-p-8" Style="max-width:1280px; margin:auto">
-        <h3 class="k-mb-4">PRE-QUALIFICATION</h3>
-
-
-    </MudCard>
+    <RegisterSupplierBank @ref="_registerSupplierBank"
+                      @bind-CurrentPerson="_currentPerson"
+                      @bind-CurrentVendor="_currentVendor"
+                      @bind-DeletedAttachmentIdList="_deletedAttachmentIdList" 
+                      CurrencyList="@_currencyList" />
 }
 else if (_currentStep == "duediligence")
 {
-    <MudCard Class="k-p-8" Style="max-width:1280px; margin:auto">
-        <h3 class="k-mb-4">DUE DILIGENCE FORM</h3>
-
-
-    </MudCard>
+    <RegisterSupplierDueDiligence @ref="_registerSupplierDueDiligence"
+                              @bind-CurrentPerson="_currentPerson"
+                              @bind-CurrentVendor="_currentVendor"
+                              @bind-DeletedAttachmentIdList="_deletedAttachmentIdList" />
+}
+else if (_currentStep == "prequalification")
+{
+    <RegisterSupplierPrequalification @ref="_registerSupplierPrequalification"
+                                  @bind-CurrentPerson="_currentPerson"
+                                  @bind-CurrentVendor="_currentVendor"
+                                  @bind-DeletedAttachmentIdList="_deletedAttachmentIdList" />
 }
 else
 {
@@ -427,10 +68,17 @@ else
 
 @code {
     [CascadingParameter] public AppState? AppState { get; set; }
-    
+
     AppUser? _currentPerson { get; set; } = new();
     Vendor? _currentVendor { get; set; } = new();
     int _currentPageIndex { get; set; } = 0;
+    List<int> _deletedAttachmentIdList = new();
+
+    RegisterSupplierInitial? _registerSupplierInitial;
+    RegisterSupplierNda? _registerSupplierNda;
+    RegisterSupplierBank? _registerSupplierBank;
+    RegisterSupplierDueDiligence? _registerSupplierDueDiligence;
+    RegisterSupplierPrequalification? _registerSupplierPrequalification;
 
     Dictionary<int, string> _stepDictionary = new()
     {
@@ -445,39 +93,12 @@ else
     bool _isFirstPage => _currentStep == _stepDictionary.FirstOrDefault().Value;
     bool _isLastPage => _currentStep == _stepDictionary.LastOrDefault().Value;
 
-    FluentValidationValidator? _personValidator;
-    FluentValidationValidator? _vendorValidator;
-    FluentValidationValidator? _bankValidator;
-    FluentValidationValidator? _ndaValidator;
-    FluentValidationValidator? _dueDiligenceValidator;
-    FluentValidationValidator? prequalificationValidator;
-    bool _isNdaAgree = false;
-    bool _showAddBankPanel = false;
-    TelerikForm? _vendorEditForm1;
-
-    IEnumerable<Product>? _productList = new List<Product>();
-    IEnumerable<Country>? _countryList = new List<Country>();
-    IEnumerable<Analysis>? _paymentTermsList = new List<Analysis>();
-
-    IEnumerable<PrequalificationCategory> _prequalificationCategoryList = new List<PrequalificationCategory>();
-    bool _otherProductsVisible => _currentVendor != null && _currentVendor.ProvidedProductIdList != null && _productList != null && _currentVendor.ProvidedProductIdList.Contains(_productList.FirstOrDefault(e => e.Other == 1).ProductServiceId);
-    string? _paymentTermsName => _paymentTermsList?.FirstOrDefault(e => e.AnalysisCode == _currentVendor?.PaymentTermsCode)?.AnalysisName;
-
-    Bank? _selectedBank = new();
-    Bank? _originalBank = new();
-    IEnumerable<Bank>? _selectedBankList = new List<Bank>();
+    IEnumerable<Product>? _productList { get; set; } = new List<Product>();
+    IEnumerable<Country>? _countryList { get; set; } = new List<Country>();
+    IEnumerable<Analysis>? _paymentTermsList { get; set; } = new List<Analysis>();
+    IEnumerable<PrequalificationCategory>? _prequalificationCategoryList { get; set; } = new List<PrequalificationCategory>();
     IEnumerable<Currency>? _currencyList = new List<Currency>();
-    TelerikGrid<Bank>? _gridRef;
-    List<int> _deletedAttachmentIdList = new();
-
-    List<EvaluationOptions>? _selectOptions = new()
-    {
-        new EvaluationOptions { Selection=5, Name="Yes, documented" },
-        new EvaluationOptions { Selection=3, Name="Yes, but not documented" },
-        new EvaluationOptions { Selection=1, Name="No" },
-        new EvaluationOptions { Selection=0, Name="Not applicable to the industry" },
-    };
-
+    
     protected override async Task OnInitializedAsync()
     {
         OnAppStateInitialized();
@@ -486,12 +107,12 @@ else
 
     async Task LoadData()
     {
-        _currentPerson = SessionData.CurrentUser;
         _productList = await ProductService.GetAll();
         _countryList = await CountryService.GetAll();
         _paymentTermsList = await AnalysisService.GetPaymentTerms();
         _prequalificationCategoryList = await PrequalificationCategoryService.GetAll();
         _currencyList = await CurrencyService.GetAll();
+        _currentPerson = SessionData.CurrentUser;
         var currentVendor = await VendorService.GetByUserIdAsync();
         if (currentVendor != null) { SetModelNewInstance(currentVendor); }
     }
@@ -519,6 +140,8 @@ else
         _currentVendor.AgreeWithDefaultDays = vendor.AgreeWithDefaultDays;
         _currentVendor.Exists = vendor.Exists;
         _currentVendor.StatusId = vendor.StatusId;
+
+        _currentVendor.DueDiligence = vendor.DueDiligence;
     }
 
     void OnAppStateInitialized()
@@ -535,7 +158,7 @@ else
         SetButtonsAbility();
         AppState.OnBackClick += BackClickHandler;
         AppState.OnNextClick += NextClickHandler;
-        AppState.OnAddClick += AddClickHandler;
+        AppState.OnAddClick += AddBankClickHandler;
         AppState.OnSaveClick += SaveClickHandler;
         AppState.OnCustomButton04Click += SubmitClickHandler;
     }
@@ -545,20 +168,24 @@ else
         if (AppState == null) return;
         AppState.OnBackClick -= BackClickHandler;
         AppState.OnNextClick -= NextClickHandler;
-        AppState.OnAddClick -= AddClickHandler;
+        AppState.OnAddClick -= AddBankClickHandler;
         AppState.OnSaveClick -= SaveClickHandler;
         AppState.OnCustomButton04Click -= SubmitClickHandler;
     }
 
-    void BackClickHandler()
+    async void BackClickHandler()
     {
-        _currentPageIndex -= 1;
+        var isValid = await Validate();
+        if (isValid)
+        {
+            _currentPageIndex -= 1;
+        }
         SetButtonsAbility();
     }
 
-    void NextClickHandler()
+    async void NextClickHandler()
     {
-        var isValid = Validate();
+        var isValid = await Validate();
         if (isValid)
         {
             _currentPageIndex += 1;
@@ -627,7 +254,7 @@ else
 
     async Task RegisterSupplier(bool justSave)
     {
-        var isValid = Validate();
+        var isValid = await Validate();
         if (AppState != null && isValid)
         {
             AppState.Loading = true;
@@ -644,227 +271,48 @@ else
             AppState.Loading = false;
         }
     }
-
-    void ProvidedProductsChanged(List<int> selectedList)
+    
+    async Task CurrentPageIndexChangeHandler(int currentPageIndex)
     {
-        if (_currentVendor != null)
-        {
-            _currentVendor.ProvidedProductIdList = selectedList;
-            if (!_otherProductsVisible) { _currentVendor.OtherProducts = null; }
-        }
+        //var isValid = await Validate();
+        //if (isValid)
+        //{
+        //    _currentPageIndex = currentPageIndex;
+        //}
+        //SetButtonsAbility();
     }
-
-    void PrequalificationCategoryListChanged(List<int> selectedList)
-    {
-        if (_currentVendor != null)
-        {
-            _currentVendor.PrequalificationCategoryIdList = selectedList;
-        }
-    }
-
-    void AgreeWithDefaultDaysChanged(bool isAgree)
-    {
-        if (_currentVendor != null)
-        {
-            _currentVendor.AgreeWithDefaultDays = isAgree;
-            if (isAgree) { _currentVendor.CreditDays = 60; }
-        }
-    }
-
-    async Task TaxIdBlured(string taxId)
-    {
-        Vendor? vendor = new();
-        if (_currentVendor != null && _currentVendor.TaxId != null) { vendor = await VendorService.GetByTaxIdAsync(_currentVendor.TaxId); }
-        if (vendor != null && vendor.TaxId != null && vendor.TaxId.Length > 0)
-        {
-            _currentVendor = vendor;
-            if (_currentVendor.StatusId > 0)
-            {
-                _currentVendor.Exists = true;
-            }
-            else
-            {
-                _currentVendor.Exists = false;
-            }
-        }
-        else
-        {
-            _currentVendor.Exists = false;
-        }
-    }
-
-
-    // ----- Page Bank -----
-
-    public void AddBank()
-    {
-        if (!_showAddBankPanel)
-        {
-            _selectedBank = new() { IsNewItem = true, CurrencyCode = "AZN" };
-            _originalBank = new();
-            _showAddBankPanel = true;
-            AppState.Refresh();
-        }
-    }
-
-    void OnRowClick(GridRowClickEventArgs args)
-    {
-        if (!_showAddBankPanel)
-        {
-            var argsItem = args.Item as Bank;
-            //argsItem.RowIndex = _currentVendor.BankList.IndexOf(argsItem);
-            _selectedBank = new Bank().GetInstanceClone(argsItem);
-            _originalBank = argsItem;
-            _showAddBankPanel = true;
-        }
-    }
-
-    void SelectedBankListChanged(IEnumerable<Bank> bankList)
-    {
-        if (!_showAddBankPanel)
-        {
-            _selectedBankList = bankList;
-        }
-    }
-
-    void BankSaveHandler()
-    {
-        var isValid = Validate() && _bankValidator != null && _bankValidator.Validate(options => options.IncludeAllRuleSets());
-        if (isValid)
-        {
-            var index = _currentVendor?.BankList?.IndexOf(_originalBank);
-            if (index > -1)
-            {
-                _currentVendor?.BankList.Remove(_originalBank);
-            }
-            _currentVendor?.BankList?.Add(_selectedBank);
-            _showAddBankPanel = false;
-            _selectedBank = new();
-            _selectedBankList = new List<Bank>();
-            _gridRef.Rebind();
-            AppState.ShowAlert("Bank details successfully saved", Severity.Success);
-        }
-        else
-        {
-            AppState.ShowAlert("Validation error", Severity.Error);
-        }
-    }
-
-    void BankCancelHandler()
-    {
-        _showAddBankPanel = false;
-        _selectedBank = new();
-        _originalBank = new();
-        _selectedBankList = new List<Bank>();
-    }
-
-    void DeleteBank(GridCommandEventArgs args)
-    {
-        _selectedBank = args.Item as Bank;
-        _currentVendor.BankList.Remove(_selectedBank);
-    }
-
-    bool ValidateCurrencyCodes()
-    {
-        var isAzerbaijan = _currentVendor != null && _currentVendor.CountryCode != null ? _currentVendor.CountryCode == "AZ" : false;
-        var isAzn = _currentVendor != null && _currentVendor.BankList != null && _currentVendor.BankList.Any(e => e.CurrencyCode == "AZN") ? true : false;
-        if (isAzerbaijan && !isAzn)
-        {
-            return false;
-        }
-        return true;
-    }
-
-    public class EvaluationOptions
-    {
-        public int Selection { get; set; }
-        public string? Name { get; set; }
-    }
-
-    public void AddClickHandler()
-    {
-        AddBank();
-    }
-
-    void CurrentPersonChangedHandler(AppUser currentPerson)
-    {
-        _currentPerson = currentPerson;
-    }
-
-    void CurrentVendorChangedHandler(Vendor currentVendor)
-    {
-        _currentVendor = currentVendor;
-    }
-
-    void CurrentPageIndexChangeHandler(int currentPageIndex)
-    {
-        var isValid = Validate();
-        if (isValid)
-        {
-            _currentPageIndex = currentPageIndex;
-        }
-        SetButtonsAbility();
-    }
-
-    void OnAttachmentDeleteHandler(List<Attachment> deletedAttachments)
-    {
-        _deletedAttachmentIdList = deletedAttachments.Select(e => e.AttachmentId).Where(s => s > 0).ToList();
-    }
-
-    bool ValidatePerson()
-    {
-        if (_personValidator != null) { return _personValidator.Validate(options => options.IncludeRuleSets(nameof(AppUser.FullName))); }
-        return false;
-    }
-
-    bool ValidateVendor()
-    {
-        if (_vendorValidator != null) { return _vendorValidator.Validate(options => options.IncludeAllRuleSets()); }
-        return false;
-    }
-
-    bool Validate()
+    
+    async Task<bool> Validate()
     {
         if (_currentStep == "initial")
         {
-            return ValidatePerson() && ValidateVendor();
+            return await _registerSupplierInitial.Validate();
         }
         else if (_currentStep == "nda")
         {
-            if (!_currentVendor.IsAgree)
-            {
-                AppState.ShowAlert("Check an agreement to continue", Severity.Error);
-            }
-            return _currentVendor.IsAgree;
+            return await _registerSupplierNda.Validate();
         }
         else if (_currentStep == "bank")
         {
-            var isBankListValid = _currentVendor != null && _currentVendor.BankList != null && _currentVendor.BankList.Any();
-            var isCurrencyValid = ValidateCurrencyCodes();
-            if (!isBankListValid)
-            {
-                AppState.ShowAlert("Add bank details", Severity.Error);
-            }
-            if (!isCurrencyValid)
-            {
-                AppState.ShowAlert("Currency code for Azerbaijan must be AZN. Delete and Re-create", Severity.Error);
-            }
-            return isBankListValid && isCurrencyValid;
+            return await _registerSupplierBank.Validate();
         }
         else if (_currentStep == "duediligence")
         {
-            //_dueDiligenceValidator
-            return true;
+            return await _registerSupplierDueDiligence.Validate();
         }
         else if (_currentStep == "prequalification")
         {
-            //prequalificationValidator
-            return true;
+            return await _registerSupplierPrequalification.Validate();
         }
         else
         {
             return false;
         }
+    }
+
+    void AddBankClickHandler()
+    {
+        _registerSupplierBank.AddBank();
     }
 }
 

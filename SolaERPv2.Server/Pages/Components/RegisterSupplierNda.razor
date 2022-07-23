@@ -1,0 +1,61 @@
+﻿<MudCard Class="k-p-8" Style="max-width:1280px; margin:auto">
+    <h3 class="k-mb-4">CONFIDENTIALITY AGREEMENT</h3>
+
+    <RegisterSupplierAgreement CurrentBusinessUnit="new BusinessUnit()" CurrentVendor="@(CurrentVendor)" />
+    <div class="k-px-4">
+        <TelerikGridLayout ColumnSpacing="16px">
+            <GridLayoutRows>
+                <GridLayoutRow Height="52px"></GridLayoutRow>
+                <GridLayoutRow></GridLayoutRow>
+            </GridLayoutRows>
+            <GridLayoutItems>
+                <GridLayoutItem Row="1" Column="1">
+                    <strong>SOCAR-STP</strong>
+                </GridLayoutItem>
+                <GridLayoutItem Row="1" Column="2">
+                    <strong>@(CurrentVendor.VendorName)</strong>
+                    <div class="k-my-2">@(SessionData.CurrentUser.FullName)</div>
+                </GridLayoutItem>
+                <GridLayoutItem Row="2" Column="1" ColumnSpan="2">
+                    <div class="k-px-4 k-py-2" style="background: var(--checkbox-background)">
+                        <TelerikCheckBox Id="cbxAgree" Size="lg" @bind-Value="@(CurrentVendor.IsAgree)" />
+                        <span class="k-pl-2">I agree</span>
+                    </div>
+                </GridLayoutItem>
+            </GridLayoutItems>
+        </TelerikGridLayout>
+    </div>
+</MudCard>
+
+
+@code {
+    [CascadingParameter] public AppState? AppState { get; set; }
+
+    [Parameter] public AppUser? CurrentPerson { get; set; } = new();
+    [Parameter] public EventCallback<AppUser> CurrentPersonChanged { get; set; }
+    [Parameter] public Vendor? CurrentVendor { get; set; } = new();
+    [Parameter] public EventCallback<Vendor> CurrentVendorChanged { get; set; }
+    [Parameter] public List<int> DeletedAttachmentIdList { get; set; } = new();
+    [Parameter] public EventCallback<List<int>> DeletedAttachmentIdListChanged { get; set; }
+
+    FluentValidationValidator? _ndaValidator;
+    //bool _isNdaAgree = false;
+
+    public async Task<bool> Validate()
+    {
+        await CurrentPersonChanged.InvokeAsync(CurrentPerson);
+        await CurrentVendorChanged.InvokeAsync(CurrentVendor);
+        if (!CurrentVendor.IsAgree)
+        {
+            AppState.ShowAlert("Check an agreement to continue", Severity.Error);
+        }
+        return CurrentVendor.IsAgree;
+    }
+
+    async Task OnAttachmentDeleteHandler(List<Attachment> deletedAttachments)
+    {
+        var idList = deletedAttachments.Select(e => e.AttachmentId);
+        DeletedAttachmentIdList.AddRange(idList);
+        await DeletedAttachmentIdListChanged.InvokeAsync(DeletedAttachmentIdList);
+    }
+}

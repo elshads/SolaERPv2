@@ -1,0 +1,48 @@
+﻿<MudCard Class="k-p-8" Style="max-width:1280px; margin:auto">
+    <h3 class="k-mb-4">PRE-QUALIFICATION</h3>
+
+
+</MudCard>
+
+
+@code {
+    [CascadingParameter] public AppState? AppState { get; set; }
+
+    [Parameter] public AppUser? CurrentPerson { get; set; } = new();
+    [Parameter] public EventCallback<AppUser> CurrentPersonChanged { get; set; }
+    [Parameter] public Vendor? CurrentVendor { get; set; } = new();
+    [Parameter] public EventCallback<Vendor> CurrentVendorChanged { get; set; }
+    [Parameter] public List<int> DeletedAttachmentIdList { get; set; } = new();
+    [Parameter] public EventCallback<List<int>> DeletedAttachmentIdListChanged { get; set; }
+
+    FluentValidationValidator? _prequalificationValidator;
+
+    List<EvaluationOptions>? _selectOptions = new()
+    {
+        new EvaluationOptions { Selection=5, Name="Yes, documented" },
+        new EvaluationOptions { Selection=3, Name="Yes, but not documented" },
+        new EvaluationOptions { Selection=1, Name="No" },
+        new EvaluationOptions { Selection=0, Name="Not applicable to the industry" },
+    };
+
+    public async Task<bool> Validate()
+    {
+        await CurrentPersonChanged.InvokeAsync(CurrentPerson);
+        await CurrentVendorChanged.InvokeAsync(CurrentVendor);
+        //evaluate and return
+        return true;
+    }
+
+    async Task OnAttachmentDeleteHandler(List<Attachment> deletedAttachments)
+    {
+        var idList = deletedAttachments.Select(e => e.AttachmentId);
+        DeletedAttachmentIdList.AddRange(idList);
+        await DeletedAttachmentIdListChanged.InvokeAsync(DeletedAttachmentIdList);
+    }
+
+    public class EvaluationOptions
+    {
+        public int Selection { get; set; }
+        public string? Name { get; set; }
+    }
+}

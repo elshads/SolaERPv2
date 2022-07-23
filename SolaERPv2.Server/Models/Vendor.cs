@@ -9,7 +9,7 @@ public class Vendor : BaseModel
     public string? TaxId { get; set; }
     public string? CompanyLocation { get; set; }
     public string? CompanyAddress { get; set; }
-    public DateTime CompanyRegistrationDate{ get; set; }
+    public DateTime CompanyRegistrationDate{ get; set; } = DateTime.Now;
     public string? CompanyWebsite { get; set; }
     public List<Attachment>? CompanyLogo { get; set; }
     public int CompanyLogoId { get; set; }
@@ -39,4 +39,5 @@ public class Vendor : BaseModel
     public int Sequence { get; set; }
     public bool IsAgree { get; set; }
     public string? ApproveStatusName { get; set; }
+    public DueDiligence? DueDiligence { get; set; } = new();
 }
