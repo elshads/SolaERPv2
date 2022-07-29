@@ -210,14 +210,14 @@
     [Parameter] public IEnumerable<Country>? CountryList { get; set; } = new List<Country>();
     [Parameter] public IEnumerable<Analysis>? PaymentTermsList { get; set; } = new List<Analysis>();
     [Parameter] public IEnumerable<PrequalificationCategory>? PrequalificationCategoryList { get; set; } = new List<PrequalificationCategory>();
-    
+
     bool _otherProductsVisible => CurrentVendor != null && CurrentVendor.ProvidedProductIdList != null && ProductList != null && CurrentVendor.ProvidedProductIdList.Any(p => ProductList.Where(e => e.Other == 1).Select(s => s.ProductServiceId).Contains(p));
     string? _paymentTermsName => PaymentTermsList?.FirstOrDefault(e => e.AnalysisCode == CurrentVendor?.PaymentTermsCode)?.AnalysisName;
 
     FluentValidationValidator? _personValidator;
     FluentValidationValidator? _vendorValidator;
     TelerikForm? _vendorEditForm;
-    
+
     bool ValidatePerson()
     {
         return _personValidator != null && _personValidator.Validate(options => options.IncludeAllRuleSets());

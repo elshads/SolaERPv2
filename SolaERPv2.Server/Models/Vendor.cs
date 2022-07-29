@@ -39,5 +39,5 @@ public class Vendor : BaseModel
     public int Sequence { get; set; }
     public bool IsAgree { get; set; }
     public string? ApproveStatusName { get; set; }
-    public DueDiligence? DueDiligence { get; set; } = new();
+    public List<DueDiligence>? DueDiligenceList { get; set; }
 }

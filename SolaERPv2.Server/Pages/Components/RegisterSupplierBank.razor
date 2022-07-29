@@ -164,6 +164,7 @@
     [Parameter] public List<int> DeletedAttachmentIdList { get; set; } = new();
     [Parameter] public EventCallback<List<int>> DeletedAttachmentIdListChanged { get; set; }
 
+
     [Parameter] public IEnumerable<Currency>? CurrencyList { get; set; } = new List<Currency>();
 
     FluentValidationValidator? _bankValidator;

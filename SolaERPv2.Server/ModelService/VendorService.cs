@@ -145,11 +145,12 @@ public class VendorService : BaseModelService<Vendor>
         p.Add("@UserId", currentUser.Id, DbType.Int32, ParameterDirection.Input);
 
         using IDbConnection cn = new SqlConnection(_sqlDataAccess.ConnectionString);
-        _ = await cn.QueryAsync<Vendor, Bank, string, string, int, Vendor>("dbo.SP_ZZZTest",
-            (vendor, bank, repComp, repProd, product) =>
+        _ = await cn.QueryAsync<Vendor, DueDiligence, Bank, string, string, int, Vendor>("dbo.SP_VendorByUserId",
+            (vendor, dueDiligence, bank, repComp, repProd, product) =>
             {
                 if (!result.ContainsKey(vendor.VendorId))
                 {
+                    vendor.DueDiligenceList = new();
                     vendor.BankList = new();
                     vendor.RepresentedCompanyList = new();
                     vendor.RepresentedProductList = new();
@@ -157,6 +158,7 @@ public class VendorService : BaseModelService<Vendor>
                     result.Add(vendor.VendorId, vendor);
                 }
                 var currentVendor = result[vendor.VendorId];
+                if (dueDiligence != null && !currentVendor.DueDiligenceList.Select(e => e.DueDiligenceDesignId).Contains(dueDiligence.DueDiligenceDesignId)) { currentVendor.DueDiligenceList.Add(dueDiligence); }
                 if (bank != null && !currentVendor.BankList.Select(e => e.BankId).Contains(bank.BankId)) { currentVendor.BankList.Add(bank); }
                 if (repComp != null && !currentVendor.RepresentedCompanyList.Contains(repComp)) { currentVendor.RepresentedCompanyList.Add(repComp); }
                 if (repProd != null && !currentVendor.RepresentedProductList.Contains(repProd)) { currentVendor.RepresentedProductList.Add(repProd); }
@@ -164,8 +166,10 @@ public class VendorService : BaseModelService<Vendor>
                 return vendor;
             },
             param: p,
-            splitOn: "VendorId,BankId,RepresentedCompanyName,RepresentedProductName,ProductServiceId",
+            splitOn: "VendorId,DueDiligenceDesignId,BankId,RepresentedCompanyName,RepresentedProductName,ProductServiceId",
             commandType: CommandType.StoredProcedure);
+
+        // add attachments
 
         return result.Values.FirstOrDefault();
     }

@@ -1,6 +1,109 @@
-﻿<MudCard Class="k-p-8" Style="max-width:1280px; margin:auto">
+﻿
+<MudCard Class="k-p-8" Style="max-width:1280px; margin:auto">
     <h3 class="k-mb-4">DUE DILIGENCE FORM</h3>
 
+    <TelerikForm Model="@CurrentVendor?.DueDiligenceList" Orientation="FormOrientation.Horizontal">
+        <FormValidation>
+            <FluentValidationValidator @ref="_dueDiligenceValidator" DisableAssemblyScanning="true" />
+        </FormValidation>
+        <FormItems>
+            @foreach (var group in _dueDiligenceGroupList)
+            {
+                <FormGroup LabelText="@group">
+                    @foreach (var design in DueDiligenceDesignList)
+                    {
+                        var currentGroup = DueDiligenceDesignList?.FirstOrDefault(e => design.Title == group);
+                        var currentDueDiligence = CurrentVendor?.DueDiligenceList?.FirstOrDefault(e => e.DueDiligenceDesignId == design.DueDiligenceDesignId);
+                        @if (currentGroup != null)
+                        {
+                            <FormItem>
+                                <Template>
+                                    <MudGrid Spacing="1">
+                                        <MudItem xs="12" md="4">
+                                            <label class="pt-1 mr-4">@design.Label</label>
+                                        </MudItem>
+                                        <MudItem xs="12" md="8">
+                                            <MudGrid Spacing="1">
+                                                <MudItem xs="12" md="8">
+                                                    @if (currentDueDiligence != null)
+                                                    {
+                                                        <div class="d-flex flex-nowrap">
+                                                            @if (design.HasRadiobox)
+                                                            {
+                                                                <TelerikRadioGroup Class="mr-4 radio-value" Data="@_radioSelectionList"
+                                                               @bind-Value="@currentDueDiligence.RadioboxValue"
+                                                               Layout="RadioGroupLayout.Horizontal"
+                                                               ValueField="Value"
+                                                               TextField="Text" />
+                                                            }
+                                                            @if (design.HasCheckbox)
+                                                            {
+                                                                <TelerikCheckBox Class="mr-4" @bind-Value="@currentDueDiligence.CheckboxValue" />
+                                                            }
+                                                            @if (design.HasInt)
+                                                            {
+                                                                <TelerikNumericTextBox Class="mr-4" @bind-Value="currentDueDiligence.IntValue" Arrows="false" />
+                                                            }
+                                                            @if (design.HasDecimal)
+                                                            {
+                                                                <TelerikNumericTextBox Class="mr-4" @bind-Value="currentDueDiligence.DecimalValue" Arrows="false" />
+                                                            }
+                                                            @if (design.HasTextbox)
+                                                            {
+                                                                <TelerikTextBox Class="mr-4" @bind-Value="@currentDueDiligence.TextboxValue" />
+                                                            }
+                                                            @if (design.HasTextarea)
+                                                            {
+                                                                <TelerikTextArea Class="mr-4" @bind-Value="@currentDueDiligence.TextareaValue" />
+                                                            }
+                                                            @if (design.HasDateTime)
+                                                            {
+                                                                <TelerikDatePicker Class="mr-4" @bind-Value="@currentDueDiligence.DateTimeValue" />
+                                                            }
+                                                            @if (design.HasBankList)
+                                                            {
+                                                                <div class="mr-4">
+                                                                    <div>currentDueDiligence.BankList</div>
+                                                                </div>
+                                                            }
+                                                            @if (design.HasAttachment)
+                                                            {
+                                                                <div class="mr-4">
+                                                                    <AttachmentDialog @bind-AttachmentList="@currentDueDiligence.AttachmentValue" />
+                                                                </div>
+                                                            }
+                                                        </div>
+                                                    }
+                                                </MudItem>
+                                                <MudItem xs="12" md="4">
+                                                    <MudGrid Spacing="1" Class="scoring-values">
+                                                        @if (currentDueDiligence != null)
+                                                        {
+                                                            var outcome = currentDueDiligence.Scoring * design.Weight;
+                                                            <MudItem xs="4">
+                                                                <TelerikNumericTextBox Class="scoring" @bind-Value="currentDueDiligence.Scoring" Arrows="false" Min="1" Max="100" />
+                                                            </MudItem>
+                                                            <MudItem xs="4">
+                                                                <TelerikNumericTextBox Class="weight" Value="design.Weight" ValueExpression="() => design.Weight" Arrows="false" Enabled=false />
+                                                            </MudItem>
+                                                            <MudItem xs="4">
+                                                                <TelerikNumericTextBox Class="outcome" Value="outcome" ValueExpression="() => outcome" Arrows="false" Enabled=false />
+                                                            </MudItem>
+                                                        }
+                                                    </MudGrid>
+                                                </MudItem>
+                                            </MudGrid>
+                                        </MudItem>
+                                    </MudGrid>
+                                </Template>
+                            </FormItem>
+                        }
+                    }
+                </FormGroup>
+            }
+        </FormItems>
+        <FormButtons />
+    </TelerikForm>
 
 </MudCard>
 
@@ -12,10 +115,23 @@
     [Parameter] public EventCallback<AppUser> CurrentPersonChanged { get; set; }
     [Parameter] public Vendor? CurrentVendor { get; set; } = new();
     [Parameter] public EventCallback<Vendor> CurrentVendorChanged { get; set; }
-    [Parameter] public List<int> DeletedAttachmentIdList { get; set; } = new();
+    [Parameter] public List<int>? DeletedAttachmentIdList { get; set; } = new();
     [Parameter] public EventCallback<List<int>> DeletedAttachmentIdListChanged { get; set; }
+    [Parameter] public IEnumerable<DueDiligenceDesign>? DueDiligenceDesignList { get; set; } = new List<DueDiligenceDesign>();
 
     FluentValidationValidator? _dueDiligenceValidator;
+
+
+    List<RadioSelection> _radioSelectionList = new() { new RadioSelection { Value = false, Text = "No" }, new RadioSelection { Value = true, Text = "Yes" } };
+    DueDiligence? _currentDueDiligence = new();
+    IEnumerable<string>? _dueDiligenceGroupList => DueDiligenceDesignList != null ? DueDiligenceDesignList?.Select(e => e.Title)?.Distinct() : new List<string>();
+
+    bool isScoringEnabled = true;
+    bool isWeightEnabled = false;
+    decimal minScoring = 1m;
+    decimal maxScoring = 100m;
+    decimal minWeight = 0.01m;
+    decimal maxWeight = 1m;
 
     public async Task<bool> Validate()
     {
@@ -28,7 +144,43 @@
     async Task OnAttachmentDeleteHandler(List<Attachment> deletedAttachments)
     {
         var idList = deletedAttachments.Select(e => e.AttachmentId);
-        DeletedAttachmentIdList.AddRange(idList);
+        DeletedAttachmentIdList?.AddRange(idList);
         await DeletedAttachmentIdListChanged.InvokeAsync(DeletedAttachmentIdList);
     }
 }
+
+<style>
+    .scoring-values {
+    }
+
+        .scoring-values .k-input-inner {
+            text-align: end;
+            font-size: 0.75rem;
+            padding: 5px 8px;
+        }
+
+        .scoring-values .k-state-disabled, .k-widget[disabled], .k-disabled {
+            opacity: 1;
+        }
+
+        .scoring-values .scoring {
+            color: var(--mud-palette-info);
+        }
+
+        .scoring-values .weight {
+            color: var(--mud-palette-info);
+        }
+
+        .scoring-values .outcome {
+            color: #fff;
+            background-color: var(--mud-palette-info);
+        }
+
+            .scoring-values .outcome.k-rounded-md {
+                border-radius: 16px;
+            }
+
+    .radio-value .k-radio-list-horizontal, .k-radio-list.k-list-horizontal {
+        min-width: 6.875rem;
+    }
+</style>
