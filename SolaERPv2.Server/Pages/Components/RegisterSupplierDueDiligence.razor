@@ -2,6 +2,22 @@
 <MudCard Class="k-p-8" Style="max-width:1280px; margin:auto">
     <h3 class="k-mb-4">DUE DILIGENCE FORM</h3>
 
+    <MudGrid Spacing="1">
+        <MudItem xs="12" md="4"></MudItem>
+        <MudItem xs="12" md="8">
+            <MudGrid Spacing="1">
+                <MudItem xs="12" md="8"></MudItem>
+                <MudItem xs="12" md="4">
+                    <MudGrid Spacing="1" Class="scoring-values">
+                        <MudItem xs="4"><div class="pr-2 scoring-title">Scoring</div></MudItem>
+                        <MudItem xs="4"><div class="pr-2 scoring-title">Weight</div></MudItem>
+                        <MudItem xs="4"><div class="pr-2 scoring-title">Outcome</div></MudItem>
+                    </MudGrid>
+                </MudItem>
+            </MudGrid>
+        </MudItem>
+    </MudGrid>
+
     <TelerikForm Model="@CurrentVendor?.DueDiligenceList" Orientation="FormOrientation.Horizontal">
         <FormValidation>
             <FluentValidationValidator @ref="_dueDiligenceValidator" DisableAssemblyScanning="true" />
@@ -97,7 +113,7 @@
                                                     <MudGrid Spacing="1" Class="scoring-values">
                                                         @if (currentDueDiligence != null)
                                                         {
-                                                            var outcome = currentDueDiligence.Scoring * design.Weight;
+                                                            var outcome = _totalWeight != 0 ? currentDueDiligence.Scoring * (design.Weight / _totalWeight) : 0;
                                                             <MudItem xs="4">
                                                                 <TelerikNumericTextBox Class="scoring" @bind-Value="currentDueDiligence.Scoring" Arrows="false" Min="1" Max="100" />
                                                             </MudItem>
@@ -146,6 +162,7 @@
 
     string _selectedBankAccount = "";
     List<int> _disabledLines = new() { 1, 2, 3, 4, 5, 6, 7 };
+    decimal _totalWeight => DueDiligenceDesignList != null ? DueDiligenceDesignList.Sum(e => e.Weight) : 0;
 
     protected override void OnInitialized()
     {
@@ -180,6 +197,11 @@
 
         .scoring-values .k-state-disabled, .k-widget[disabled], .k-disabled {
             opacity: 1;
+        }
+
+        .scoring-values .scoring-title {
+            color: var(--mud-palette-info);
+            text-align: end;
         }
 
         .scoring-values .scoring {
