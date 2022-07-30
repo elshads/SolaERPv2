@@ -21,6 +21,7 @@
     </TelerikStepper>
 </MudCard>
 
+
 @if (_currentStep == "initial")
 {
     <RegisterSupplierInitial @ref="_registerSupplierInitial"
@@ -69,6 +70,7 @@ else
 
 
 @code {
+
     [CascadingParameter] public AppState? AppState { get; set; }
 
     AppUser? _currentPerson { get; set; } = new();

@@ -34,37 +34,55 @@
                                                                @bind-Value="@currentDueDiligence.RadioboxValue"
                                                                Layout="RadioGroupLayout.Horizontal"
                                                                ValueField="Value"
-                                                               TextField="Text" />
+                                                               TextField="Text"
+                                                               Enabled="!_disabledLines.Contains(design.LineNo)" />
                                                             }
                                                             @if (design.HasCheckbox)
                                                             {
-                                                                <TelerikCheckBox Class="mr-4" @bind-Value="@currentDueDiligence.CheckboxValue" />
+                                                                <TelerikCheckBox Enabled="!_disabledLines.Contains(design.LineNo)" Class="mr-4" @bind-Value="@currentDueDiligence.CheckboxValue" />
                                                             }
                                                             @if (design.HasInt)
                                                             {
-                                                                <TelerikNumericTextBox Class="mr-4" @bind-Value="currentDueDiligence.IntValue" Arrows="false" />
+                                                                <TelerikNumericTextBox Enabled="!_disabledLines.Contains(design.LineNo)" Class="mr-4" @bind-Value="currentDueDiligence.IntValue" Arrows="false" />
                                                             }
                                                             @if (design.HasDecimal)
                                                             {
-                                                                <TelerikNumericTextBox Class="mr-4" @bind-Value="currentDueDiligence.DecimalValue" Arrows="false" />
+                                                                <TelerikNumericTextBox Enabled="!_disabledLines.Contains(design.LineNo)" Class="mr-4" @bind-Value="currentDueDiligence.DecimalValue" Arrows="false" />
                                                             }
                                                             @if (design.HasTextbox)
                                                             {
-                                                                <TelerikTextBox Class="mr-4" @bind-Value="@currentDueDiligence.TextboxValue" />
+                                                                <TelerikTextBox Enabled="!_disabledLines.Contains(design.LineNo)" Class="mr-4" @bind-Value="@currentDueDiligence.TextboxValue" />
                                                             }
                                                             @if (design.HasTextarea)
                                                             {
-                                                                <TelerikTextArea Class="mr-4" @bind-Value="@currentDueDiligence.TextareaValue" />
+                                                                <TelerikTextArea Enabled="!_disabledLines.Contains(design.LineNo)" Class="mr-4" @bind-Value="@currentDueDiligence.TextareaValue" />
                                                             }
                                                             @if (design.HasDateTime)
                                                             {
-                                                                <TelerikDatePicker Class="mr-4" @bind-Value="@currentDueDiligence.DateTimeValue" />
+                                                                <TelerikDatePicker Enabled="!_disabledLines.Contains(design.LineNo)" Class="mr-4" @bind-Value="@currentDueDiligence.DateTimeValue" />
                                                             }
                                                             @if (design.HasBankList)
                                                             {
-                                                                <div class="mr-4">
-                                                                    <div>currentDueDiligence.BankList</div>
-                                                                </div>
+                                                                @if (CurrentVendor != null && CurrentVendor.BankList != null)
+                                                                {
+                                                                    <span class="mr-4 pt-1" style="white-space: nowrap;">
+                                                                        Bank accounts: @CurrentVendor.BankList.Count()
+                                                                    </span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span class="mr-4 pt-1" style="white-space: nowrap;">
+                                                                        Bank accounts: 0
+                                                                    </span>
+                                                                }
+                                                                <TelerikDropDownList Data="@CurrentVendor.BankList"
+                                                                 Enabled="!_disabledLines.Contains(design.LineNo)"
+                                                                 @bind-Value="@_selectedBankAccount"
+                                                                 TItem="Bank"
+                                                                 TValue="string"
+                                                                 Class="mr-4"
+                                                                 TextField="@nameof(Bank.BankAccountNumber)"
+                                                                 ValueField="@nameof(Bank.BankAccountNumber)" />
                                                             }
                                                             @if (design.HasAttachment)
                                                             {
@@ -126,12 +144,13 @@
     DueDiligence? _currentDueDiligence = new();
     IEnumerable<string>? _dueDiligenceGroupList => DueDiligenceDesignList != null ? DueDiligenceDesignList?.Select(e => e.Title)?.Distinct() : new List<string>();
 
-    bool isScoringEnabled = true;
-    bool isWeightEnabled = false;
-    decimal minScoring = 1m;
-    decimal maxScoring = 100m;
-    decimal minWeight = 0.01m;
-    decimal maxWeight = 1m;
+    string _selectedBankAccount = "";
+    List<int> _disabledLines = new() { 1, 2, 3, 4, 5, 6, 7 };
+
+    protected override void OnInitialized()
+    {
+        _selectedBankAccount = CurrentVendor != null && CurrentVendor.BankList != null && CurrentVendor.BankList.Any() ? CurrentVendor.BankList.FirstOrDefault().BankAccountNumber : "";
+    }
 
     public async Task<bool> Validate()
     {
