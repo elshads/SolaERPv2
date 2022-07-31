@@ -75,7 +75,7 @@
                                                             }
                                                             @if (design.HasDateTime)
                                                             {
-                                                                <TelerikDatePicker Enabled="!_disabledLines.Contains(design.LineNo)" Class="mr-4" @bind-Value="@currentDueDiligence.DateTimeValue" />
+                                                                <TelerikDatePicker T="DateTime" Enabled="!_disabledLines.Contains(design.LineNo)" Class="mr-4" @bind-Value="@currentDueDiligence.DateTimeValue" />
                                                             }
                                                             @if (design.HasBankList)
                                                             {
@@ -167,6 +167,86 @@
     protected override void OnInitialized()
     {
         _selectedBankAccount = CurrentVendor != null && CurrentVendor.BankList != null && CurrentVendor.BankList.Any() ? CurrentVendor.BankList.FirstOrDefault().BankAccountNumber : "";
+        SetDueDiligenceValues();
+    }
+
+    void SetDueDiligenceValues()
+    {
+        if (DueDiligenceDesignList != null && DueDiligenceDesignList.Any())
+        {
+            var dueDiligenceDesignList = DueDiligenceDesignList.ToList();
+            
+            var design01Index = dueDiligenceDesignList.FindIndex(e => e.LineNo == 1);
+            var design02Index = dueDiligenceDesignList.FindIndex(e => e.LineNo == 2);
+            var design03Index = dueDiligenceDesignList.FindIndex(e => e.LineNo == 3);
+            var design04Index = dueDiligenceDesignList.FindIndex(e => e.LineNo == 4);
+            var design05Index = dueDiligenceDesignList.FindIndex(e => e.LineNo == 5);
+            var design06Index = dueDiligenceDesignList.FindIndex(e => e.LineNo == 6);
+            var design07Index = dueDiligenceDesignList.FindIndex(e => e.LineNo == 7);
+            var design08Index = dueDiligenceDesignList.FindIndex(e => e.LineNo == 8);
+
+            var design01Id = design01Index > -1 ? dueDiligenceDesignList[design01Index].DueDiligenceDesignId : 0;
+            var design02Id = design02Index > -1 ? dueDiligenceDesignList[design02Index].DueDiligenceDesignId : 0;
+            var design03Id = design03Index > -1 ? dueDiligenceDesignList[design03Index].DueDiligenceDesignId : 0;
+            var design04Id = design04Index > -1 ? dueDiligenceDesignList[design04Index].DueDiligenceDesignId : 0;
+            var design05Id = design05Index > -1 ? dueDiligenceDesignList[design05Index].DueDiligenceDesignId : 0;
+            var design06Id = design06Index > -1 ? dueDiligenceDesignList[design06Index].DueDiligenceDesignId : 0;
+            var design07Id = design07Index > -1 ? dueDiligenceDesignList[design07Index].DueDiligenceDesignId : 0;
+            var design08Id = design08Index > -1 ? dueDiligenceDesignList[design08Index].DueDiligenceDesignId : 0;
+
+            if (CurrentVendor.DueDiligenceList.Any())
+            {
+                var line01Index = CurrentVendor.DueDiligenceList.FindIndex(e => e.DueDiligenceDesignId == design01Id);
+                var line02Index = CurrentVendor.DueDiligenceList.FindIndex(e => e.DueDiligenceDesignId == design02Id);
+                var line03Index = CurrentVendor.DueDiligenceList.FindIndex(e => e.DueDiligenceDesignId == design03Id);
+                var line04Index = CurrentVendor.DueDiligenceList.FindIndex(e => e.DueDiligenceDesignId == design04Id);
+                var line05Index = CurrentVendor.DueDiligenceList.FindIndex(e => e.DueDiligenceDesignId == design05Id);
+                var line06Index = CurrentVendor.DueDiligenceList.FindIndex(e => e.DueDiligenceDesignId == design06Id);
+                var line07Index = CurrentVendor.DueDiligenceList.FindIndex(e => e.DueDiligenceDesignId == design07Id);
+                var line08Index = CurrentVendor.DueDiligenceList.FindIndex(e => e.DueDiligenceDesignId == design08Id);
+
+                if (line01Index > -1)
+                {
+                    CurrentVendor.DueDiligenceList[line01Index].TextboxValue = CurrentVendor.VendorName;
+                }
+
+                if (line02Index > -1)
+                {
+                    CurrentVendor.DueDiligenceList[line02Index].TextboxValue = CurrentVendor.CompanyWebsite;
+                }
+
+                if (line03Index > -1)
+                {
+                    CurrentVendor.DueDiligenceList[line03Index].TextboxValue = CurrentVendor.CountryCode;
+                    CurrentVendor.DueDiligenceList[line03Index].DateTimeValue = CurrentVendor.CompanyRegistrationDate;
+                }
+
+                if (line04Index > -1)
+                {
+                    CurrentVendor.DueDiligenceList[line04Index].TextboxValue = CurrentVendor.CompanyLocation;
+                }
+
+                if (line05Index > -1)
+                {
+                    CurrentVendor.DueDiligenceList[line05Index].TextboxValue = CurrentVendor.TaxId;
+                }
+
+                if (line06Index > -1)
+                {
+                    CurrentVendor.DueDiligenceList[line06Index].TextboxValue = CurrentVendor.TaxId;
+                }
+
+                if (line07Index > -1)
+                {
+                    CurrentVendor.DueDiligenceList[line07Index].TextareaValue = CurrentVendor.CompanyAddress;
+                }
+
+                if (line08Index > -1)
+                {
+                    CurrentVendor.DueDiligenceList[line08Index].BankList = CurrentVendor.BankList;
+                }
+            }
+        }
     }
 
     public async Task<bool> Validate()

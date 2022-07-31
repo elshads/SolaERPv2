@@ -5,7 +5,7 @@ public class SqlDataAccess
     public string? ConnectionString { get; private set; }
     public SqlDataAccess(string connectionString) => ConnectionString = connectionString;
 
-    public async Task<IEnumerable<T>?> QueryAll<T>(string sql, DynamicParameters? p, string errorMessageSource, CommandType commandType = CommandType.StoredProcedure)
+    public async Task<IEnumerable<T>?> QueryAll<T>(string sql, object? p, string errorMessageSource, CommandType commandType = CommandType.StoredProcedure)
     {
         try
         {
@@ -19,7 +19,7 @@ public class SqlDataAccess
         }
     }
 
-    public async Task<T?> QuerySingle<T>(string sql, DynamicParameters? p, string errorMessageSource, CommandType commandType = CommandType.StoredProcedure)
+    public async Task<T?> QuerySingle<T>(string sql, object? p, string errorMessageSource, CommandType commandType = CommandType.StoredProcedure)
     {
         try
         {
@@ -34,7 +34,7 @@ public class SqlDataAccess
         }
     }
     
-    public async Task<SqlResult?> QueryReturnInteger(string sql, DynamicParameters? p, string errorMessageSource, CommandType commandType = CommandType.StoredProcedure)
+    public async Task<SqlResult?> QueryReturnInteger(string sql, object? p, string errorMessageSource, CommandType commandType = CommandType.StoredProcedure)
     {
         SqlResult? result = new();
         try
@@ -50,7 +50,7 @@ public class SqlDataAccess
         return result;
     }
 
-    public async Task<SqlResult?> ExecuteSql(string sql, DynamicParameters? p, string errorMessageSource, CommandType commandType = CommandType.StoredProcedure)
+    public async Task<SqlResult?> ExecuteSql(string sql, object? p, string errorMessageSource, CommandType commandType = CommandType.StoredProcedure)
     {
         SqlResult? result = new();
         try

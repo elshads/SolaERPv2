@@ -14,11 +14,12 @@ else
 
 @code {
     [CascadingParameter] public AppState? AppState { get; set; }
-    
+
     bool _showDashboard = false;
 
     protected override void OnInitialized()
     {
+        AppState.Loading = true;
         if (SessionData.CurrentUser != null && (SessionData.CurrentUser.StatusId == 0 || SessionData.CurrentUser.StatusId == 3) && SessionData.CurrentUser.UserTypeId == 1)
         {
             _showDashboard = false;
@@ -31,6 +32,7 @@ else
 
     protected override void OnAfterRender(bool firstRender)
     {
+        AppState.Loading = false;
         if (firstRender && SessionData.CurrentUser != null && (SessionData.CurrentUser.StatusId == 0 || SessionData.CurrentUser.StatusId == 3) && SessionData.CurrentUser.UserTypeId == 1)
         {
             NavigationManager.NavigateTo("/vendorevaluation");

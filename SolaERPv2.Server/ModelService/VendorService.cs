@@ -169,75 +169,69 @@ public class VendorService : BaseModelService<Vendor>
             splitOn: "VendorId,DueDiligenceDesignId,BankId,RepresentedCompanyName,RepresentedProductName,ProductServiceId",
             commandType: CommandType.StoredProcedure);
 
-        // add attachments
-
-        return result.Values.FirstOrDefault();
-    }
-
-
-    public async Task<Vendor?> GetByUserIdAsyncOld()
-    {
-        var currentUser = await _appUserService.GetCurrentUserAsync();
-
-        var p = new DynamicParameters();
-        p.Add("@UserId", currentUser.Id, DbType.Int32, ParameterDirection.Input);
-        var vendor = await _sqlDataAccess.QuerySingle<Vendor>("dbo.SP_VendorByUserId", p, "Vendor-GetByUserId1");
+        var vendor = result.Values.FirstOrDefault();
 
         if (vendor != null)
         {
-            var ap11 = new DynamicParameters();
-            ap11.Add("@SourceId", vendor.VendorId, DbType.Int32, ParameterDirection.Input);
-            ap11.Add("@Reference", null, DbType.String, ParameterDirection.Input);
-            ap11.Add("@SourceType", "VEN_LOGO", DbType.String, ParameterDirection.Input);
-            var attLogo = await _sqlDataAccess.QueryAll<Attachment>("dbo.SP_AttachmentList_Load", ap11, "Vendor-GetByUserId1-1");
+            var alp = new DynamicParameters();
+            alp.Add("@SourceId", vendor.VendorId, DbType.Int32, ParameterDirection.Input);
+            alp.Add("@Reference", null, DbType.String, ParameterDirection.Input);
+            alp.Add("@SourceType", "VEN_LOGO", DbType.String, ParameterDirection.Input);
+            var attLogo = await _sqlDataAccess.QueryAll<Attachment>("dbo.SP_AttachmentList_Load", alp, "Vendor-GetByUserIdAttachmentLoad");
             if (attLogo != null) { vendor.CompanyLogo = attLogo.ToList(); }
 
-            var ap12 = new DynamicParameters();
-            ap12.Add("@SourceId", vendor.VendorId, DbType.Int32, ParameterDirection.Input);
-            ap12.Add("@Reference", null, DbType.String, ParameterDirection.Input);
-            ap12.Add("@SourceType", "VEN_OLET", DbType.String, ParameterDirection.Input);
-            var attOfletter = await _sqlDataAccess.QueryAll<Attachment>("dbo.SP_AttachmentList_Load", ap12, "Vendor-GetByUserId1-2");
+            var aop = new DynamicParameters();
+            aop.Add("@SourceId", vendor.VendorId, DbType.Int32, ParameterDirection.Input);
+            aop.Add("@Reference", null, DbType.String, ParameterDirection.Input);
+            aop.Add("@SourceType", "VEN_OLET", DbType.String, ParameterDirection.Input);
+            var attOfletter = await _sqlDataAccess.QueryAll<Attachment>("dbo.SP_AttachmentList_Load", aop, "Vendor-GetByUserIdAttachmentLoad");
             if (attOfletter != null) { vendor.OfficialLetter = attOfletter.ToList(); }
 
-            var rp = new DynamicParameters();
-            rp.Add("@VendorId", vendor.VendorId, DbType.Int32, ParameterDirection.Input);
-
-            var productList = await _sqlDataAccess.QueryAll<Product>("dbo.SP_VendorProductServices_Load", rp, "Vendor-GetByUserId2");
-            if (productList != null && productList.Any())
+            if (vendor.BankList != null && vendor.BankList.Any())
             {
-                vendor.ProvidedProductIdList = productList.Select(e => e.ProductServiceId).ToList();
-            }
-
-            var bankList = await _sqlDataAccess.QueryAll<Bank>("dbo.SP_VendorBank_Load", rp, "Vendor-GetByUserId3");
-            if (bankList != null && bankList.Any())
-            {
-                foreach (var item in bankList)
+                var newBankList = new List<Bank>();
+                foreach (var bank in vendor.BankList)
                 {
-                    var ap31 = new DynamicParameters();
-                    ap31.Add("@SourceId", item.BankId, DbType.Int32, ParameterDirection.Input);
-                    ap31.Add("@Reference", null, DbType.String, ParameterDirection.Input);
-                    ap31.Add("@SourceType", "VEN_BNK", DbType.String, ParameterDirection.Input);
-                    var attBank = await _sqlDataAccess.QueryAll<Attachment>("dbo.SP_AttachmentList_Load", ap31, "Vendor-GetByUserId3-1");
+                    var abp = new DynamicParameters();
+                    abp.Add("@SourceId", bank.BankId, DbType.Int32, ParameterDirection.Input);
+                    abp.Add("@Reference", null, DbType.String, ParameterDirection.Input);
+                    abp.Add("@SourceType", "VEN_BNK", DbType.String, ParameterDirection.Input);
+                    var attBank = await _sqlDataAccess.QueryAll<Attachment>("dbo.SP_AttachmentList_Load", abp, "Vendor-GetByUserIdAttachmentLoad");
                     if (attBank != null)
                     {
-                        item.BankLetter = attBank.ToList();
+                        bank.BankLetter = attBank.ToList();
                     }
-                    vendor.BankList ??= new();
-                    vendor.BankList.Add(item);
+                    newBankList.Add(bank);
                 }
+                vendor.BankList = newBankList;
             }
 
-
+            if (vendor.DueDiligenceList != null && vendor.DueDiligenceList.Any())
+            {
+                var newDueDiligenceList = new List<DueDiligence>();
+                foreach (var dueDiligence in vendor.DueDiligenceList)
+                {
+                    var adp = new DynamicParameters();
+                    adp.Add("@SourceId", dueDiligence.VendorDueDiligenceId, DbType.Int32, ParameterDirection.Input);
+                    adp.Add("@Reference", null, DbType.String, ParameterDirection.Input);
+                    adp.Add("@SourceType", "VEN_DUE", DbType.String, ParameterDirection.Input);
+                    var attBank = await _sqlDataAccess.QueryAll<Attachment>("dbo.SP_AttachmentList_Load", adp, "Vendor-GetByUserIdAttachmentLoad");
+                    if (attBank != null)
+                    {
+                        dueDiligence.AttachmentValue = attBank.ToList();
+                    }
+                    newDueDiligenceList.Add(dueDiligence);
+                }
+                vendor.DueDiligenceList = newDueDiligenceList;
+            }
         }
-
         return vendor;
     }
 
+
     public async Task<bool> IsVendorUniqueAsync(string taxId)
     {
-        var p = new DynamicParameters();
-        p.Add("@TaxId", taxId, DbType.String, ParameterDirection.Input);
-        var result = await _sqlDataAccess.QuerySingle<Vendor>("dbo.SP_VendorsTaxCheck", p, "IsVendorUnique");
+        var result = await _sqlDataAccess.QuerySingle<Vendor>("dbo.SP_VendorsTaxCheck", new { TaxId = taxId }, "IsVendorUnique");
         if (result != null && result.TaxId != null) { return false; }
         return true;
     }
@@ -287,7 +281,7 @@ public class VendorService : BaseModelService<Vendor>
                 .Replace("{poreference}", $"replaceIt")
                 .Replace("{buyer}", $"replaceIt");
 
-                var addressList = new List<string>() {"elshad82@gmail.com"};
+                var addressList = new List<string>() { currentUser.Email };
                 var subject = $"BID Comparison Chart Approved - Comparison №";
                 await _mailService.SendHtmlMailAsync(addressList, subject, htmlBody, subject);
             }
@@ -305,9 +299,7 @@ public class VendorService : BaseModelService<Vendor>
 
         foreach (var attachmentId in deletedAttachmentIdList)
         {
-            var ap = new DynamicParameters();
-            ap.Add("@AttachmentId", attachmentId, DbType.Int32, ParameterDirection.Input);
-            var bankLetterResult = await _sqlDataAccess.ExecuteSql("dbo.SP_Attachments_IUD", ap, "Vendor-DeleteAttachments");
+            var bankLetterResult = await _sqlDataAccess.ExecuteSql("dbo.SP_Attachments_IUD", new { AttachmentId = attachmentId }, "Vendor-DeleteAttachments");
         }
 
         var p = new DynamicParameters();
@@ -317,8 +309,6 @@ public class VendorService : BaseModelService<Vendor>
         p.Add("@TaxId", vendor.TaxId, DbType.String, ParameterDirection.Input);
         p.Add("@Location", vendor.CompanyLocation, DbType.String, ParameterDirection.Input);
         p.Add("@Website", vendor.CompanyWebsite, DbType.String, ParameterDirection.Input);
-        //p.Add("@RepresentedProducts", vendor.RepresentedProducts, DbType.String, ParameterDirection.Input);
-        //p.Add("@RepresentedCompanies", vendor.RepresentedCompanies, DbType.String, ParameterDirection.Input);
         p.Add("@PaymentTerms", vendor.PaymentTermsCode, DbType.String, ParameterDirection.Input);
         p.Add("@CreditDays", vendor.CreditDays, DbType.Int32, ParameterDirection.Input);
         p.Add("@_0DaysPayment", vendor.AgreeWithDefaultDays, DbType.Boolean, ParameterDirection.Input);
@@ -335,17 +325,76 @@ public class VendorService : BaseModelService<Vendor>
 
             if (vendor.ProvidedProductIdList != null && vendor.ProvidedProductIdList.Any())
             {
-                var pdp = new DynamicParameters();
-                pdp.Add("@VendorId", vendor.VendorId, DbType.Int32, ParameterDirection.Input);
-                var productsDeleteResult = await _sqlDataAccess.ExecuteSql("dbo.SP_VendorProductServices_ID", pdp, "Vendor-SaveDeleteProducts");
+                var deleteResult = await _sqlDataAccess.ExecuteSql("dbo.SP_VendorProductServices_ID", new { VendorId = vendor.VendorId }, "Vendor-SaveDeleteProducts");
 
                 foreach (var itemId in vendor.ProvidedProductIdList)
                 {
-                    var pp = new DynamicParameters();
-                    pp.Add("@VendorId", vendor.VendorId, DbType.Int32, ParameterDirection.Input);
-                    pp.Add("@ProductServiceId", itemId, DbType.Int32, ParameterDirection.Input);
-                    var productsResult = await _sqlDataAccess.ExecuteSql("dbo.SP_VendorProductServices_ID", pp, "Vendor-SaveProducts");
-                    if (productsResult != null && productsResult.QueryResultMessage != null) { supplierResult.QueryResultMessage = productsResult.QueryResultMessage; return supplierResult; }
+                    var eachResult = await _sqlDataAccess.ExecuteSql("dbo.SP_VendorProductServices_ID", new { VendorId = vendor.VendorId, ProductServiceId = itemId }, "Vendor-SaveProducts");
+                    if (eachResult != null && eachResult.QueryResultMessage != null) { supplierResult.QueryResultMessage = eachResult.QueryResultMessage; return supplierResult; }
+                }
+            }
+
+            if (vendor.RepresentedProductList != null && vendor.RepresentedProductList.Any())
+            {
+                var deleteResult = await _sqlDataAccess.ExecuteSql("dbo.SP_VendorRepresentedProducts_ID", new { VendorId = vendor.VendorId }, "Vendor-SaveDeleteRepresentedProducts");
+
+                foreach (var item in vendor.RepresentedProductList)
+                {
+                    var eachResult = await _sqlDataAccess.ExecuteSql("dbo.SP_VendorRepresentedProducts_ID", new { VendorId = vendor.VendorId, RepresentedProductName = item }, "Vendor-SaveRepresentedProducts");
+                    if (eachResult != null && eachResult.QueryResultMessage != null) { supplierResult.QueryResultMessage = eachResult.QueryResultMessage; return supplierResult; }
+                }
+            }
+
+            if (vendor.RepresentedCompanyList != null && vendor.RepresentedCompanyList.Any())
+            {
+                var deleteResult = await _sqlDataAccess.ExecuteSql("dbo.SP_VendorRepresentedCompany_ID", new { VendorId = vendor.VendorId }, "Vendor-SaveDeleteRepresentedCompany");
+
+                foreach (var item in vendor.RepresentedCompanyList)
+                {
+                    var eachResult = await _sqlDataAccess.ExecuteSql("dbo.SP_VendorRepresentedCompany_ID", new { VendorId = vendor.VendorId, RepresentedCompanyName = item }, "Vendor-SaveRepresentedCompany");
+                    if (eachResult != null && eachResult.QueryResultMessage != null) { supplierResult.QueryResultMessage = eachResult.QueryResultMessage; return supplierResult; }
+                }
+            }
+
+            if (vendor.CompanyLogo != null && vendor.CompanyLogo.Any())
+            {
+                foreach (var file in vendor.CompanyLogo)
+                {
+                    var lp = new DynamicParameters();
+                    lp.Add("@AttachmentId", file.AttachmentId, DbType.Int32, ParameterDirection.Input);
+                    lp.Add("@FileName", file.FileName, DbType.String, ParameterDirection.Input);
+                    lp.Add("@FileData", file.FileData, DbType.Binary, ParameterDirection.Input);
+                    lp.Add("@SourceId", vendor.VendorId, DbType.Int32, ParameterDirection.Input);
+                    lp.Add("@SourceType", "VEN_LOGO", DbType.String, ParameterDirection.Input);
+                    lp.Add("@Reference", file.Reference, DbType.String, ParameterDirection.Input);
+                    lp.Add("@ExtensionType", file.ExtensionType, DbType.String, ParameterDirection.Input);
+                    lp.Add("@AttachmentTypeId", file.AttachmentTypeId, DbType.Int32, ParameterDirection.Input);
+                    lp.Add("@AttachmentSubTypeId", file.AttachmentSubTypeId, DbType.Int32, ParameterDirection.Input);
+                    lp.Add("@UploadDateTime", file.UploadDateTime, DbType.DateTime, ParameterDirection.Input);
+                    lp.Add("@Size", file.Size, DbType.Int32, ParameterDirection.Input);
+                    var logoResult = await _sqlDataAccess.ExecuteSql("dbo.SP_Attachments_IUD", lp, "Vendor-SaveVendorLogo");
+                    if (logoResult != null && logoResult.QueryResultMessage != null) { supplierResult.QueryResultMessage = logoResult.QueryResultMessage; return supplierResult; }
+                }
+            }
+
+            if (vendor.OfficialLetter != null && vendor.OfficialLetter.Any())
+            {
+                foreach (var ofletAtt in vendor.OfficialLetter)
+                {
+                    var op = new DynamicParameters();
+                    op.Add("@AttachmentId", ofletAtt.AttachmentId, DbType.Int32, ParameterDirection.Input);
+                    op.Add("@FileName", ofletAtt.FileName, DbType.String, ParameterDirection.Input);
+                    op.Add("@FileData", ofletAtt.FileData, DbType.Binary, ParameterDirection.Input);
+                    op.Add("@SourceId", vendor.VendorId, DbType.Int32, ParameterDirection.Input);
+                    op.Add("@SourceType", "VEN_OLET", DbType.String, ParameterDirection.Input);
+                    op.Add("@Reference", ofletAtt.Reference, DbType.String, ParameterDirection.Input);
+                    op.Add("@ExtensionType", ofletAtt.ExtensionType, DbType.String, ParameterDirection.Input);
+                    op.Add("@AttachmentTypeId", ofletAtt.AttachmentTypeId, DbType.Int32, ParameterDirection.Input);
+                    op.Add("@AttachmentSubTypeId", ofletAtt.AttachmentSubTypeId, DbType.Int32, ParameterDirection.Input);
+                    op.Add("@UploadDateTime", ofletAtt.UploadDateTime, DbType.DateTime, ParameterDirection.Input);
+                    op.Add("@Size", ofletAtt.Size, DbType.Int32, ParameterDirection.Input);
+                    var officialLetterResult = await _sqlDataAccess.ExecuteSql("dbo.SP_Attachments_IUD", op, "Vendor-SaveOfficialLetter");
+                    if (officialLetterResult != null && officialLetterResult.QueryResultMessage != null) { supplierResult.QueryResultMessage = officialLetterResult.QueryResultMessage; return supplierResult; }
                 }
             }
 
@@ -392,49 +441,48 @@ public class VendorService : BaseModelService<Vendor>
                     }
                 }
             }
-            
-            if (vendor.CompanyLogo != null && vendor.CompanyLogo.Any())
-            {
-                foreach (var file in vendor.CompanyLogo)
-                {
-                    var lp = new DynamicParameters();
-                    lp.Add("@AttachmentId", file.AttachmentId, DbType.Int32, ParameterDirection.Input);
-                    lp.Add("@FileName", file.FileName, DbType.String, ParameterDirection.Input);
-                    lp.Add("@FileData", file.FileData, DbType.Binary, ParameterDirection.Input);
-                    lp.Add("@SourceId", vendor.VendorId, DbType.Int32, ParameterDirection.Input);
-                    lp.Add("@SourceType", "VEN_LOGO", DbType.String, ParameterDirection.Input);
-                    lp.Add("@Reference", file.Reference, DbType.String, ParameterDirection.Input);
-                    lp.Add("@ExtensionType", file.ExtensionType, DbType.String, ParameterDirection.Input);
-                    lp.Add("@AttachmentTypeId", file.AttachmentTypeId, DbType.Int32, ParameterDirection.Input);
-                    lp.Add("@AttachmentSubTypeId", file.AttachmentSubTypeId, DbType.Int32, ParameterDirection.Input);
-                    lp.Add("@UploadDateTime", file.UploadDateTime, DbType.DateTime, ParameterDirection.Input);
-                    lp.Add("@Size", file.Size, DbType.Int32, ParameterDirection.Input);
-                    var logoResult = await _sqlDataAccess.ExecuteSql("dbo.SP_Attachments_IUD", lp, "Vendor-SaveVendorLogo");
-                    if (logoResult != null && logoResult.QueryResultMessage != null) { supplierResult.QueryResultMessage = logoResult.QueryResultMessage; return supplierResult; }
-                }
-            }
 
-            if (vendor.OfficialLetter != null && vendor.OfficialLetter.Any())
+            if (vendor.DueDiligenceList != null && vendor.DueDiligenceList.Any())
             {
-                foreach (var ofletAtt in vendor.OfficialLetter)
+                foreach (var item in vendor.DueDiligenceList)
                 {
-                    var op = new DynamicParameters();
-                    op.Add("@AttachmentId", ofletAtt.AttachmentId, DbType.Int32, ParameterDirection.Input);
-                    op.Add("@FileName", ofletAtt.FileName, DbType.String, ParameterDirection.Input);
-                    op.Add("@FileData", ofletAtt.FileData, DbType.Binary, ParameterDirection.Input);
-                    op.Add("@SourceId", vendor.VendorId, DbType.Int32, ParameterDirection.Input);
-                    op.Add("@SourceType", "VEN_OLET", DbType.String, ParameterDirection.Input);
-                    op.Add("@Reference", ofletAtt.Reference, DbType.String, ParameterDirection.Input);
-                    op.Add("@ExtensionType", ofletAtt.ExtensionType, DbType.String, ParameterDirection.Input);
-                    op.Add("@AttachmentTypeId", ofletAtt.AttachmentTypeId, DbType.Int32, ParameterDirection.Input);
-                    op.Add("@AttachmentSubTypeId", ofletAtt.AttachmentSubTypeId, DbType.Int32, ParameterDirection.Input);
-                    op.Add("@UploadDateTime", ofletAtt.UploadDateTime, DbType.DateTime, ParameterDirection.Input);
-                    op.Add("@Size", ofletAtt.Size, DbType.Int32, ParameterDirection.Input);
-                    var officialLetterResult = await _sqlDataAccess.ExecuteSql("dbo.SP_Attachments_IUD", op, "Vendor-SaveOfficialLetter");
-                    if (officialLetterResult != null && officialLetterResult.QueryResultMessage != null) { supplierResult.QueryResultMessage = officialLetterResult.QueryResultMessage; return supplierResult; }
+                    var dd = new DynamicParameters();
+                    dd.Add("@VendorDueDiligenceId", item.VendorDueDiligenceId, DbType.Int32, ParameterDirection.Input);
+                    dd.Add("@DueDiligenceDesignId", item.DueDiligenceDesignId, DbType.Int32, ParameterDirection.Input);
+                    dd.Add("@VendorId", vendor.VendorId, DbType.Int32, ParameterDirection.Input);
+                    dd.Add("@TextboxValue", item.TextboxValue, DbType.String, ParameterDirection.Input);
+                    dd.Add("@TextareaValue", item.TextareaValue, DbType.String, ParameterDirection.Input);
+                    dd.Add("@CheckboxValue", item.CheckboxValue, DbType.Boolean, ParameterDirection.Input);
+                    dd.Add("@RadioboxValue", item.RadioboxValue, DbType.Boolean, ParameterDirection.Input);
+                    dd.Add("@IntValue", item.IntValue, DbType.Int32, ParameterDirection.Input);
+                    dd.Add("@DecimalValue", item.DecimalValue, DbType.Decimal, ParameterDirection.Input);
+                    dd.Add("@DateTimeValue", new DateTime(item.DateTimeValue.Year, item.DateTimeValue.Month, item.DateTimeValue.Day), DbType.DateTime, ParameterDirection.Input);
+                    dd.Add("@Scoring", item.Scoring, DbType.Decimal, ParameterDirection.Input);
+                    var dueResult = await _sqlDataAccess.QueryReturnInteger("dbo.SP_VendorDueDiligence_IUD", dd, "Vendor-SaveDueDiligence");
+                    if (dueResult != null && dueResult.QueryResultMessage != null) { supplierResult.QueryResultMessage = dueResult.QueryResultMessage; return supplierResult; }
+
+                    if (item.AttachmentValue != null && item.AttachmentValue.Any() && dueResult != null && dueResult.QueryResult > 0)
+                    {
+                        foreach (var attachment in item.AttachmentValue)
+                        {
+                            var dda = new DynamicParameters();
+                            dda.Add("@AttachmentId", attachment.AttachmentId, DbType.Int32, ParameterDirection.Input);
+                            dda.Add("@FileName", attachment.FileName, DbType.String, ParameterDirection.Input);
+                            dda.Add("@FileData", attachment.FileData, DbType.Binary, ParameterDirection.Input);
+                            dda.Add("@SourceId", dueResult.QueryResult, DbType.Int32, ParameterDirection.Input);
+                            dda.Add("@SourceType", "VEN_DUE", DbType.String, ParameterDirection.Input);
+                            dda.Add("@Reference", attachment.Reference, DbType.String, ParameterDirection.Input);
+                            dda.Add("@ExtensionType", attachment.ExtensionType, DbType.String, ParameterDirection.Input);
+                            dda.Add("@AttachmentTypeId", attachment.AttachmentTypeId, DbType.Int32, ParameterDirection.Input);
+                            dda.Add("@AttachmentSubTypeId", attachment.AttachmentSubTypeId, DbType.Int32, ParameterDirection.Input);
+                            dda.Add("@UploadDateTime", attachment.UploadDateTime, DbType.DateTime, ParameterDirection.Input);
+                            dda.Add("@Size", attachment.Size, DbType.Int32, ParameterDirection.Input);
+                            var dueAttachmentResult = await _sqlDataAccess.ExecuteSql("dbo.SP_Attachments_IUD", dda, "Vendor-SaveDueDiligenceAttachments");
+                            if (dueAttachmentResult != null && dueAttachmentResult.QueryResultMessage != null) { supplierResult.QueryResultMessage = dueAttachmentResult.QueryResultMessage; return supplierResult; }
+                        }
+                    }
                 }
             }
-            
         }
         return supplierResult;
     }
@@ -444,10 +492,7 @@ public class VendorService : BaseModelService<Vendor>
         var sqlResult = new SqlResult();
         foreach (var vendor in vendorList)
         {
-            var p = new DynamicParameters();
-            p.Add("@VendorId", vendor.VendorId, DbType.Int32, ParameterDirection.Input);
-            p.Add("@ApproveStageMainId", approveStageMainId, DbType.Int32, ParameterDirection.Input);
-            sqlResult = await _sqlDataAccess.ExecuteSql("dbo.SP_VendorSendToApprove", p, "Vendor-SendToApproval");
+            sqlResult = await _sqlDataAccess.ExecuteSql("dbo.SP_VendorSendToApprove", new { VendorId = vendor.VendorId, ApproveStageMainId = approveStageMainId }, "Vendor-SendToApproval");
         }
 
         return sqlResult;

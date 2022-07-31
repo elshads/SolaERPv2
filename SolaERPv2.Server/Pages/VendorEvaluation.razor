@@ -112,6 +112,7 @@ else
 
     async Task LoadData()
     {
+        AppState.Loading = true;
         _productList = await ProductService.GetAll();
         _countryList = await CountryService.GetAll();
         _paymentTermsList = await AnalysisService.GetPaymentTerms();
@@ -121,6 +122,7 @@ else
         var currentVendor = await VendorService.GetByUserIdAsync();
         if (currentVendor != null) { SetModelNewInstance(currentVendor); }
         SetDueDiligenceValues();
+        AppState.Loading = false;
     }
 
     void SetDueDiligenceValues()
@@ -128,7 +130,7 @@ else
         _currentVendor ??= new();
         if (_dueDiligenceDesignList != null && _dueDiligenceDesignList.Any())
         {
-            List<DueDiligenceDesign> dueDiligenceDesignList = _dueDiligenceDesignList.ToList();
+            var dueDiligenceDesignList = _dueDiligenceDesignList.ToList();
             _currentVendor.DueDiligenceList ??= new();
             foreach (var item in _dueDiligenceDesignList)
             {
