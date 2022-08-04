@@ -1,138 +1,139 @@
 ﻿<MudCard Class="k-p-8">
-        <h3 class="k-mb-4">BANK DETAILS</h3>
+    <h3 class="k-mb-4">BANK DETAILS</h3>
 
-        @if (_showAddBankPanel)
-        {
-            <TelerikForm Class="k-pb-4" Model="_selectedBank" Orientation="FormOrientation.Horizontal" ColumnSpacing="16px" Columns="@(AppState.MobileView ? 1 : 2)">
-                <FormValidation>
-                    <FluentValidationValidator @ref="_bankValidator" DisableAssemblyScanning="true" />
-                </FormValidation>
-                <FormItems>
-                    <FormItem LabelText="Bank Account Number: " Field="@nameof(Bank.BankAccountNumber)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
-                        <Template>
-                            <label for="accountnumber" class="k-label k-form-label">Bank Account Number: </label>
-                            <div class="k-form-field-wrap">
-                                <TelerikTextBox Id="accountnumber" @bind-Value="@_selectedBank.BankAccountNumber" />
-                                <TelerikValidationMessage For="@(() => _selectedBank.BankAccountNumber)" />
-                            </div>
-                        </Template>
-                    </FormItem>
-                    <FormItem LabelText="Currency Code: " Field="@nameof(Bank.CurrencyCode)" Enabled="@(CurrentVendor != null && CurrentVendor.CountryCode != "AZ" && !CurrentVendor.Exists)">
-                        <Template>
-                            <label for="currencycode" class="k-label k-form-label">Currency Code: </label>
-                            <div class="k-form-field-wrap">
-                                <GridDropDownList Data="@CurrencyList"
+
+    @if (_showAddBankPanel)
+    {
+        <TelerikForm Class="k-pb-4" Model="_selectedBank" Orientation="FormOrientation.Horizontal" ColumnSpacing="16px" Columns="@(AppState.MobileView ? 1 : 2)">
+            <FormValidation>
+                <FluentValidationValidator @ref="_bankValidator" DisableAssemblyScanning="true" />
+            </FormValidation>
+            <FormItems>
+                <FormItem LabelText="Bank Account Number: " Field="@nameof(Bank.BankAccountNumber)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
+                    <Template>
+                        <label for="accountnumber" class="k-label k-form-label">Bank Account Number: </label>
+                        <div class="k-form-field-wrap">
+                            <TelerikTextBox Id="accountnumber" @bind-Value="@_selectedBank.BankAccountNumber" />
+                            <TelerikValidationMessage For="@(() => _selectedBank.BankAccountNumber)" />
+                        </div>
+                    </Template>
+                </FormItem>
+                <FormItem LabelText="Currency Code: " Field="@nameof(Bank.CurrencyCode)" Enabled="@(CurrentVendor != null && CurrentVendor.CountryCode != "AZ" && !CurrentVendor.Exists)">
+                    <Template>
+                        <label for="currencycode" class="k-label k-form-label">Currency Code: </label>
+                        <div class="k-form-field-wrap">
+                            <GridDropDownList Data="@CurrencyList"
                                           Id="currencycode"
                                           @bind-Value="@_selectedBank.CurrencyCode"
                                           TextField="@nameof(Currency.CurrencyCode)"
                                           ValueField="@nameof(Currency.CurrencyCode)"
                                           SearchFields="@(new List<string>() {"CurrencyCode", "CurrencyName"})"
                                           HeaderNames="@(new List<string>() {"Code", "Name"})" />
-                                <TelerikValidationMessage For="@(() => _selectedBank.CurrencyCode)" />
-                            </div>
-                        </Template>
-                    </FormItem>
-                    <FormItem LabelText="Add bank letter head: " Field="@nameof(Bank.BankLetter)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)">
-                        <Template>
-                            <label for="bankletter" class="k-label k-form-label">Add bank letter head: </label>
-                            <div class="k-form-field-wrap">
-                                <AttachmentDialog WithButton="true" @bind-AttachmentList="_selectedBank.BankLetter" OnDeleteClick="OnAttachmentDeleteHandler" SourceId="_selectedBank.BankId" SourceTypeName="VEN_BNK" />
-                                <TelerikValidationMessage For="@(() => _selectedBank.BankLetter)" />
-                            </div>
-                        </Template>
-                    </FormItem>
-                    <FormItem LabelText="Beneficiary Full Name: " Field="@nameof(Bank.BeneficiaryFullName)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
-                        <Template>
-                            <label for="fullname" class="k-label k-form-label">Beneficiary Full Name: </label>
-                            <div class="k-form-field-wrap">
-                                <TelerikTextBox Id="fullname" @bind-Value="@_selectedBank.BeneficiaryFullName" />
-                                <TelerikValidationMessage For="@(() => _selectedBank.BeneficiaryFullName)" />
-                            </div>
-                        </Template>
-                    </FormItem>
-                    <FormItem LabelText="Beneficiary Address: " Field="@nameof(Bank.BeneficiaryAddress)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
-                        <Template>
-                            <label for="beneficiaryaddress" class="k-label k-form-label">Beneficiary Address: </label>
-                            <div class="k-form-field-wrap">
-                                <TelerikTextBox Id="beneficiaryaddress" @bind-Value="@_selectedBank.BeneficiaryAddress" />
-                                <TelerikValidationMessage For="@(() => _selectedBank.BeneficiaryAddress)" />
-                            </div>
-                        </Template>
-                    </FormItem>
-                    <FormItem LabelText="Beneficiary Address 1: " Field="@nameof(Bank.BeneficiaryAddress1)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
-                        <Template>
-                            <label for="beneficiaryaddress1" class="k-label k-form-label">Beneficiary Address 1: </label>
-                            <div class="k-form-field-wrap">
-                                <TelerikTextBox Id="beneficiaryaddress1" @bind-Value="@_selectedBank.BeneficiaryAddress1" />
-                                <TelerikValidationMessage For="@(() => _selectedBank.BeneficiaryAddress1)" />
-                            </div>
-                        </Template>
-                    </FormItem>
-                    <FormItem LabelText="Beneficiary Bank Name: " Field="@nameof(Bank.BeneficiaryBankName)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
-                        <Template>
-                            <label for="beneficiarybankname" class="k-label k-form-label">Beneficiary Bank Name: </label>
-                            <div class="k-form-field-wrap">
-                                <TelerikTextBox Id="beneficiarybankname" @bind-Value="@_selectedBank.BeneficiaryBankName" />
-                                <TelerikValidationMessage For="@(() => _selectedBank.BeneficiaryBankName)" />
-                            </div>
-                        </Template>
-                    </FormItem>
-                    <FormItem LabelText="Beneficiary Bank Address: " Field="@nameof(Bank.BeneficiaryBankAddress)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
-                        <Template>
-                            <label for="beneficiarybankaddress" class="k-label k-form-label">Beneficiary Bank Address: </label>
-                            <div class="k-form-field-wrap">
-                                <TelerikTextBox Id="beneficiarybankaddress" @bind-Value="@_selectedBank.BeneficiaryBankAddress" />
-                                <TelerikValidationMessage For="@(() => _selectedBank.BeneficiaryBankAddress)" />
-                            </div>
-                        </Template>
-                    </FormItem>
-                    <FormItem LabelText="Beneficiary Bank Address 1: " Field="@nameof(Bank.BeneficiaryBankAddress1)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
-                        <Template>
-                            <label for="beneficiarybankaddress1" class="k-label k-form-label">Beneficiary Bank Address 1: </label>
-                            <div class="k-form-field-wrap">
-                                <TelerikTextBox Id="beneficiarybankaddress1" @bind-Value="@_selectedBank.BeneficiaryBankAddress1" />
-                                <TelerikValidationMessage For="@(() => _selectedBank.BeneficiaryBankAddress1)" />
-                            </div>
-                        </Template>
-                    </FormItem>
-                    <FormItem LabelText="Beneficiary Bank Code: " Field="@nameof(Bank.BeneficiaryBankCode)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
-                        <Template>
-                            <label for="beneficiarybankcode" class="k-label k-form-label">Beneficiary Bank Code: </label>
-                            <div class="k-form-field-wrap">
-                                <TelerikTextBox Id="beneficiarybankcode" @bind-Value="@_selectedBank.BeneficiaryBankCode" />
-                                <TelerikValidationMessage For="@(() => _selectedBank.BeneficiaryBankCode)" />
-                            </div>
-                        </Template>
-                    </FormItem>
-                    <FormItem LabelText="Intermediary Bank Code Number: " Field="@nameof(Bank.IntermediaryBankCodeNumber)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
-                        <Template>
-                            <label for="intermediarybankcodenumber" class="k-label k-form-label">Intermediary Bank Code Number: </label>
-                            <div class="k-form-field-wrap">
-                                <TelerikTextBox Id="intermediarybankcodenumber" @bind-Value="@_selectedBank.IntermediaryBankCodeNumber" />
-                                <TelerikValidationMessage For="@(() => _selectedBank.IntermediaryBankCodeNumber)" />
-                            </div>
-                        </Template>
-                    </FormItem>
-                    <FormItem LabelText="Intermediary Bank Code Type: " Field="@nameof(Bank.IntermediaryBankCodeType)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
-                        <Template>
-                            <label for="intermediarybankcodetype" class="k-label k-form-label">Intermediary Bank Code Type: </label>
-                            <div class="k-form-field-wrap">
-                                <TelerikTextBox Id="intermediarybankcodetype" @bind-Value="@_selectedBank.IntermediaryBankCodeType" />
-                                <TelerikValidationMessage For="@(() => _selectedBank.IntermediaryBankCodeType)" />
-                            </div>
-                        </Template>
-                    </FormItem>
-                    <TelerikValidationSummary Class="k-my-4" />
-                </FormItems>
-                <FormButtons>
-                    <TelerikButton Rounded="@Telerik.Blazor.ThemeConstants.Button.Rounded.Small" OnClick="@BankSaveHandler" ThemeColor="primary" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">Save</TelerikButton>
-                    <TelerikButton Rounded="@Telerik.Blazor.ThemeConstants.Button.Rounded.Small" OnClick="@BankCancelHandler" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">Cancel</TelerikButton>
-                </FormButtons>
-            </TelerikForm>
-        }
+                            <TelerikValidationMessage For="@(() => _selectedBank.CurrencyCode)" />
+                        </div>
+                    </Template>
+                </FormItem>
+                <FormItem LabelText="Add bank letter head: " Field="@nameof(Bank.BankLetter)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)">
+                    <Template>
+                        <label for="bankletter" class="k-label k-form-label">Add bank letter head: </label>
+                        <div class="k-form-field-wrap">
+                            <AttachmentDialog WithButton="true" @bind-AttachmentList="_selectedBank.BankLetter" OnDeleteClick="OnAttachmentDeleteHandler" SourceId="_selectedBank.BankId" SourceTypeName="VEN_BNK" />
+                            <TelerikValidationMessage For="@(() => _selectedBank.BankLetter)" />
+                        </div>
+                    </Template>
+                </FormItem>
+                <FormItem LabelText="Beneficiary Full Name: " Field="@nameof(Bank.BeneficiaryFullName)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
+                    <Template>
+                        <label for="fullname" class="k-label k-form-label">Beneficiary Full Name: </label>
+                        <div class="k-form-field-wrap">
+                            <TelerikTextBox Id="fullname" @bind-Value="@_selectedBank.BeneficiaryFullName" />
+                            <TelerikValidationMessage For="@(() => _selectedBank.BeneficiaryFullName)" />
+                        </div>
+                    </Template>
+                </FormItem>
+                <FormItem LabelText="Beneficiary Address: " Field="@nameof(Bank.BeneficiaryAddress)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
+                    <Template>
+                        <label for="beneficiaryaddress" class="k-label k-form-label">Beneficiary Address: </label>
+                        <div class="k-form-field-wrap">
+                            <TelerikTextBox Id="beneficiaryaddress" @bind-Value="@_selectedBank.BeneficiaryAddress" />
+                            <TelerikValidationMessage For="@(() => _selectedBank.BeneficiaryAddress)" />
+                        </div>
+                    </Template>
+                </FormItem>
+                <FormItem LabelText="Beneficiary Address 1: " Field="@nameof(Bank.BeneficiaryAddress1)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
+                    <Template>
+                        <label for="beneficiaryaddress1" class="k-label k-form-label">Beneficiary Address 1: </label>
+                        <div class="k-form-field-wrap">
+                            <TelerikTextBox Id="beneficiaryaddress1" @bind-Value="@_selectedBank.BeneficiaryAddress1" />
+                            <TelerikValidationMessage For="@(() => _selectedBank.BeneficiaryAddress1)" />
+                        </div>
+                    </Template>
+                </FormItem>
+                <FormItem LabelText="Beneficiary Bank Name: " Field="@nameof(Bank.BeneficiaryBankName)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
+                    <Template>
+                        <label for="beneficiarybankname" class="k-label k-form-label">Beneficiary Bank Name: </label>
+                        <div class="k-form-field-wrap">
+                            <TelerikTextBox Id="beneficiarybankname" @bind-Value="@_selectedBank.BeneficiaryBankName" />
+                            <TelerikValidationMessage For="@(() => _selectedBank.BeneficiaryBankName)" />
+                        </div>
+                    </Template>
+                </FormItem>
+                <FormItem LabelText="Beneficiary Bank Address: " Field="@nameof(Bank.BeneficiaryBankAddress)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
+                    <Template>
+                        <label for="beneficiarybankaddress" class="k-label k-form-label">Beneficiary Bank Address: </label>
+                        <div class="k-form-field-wrap">
+                            <TelerikTextBox Id="beneficiarybankaddress" @bind-Value="@_selectedBank.BeneficiaryBankAddress" />
+                            <TelerikValidationMessage For="@(() => _selectedBank.BeneficiaryBankAddress)" />
+                        </div>
+                    </Template>
+                </FormItem>
+                <FormItem LabelText="Beneficiary Bank Address 1: " Field="@nameof(Bank.BeneficiaryBankAddress1)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
+                    <Template>
+                        <label for="beneficiarybankaddress1" class="k-label k-form-label">Beneficiary Bank Address 1: </label>
+                        <div class="k-form-field-wrap">
+                            <TelerikTextBox Id="beneficiarybankaddress1" @bind-Value="@_selectedBank.BeneficiaryBankAddress1" />
+                            <TelerikValidationMessage For="@(() => _selectedBank.BeneficiaryBankAddress1)" />
+                        </div>
+                    </Template>
+                </FormItem>
+                <FormItem LabelText="Beneficiary Bank Code: " Field="@nameof(Bank.BeneficiaryBankCode)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
+                    <Template>
+                        <label for="beneficiarybankcode" class="k-label k-form-label">Beneficiary Bank Code: </label>
+                        <div class="k-form-field-wrap">
+                            <TelerikTextBox Id="beneficiarybankcode" @bind-Value="@_selectedBank.BeneficiaryBankCode" />
+                            <TelerikValidationMessage For="@(() => _selectedBank.BeneficiaryBankCode)" />
+                        </div>
+                    </Template>
+                </FormItem>
+                <FormItem LabelText="Intermediary Bank Code Number: " Field="@nameof(Bank.IntermediaryBankCodeNumber)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
+                    <Template>
+                        <label for="intermediarybankcodenumber" class="k-label k-form-label">Intermediary Bank Code Number: </label>
+                        <div class="k-form-field-wrap">
+                            <TelerikTextBox Id="intermediarybankcodenumber" @bind-Value="@_selectedBank.IntermediaryBankCodeNumber" />
+                            <TelerikValidationMessage For="@(() => _selectedBank.IntermediaryBankCodeNumber)" />
+                        </div>
+                    </Template>
+                </FormItem>
+                <FormItem LabelText="Intermediary Bank Code Type: " Field="@nameof(Bank.IntermediaryBankCodeType)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
+                    <Template>
+                        <label for="intermediarybankcodetype" class="k-label k-form-label">Intermediary Bank Code Type: </label>
+                        <div class="k-form-field-wrap">
+                            <TelerikTextBox Id="intermediarybankcodetype" @bind-Value="@_selectedBank.IntermediaryBankCodeType" />
+                            <TelerikValidationMessage For="@(() => _selectedBank.IntermediaryBankCodeType)" />
+                        </div>
+                    </Template>
+                </FormItem>
+                <TelerikValidationSummary Class="k-my-4" />
+            </FormItems>
+            <FormButtons>
+                <TelerikButton Rounded="@Telerik.Blazor.ThemeConstants.Button.Rounded.Small" OnClick="@BankSaveHandler" ThemeColor="primary" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">Save</TelerikButton>
+                <TelerikButton Rounded="@Telerik.Blazor.ThemeConstants.Button.Rounded.Small" OnClick="@BankCancelHandler" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">Cancel</TelerikButton>
+            </FormButtons>
+        </TelerikForm>
+    }
 
 
-        <TelerikGrid @ref="_gridRef"
+    <TelerikGrid @ref="_gridRef"
                  Data="@(CurrentVendor.BankList)"
                  EditMode="@GridEditMode.None"
                  Pageable="true"
@@ -142,16 +143,16 @@
                  SelectedItems="@_selectedBankList"
                  SelectedItemsChanged="@((IEnumerable<Bank> bankList) => SelectedBankListChanged(bankList))"
                  OnRowClick="@OnRowClick">
-            <GridColumns>
-                <GridCommandColumn Width="50px">
-                    <GridCommandButton Command="Delete" Icon="delete" ShowInEdit="false" Enabled="!_showAddBankPanel && !CurrentVendor.Exists" />
-                </GridCommandColumn>
-                <GridColumn Field=@nameof(Bank.BankAccountNumber) />
-                <GridColumn Field=@nameof(Bank.CurrencyCode) />
-                <GridColumn Field=@nameof(Bank.BeneficiaryFullName) />
-            </GridColumns>
-        </TelerikGrid>
-    </MudCard>
+        <GridColumns>
+            <GridCommandColumn Width="50px">
+                <GridCommandButton Command="Delete" Icon="delete" ShowInEdit="false" Enabled="!_showAddBankPanel && !CurrentVendor.Exists" />
+            </GridCommandColumn>
+            <GridColumn Field=@nameof(Bank.BankAccountNumber) />
+            <GridColumn Field=@nameof(Bank.CurrencyCode) />
+            <GridColumn Field=@nameof(Bank.BeneficiaryFullName) />
+        </GridColumns>
+    </TelerikGrid>
+</MudCard>
 
 
 @code {
@@ -173,7 +174,12 @@
     Bank? _originalBank = new();
     IEnumerable<Bank>? _selectedBankList = new List<Bank>();
     TelerikGrid<Bank>? _gridRef;
-    
+
+    protected override void OnParametersSet()
+    {
+        if(CurrentVendor != null && CurrentVendor.BankList == null) { CurrentVendor.BankList = new(); }
+    }
+
     public async Task<bool> Validate()
     {
         await CurrentPersonChanged.InvokeAsync(CurrentPerson);
@@ -195,7 +201,7 @@
     {
         if (!_showAddBankPanel)
         {
-            _selectedBank = new() { IsNewItem = true, CurrencyCode = "AZN" };
+            _selectedBank = new() { CurrencyCode="AZN", IsNewItem = true };
             _originalBank = new();
             _showAddBankPanel = true;
             AppState.Refresh();
@@ -207,7 +213,6 @@
         if (!_showAddBankPanel)
         {
             var argsItem = args.Item as Bank;
-            //argsItem.RowIndex = CurrentVendor.BankList.IndexOf(argsItem);
             _selectedBank = new Bank().GetInstanceClone(argsItem);
             _originalBank = argsItem;
             _showAddBankPanel = true;
@@ -222,9 +227,9 @@
         }
     }
 
-    async Task BankSaveHandler()
+    void BankSaveHandler()
     {
-        var isValid = await Validate() && _bankValidator != null && _bankValidator.Validate(options => options.IncludeAllRuleSets());
+        var isValid = _bankValidator != null && _bankValidator.Validate(options => options.IncludeAllRuleSets());
         if (isValid)
         {
             var index = CurrentVendor?.BankList?.IndexOf(_originalBank);
@@ -261,15 +266,15 @@
 
     bool ValidateCurrencyCodes()
     {
-        var isAzerbaijan = CurrentVendor != null && CurrentVendor.CountryCode != null ? CurrentVendor.CountryCode == "AZ" : false;
-        var isAzn = CurrentVendor != null && CurrentVendor.BankList != null && CurrentVendor.BankList.Any(e => e.CurrencyCode == "AZN") ? true : false;
+        var isAzerbaijan = CurrentVendor != null && CurrentVendor.CountryCode != null && CurrentVendor.CountryCode == "AZ";
+        var isAzn = CurrentVendor != null && CurrentVendor.BankList != null && CurrentVendor.BankList.All(e => e.CurrencyCode == "AZN");
         if (isAzerbaijan && !isAzn)
         {
             return false;
         }
         return true;
     }
-    
+
     async Task OnAttachmentDeleteHandler(List<Attachment> deletedAttachments)
     {
         var idList = deletedAttachments.Select(e => e.AttachmentId);

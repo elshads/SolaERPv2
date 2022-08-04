@@ -38,7 +38,7 @@ else if (_currentStep == "nda")
     <RegisterSupplierNda @ref="_registerSupplierNda"
                      @bind-CurrentPerson="_currentPerson"
                      @bind-CurrentVendor="_currentVendor"
-                     @bind-DeletedAttachmentIdList="_deletedAttachmentIdList" />
+                     @bind-DeletedAttachmentIdList="_deletedAttachmentIdList" GlobalBusinessUnit="@_globalBusinessUnit" />
 }
 else if (_currentStep == "bank")
 {
@@ -77,6 +77,7 @@ else
     Vendor? _currentVendor { get; set; } = new();
     int _currentPageIndex { get; set; } = 0;
     List<int> _deletedAttachmentIdList = new();
+    BusinessUnit? _globalBusinessUnit = new() { BusinessUnitName = "variableCompanyName", CountryCode="Azerbaijan", Address="variableAddress", TaxId="variableTaxId" };
 
     RegisterSupplierInitial? _registerSupplierInitial;
     RegisterSupplierNda? _registerSupplierNda;
@@ -119,8 +120,9 @@ else
         _prequalificationCategoryList = await PrequalificationCategoryService.GetAll();
         _currencyList = await CurrencyService.GetAll();
         _dueDiligenceDesignList = await DueDiligenceDesignService.GetAllAsync();
-        var currentVendor = await VendorService.GetByUserIdAsync();
+        var currentVendor = await VendorService.GetByUserIdOrTaxIdAsync();
         if (currentVendor != null) { SetModelNewInstance(currentVendor); }
+        SetNewPersonInstance();
         SetDueDiligenceValues();
         AppState.Loading = false;
     }
@@ -213,14 +215,17 @@ else
         }
     }
 
-    void SetModelNewInstance(Vendor vendor)
+    void SetNewPersonInstance()
     {
         _currentPerson.Email = SessionData.CurrentUser.Email;
         _currentPerson.UserName = SessionData.CurrentUser.UserName;
         _currentPerson.FullName = SessionData.CurrentUser.FullName;
         _currentPerson.Position = SessionData.CurrentUser.Position;
         _currentPerson.PhoneNumber = SessionData.CurrentUser.PhoneNumber;
+    }
 
+    void SetModelNewInstance(Vendor vendor)
+    {
         _currentVendor.VendorId = vendor.VendorId;
         _currentVendor.BusinessUnitId = vendor.BusinessUnitId;
         _currentVendor.VendorCode = vendor.VendorCode;

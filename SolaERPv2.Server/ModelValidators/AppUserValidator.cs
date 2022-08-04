@@ -15,6 +15,13 @@ public class AppUserValidator : AbstractValidator<Model>
                 .MaximumLength(50).WithMessage("Max length 50 characters");
         });
 
+        RuleSet(nameof(Model.Position), () =>
+        {
+            RuleFor(p => p.Position)
+                .NotEmpty().WithMessage("You must enter your position")
+                .MaximumLength(50).WithMessage("Max length 50 characters");
+        });
+
         //RuleSet(nameof(Model.Email), () =>
         //{
         //    RuleFor(p => p.Email)

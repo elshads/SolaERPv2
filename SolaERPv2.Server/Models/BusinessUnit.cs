@@ -5,4 +5,7 @@ public class BusinessUnit : BaseModel
     public int BusinessUnitId { get; set; }
     public string? BusinessUnitCode { get; set; }
     public string? BusinessUnitName { get; set; }
+    public string? TaxId { get; set; }
+    public string? Address { get; set; }
+    public string? CountryCode { get; set; }
 }

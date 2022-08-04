@@ -1,12 +1,12 @@
 ﻿
 <div class="div-gen">
-    <p class="p-line">This Confidentiality Agreement (<strong>“Agreement”</strong>) is made on [effectiveDate] (the “Effective Date”)</p>
+    <p class="p-line">This Confidentiality Agreement (<strong>“Agreement”</strong>) is made on @DateTime.Now.ToString("dd.MM.yyyy") (the “Effective Date”)</p>
     <p class="p-line">BETWEEN:</p>
-    <p class="p-line"><span class="list-ident">(1)</span><strong>[businessUnitName]</strong>, (company number [businessUnitTaxId]) organized and existing under the laws of Azerbaijan and having its principal place of business at [businessUnitAddress] (<strong>“Disclosing Party”</strong>); and</p>
-    <p class="p-line"><span class="list-ident">(2)</span>[companyName], (company number [companyTaxId]) organized and existing under the laws of [companyCountry] and having its registered address at [companyAddress] (<strong>“Recipient”</strong>).</p>
+    <p class="p-line"><span class="list-ident">(1)</span><strong>@GlobalBusinessUnit?.BusinessUnitName</strong>, (company number @GlobalBusinessUnit?.TaxId) organized and existing under the laws of Azerbaijan and having its principal place of business at @GlobalBusinessUnit?.Address (<strong>“Disclosing Party”</strong>); and</p>
+    <p class="p-line"><span class="list-ident">(2)</span>@CurrentVendor?.VendorName, (company number @CurrentVendor?.TaxId) organized and existing under the laws of @CurrentVendor?.CountryCode and having its registered address at @CurrentVendor?.CompanyAddress (<strong>“Recipient”</strong>).</p>
     <p class="p-line">The Disclosing Party and the Recipient shall hereinafter be collectively referred to as the “Parties” or individually as a “Party”.</p>
     <p class="p-line">WHEREAS:</p>
-    <p class="p-line">The Disclosing Party wishes to discuss with and disclose to the Recipient certain information in relation to the Disclosing party’s and its subsidiaries current and future operations in [businessUnitCountry] in order to engage the services of the Recipient (the <strong>“Permitted Purpose”</strong>).</p>
+    <p class="p-line">The Disclosing Party wishes to discuss with and disclose to the Recipient certain information in relation to the Disclosing party’s and its subsidiaries current and future operations in @GlobalBusinessUnit?.CountryCode in order to engage the services of the Recipient (the <strong>“Permitted Purpose”</strong>).</p>
     <p class="p-line">IT IS HEREBY AGREED AS FOLLOWS:</p>
     <p class="p-line"><span class="list-ident">1.</span>The following definitions shall apply for the purposes of this Agreement:</p>
     <p class="p-line"><strong>“Affiliate”</strong> means in relation to the Disclosing Party:</p>
@@ -43,8 +43,9 @@
 
 @code {
 
-    [Parameter] public BusinessUnit? CurrentBusinessUnit { get; set; } = new();
+    [Parameter] public BusinessUnit? GlobalBusinessUnit { get; set; } = new();
     [Parameter] public Vendor? CurrentVendor { get; set; } = new();
+    [Parameter] public AppUser? CurrentPerson { get; set; } = new();
 
 }
 

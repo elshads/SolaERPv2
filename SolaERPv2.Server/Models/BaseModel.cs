@@ -5,7 +5,7 @@ public class BaseModel : IBaseModel
     public string? ReturnMessage { get; set; }
     public int RowIndex { get; set; }
 
-    public T GetInstanceClone<T>(T originalItem) where T : IBaseModel, new()
+    public T GetInstanceClone<T>(T originalItem) where T : new()
     {
         T newItem = new();
         var properties = typeof(T).GetProperties();

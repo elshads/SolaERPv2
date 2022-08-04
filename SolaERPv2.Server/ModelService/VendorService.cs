@@ -82,8 +82,6 @@ public class VendorService : BaseModelService<Vendor>
     public async Task<Vendor?> GetByIdAsync(int vendorId)
     {
         Dictionary<int, Vendor> result = new();
-        var p = new DynamicParameters();
-        p.Add("@VendorId", vendorId, DbType.Int32, ParameterDirection.Input);
 
         using IDbConnection cn = new SqlConnection(_sqlDataAccess.ConnectionString);
         _ = await cn.QueryAsync<Vendor, AppUser, Bank, ApproveStage, Vendor>("dbo.SP_Vendor_Load",
@@ -102,128 +100,115 @@ public class VendorService : BaseModelService<Vendor>
                 if (approve != null && !currentVendor.ApproveStageList.Select(e => e.ApprovalId).Contains(approve.ApprovalId)) { currentVendor.ApproveStageList.Add(approve); }
                 return vendor;
             },
-            param: p,
+            param: new { VendorId = vendorId },
             splitOn: "Id,BankId,VendorEvaluationFormId,ApprovalId",
             commandType: CommandType.StoredProcedure);
 
         return result.Values.FirstOrDefault();
     }
 
-    public async Task<Vendor?> GetByTaxIdAsync(string taxId)
-    {
-        var p = new DynamicParameters();
-        p.Add("@TaxId", taxId, DbType.String, ParameterDirection.Input);
-        var vendor = await _sqlDataAccess.QuerySingle<Vendor>("dbo.SP_VendorByTaxId", p, "Vendor-GetByTaxId1");
-
-        if (vendor != null)
-        {
-            var rp = new DynamicParameters();
-            rp.Add("@VendorId", vendor.VendorId, DbType.Int32, ParameterDirection.Input);
-
-            var productList = await _sqlDataAccess.QueryAll<Product>("dbo.SP_VendorProductServices_Load", rp, "Vendor-GetByTaxId2");
-            if (productList != null && productList.Any())
-            {
-                vendor.ProvidedProductIdList = productList.Select(e => e.ProductServiceId).ToList();
-            }
-
-            var bankList = await _sqlDataAccess.QueryAll<Bank>("dbo.SP_VendorBank_Load", rp, "Vendor-GetByTaxId3");
-            if (bankList != null && bankList.Any())
-            {
-                vendor.BankList = bankList.ToList();
-            }
-            
-        }
-
-        return vendor;
-    }
-
-    public async Task<Vendor?> GetByUserIdAsync()
+    public async Task<Vendor?> GetByUserIdOrTaxIdAsync(string? taxId = null)
     {
         var currentUser = await _appUserService.GetCurrentUserAsync();
         Dictionary<int, Vendor> result = new();
-        var p = new DynamicParameters();
-        p.Add("@UserId", currentUser.Id, DbType.Int32, ParameterDirection.Input);
+        var vendor = new Vendor();
 
-        using IDbConnection cn = new SqlConnection(_sqlDataAccess.ConnectionString);
-        _ = await cn.QueryAsync<Vendor, DueDiligence, Bank, string, string, int, Vendor>("dbo.SP_VendorByUserId",
-            (vendor, dueDiligence, bank, repComp, repProd, product) =>
-            {
-                if (!result.ContainsKey(vendor.VendorId))
-                {
-                    vendor.DueDiligenceList = new();
-                    vendor.BankList = new();
-                    vendor.RepresentedCompanyList = new();
-                    vendor.RepresentedProductList = new();
-                    vendor.ProvidedProductIdList = new();
-                    result.Add(vendor.VendorId, vendor);
-                }
-                var currentVendor = result[vendor.VendorId];
-                if (dueDiligence != null && !currentVendor.DueDiligenceList.Select(e => e.DueDiligenceDesignId).Contains(dueDiligence.DueDiligenceDesignId)) { currentVendor.DueDiligenceList.Add(dueDiligence); }
-                if (bank != null && !currentVendor.BankList.Select(e => e.BankId).Contains(bank.BankId)) { currentVendor.BankList.Add(bank); }
-                if (repComp != null && !currentVendor.RepresentedCompanyList.Contains(repComp)) { currentVendor.RepresentedCompanyList.Add(repComp); }
-                if (repProd != null && !currentVendor.RepresentedProductList.Contains(repProd)) { currentVendor.RepresentedProductList.Add(repProd); }
-                if (product != null && !currentVendor.ProvidedProductIdList.Contains(product)) { currentVendor.ProvidedProductIdList.Add(product); }
-                return vendor;
-            },
-            param: p,
-            splitOn: "VendorId,DueDiligenceDesignId,BankId,RepresentedCompanyName,RepresentedProductName,ProductServiceId",
-            commandType: CommandType.StoredProcedure);
-
-        var vendor = result.Values.FirstOrDefault();
-
-        if (vendor != null)
+        try
         {
-            var alp = new DynamicParameters();
-            alp.Add("@SourceId", vendor.VendorId, DbType.Int32, ParameterDirection.Input);
-            alp.Add("@Reference", null, DbType.String, ParameterDirection.Input);
-            alp.Add("@SourceType", "VEN_LOGO", DbType.String, ParameterDirection.Input);
-            var attLogo = await _sqlDataAccess.QueryAll<Attachment>("dbo.SP_AttachmentList_Load", alp, "Vendor-GetByUserIdAttachmentLoad");
-            if (attLogo != null) { vendor.CompanyLogo = attLogo.ToList(); }
-
-            var aop = new DynamicParameters();
-            aop.Add("@SourceId", vendor.VendorId, DbType.Int32, ParameterDirection.Input);
-            aop.Add("@Reference", null, DbType.String, ParameterDirection.Input);
-            aop.Add("@SourceType", "VEN_OLET", DbType.String, ParameterDirection.Input);
-            var attOfletter = await _sqlDataAccess.QueryAll<Attachment>("dbo.SP_AttachmentList_Load", aop, "Vendor-GetByUserIdAttachmentLoad");
-            if (attOfletter != null) { vendor.OfficialLetter = attOfletter.ToList(); }
-
-            if (vendor.BankList != null && vendor.BankList.Any())
+            using IDbConnection cn = new SqlConnection(_sqlDataAccess.ConnectionString);
+            var p = new DynamicParameters();
+            if(taxId == null)
             {
-                var newBankList = new List<Bank>();
-                foreach (var bank in vendor.BankList)
-                {
-                    var abp = new DynamicParameters();
-                    abp.Add("@SourceId", bank.BankId, DbType.Int32, ParameterDirection.Input);
-                    abp.Add("@Reference", null, DbType.String, ParameterDirection.Input);
-                    abp.Add("@SourceType", "VEN_BNK", DbType.String, ParameterDirection.Input);
-                    var attBank = await _sqlDataAccess.QueryAll<Attachment>("dbo.SP_AttachmentList_Load", abp, "Vendor-GetByUserIdAttachmentLoad");
-                    if (attBank != null)
-                    {
-                        bank.BankLetter = attBank.ToList();
-                    }
-                    newBankList.Add(bank);
-                }
-                vendor.BankList = newBankList;
+                p.Add("@UserId", currentUser.Id, DbType.Int32, ParameterDirection.Input);
             }
-
-            if (vendor.DueDiligenceList != null && vendor.DueDiligenceList.Any())
+            else
             {
-                var newDueDiligenceList = new List<DueDiligence>();
-                foreach (var dueDiligence in vendor.DueDiligenceList)
-                {
-                    var adp = new DynamicParameters();
-                    adp.Add("@SourceId", dueDiligence.VendorDueDiligenceId, DbType.Int32, ParameterDirection.Input);
-                    adp.Add("@Reference", null, DbType.String, ParameterDirection.Input);
-                    adp.Add("@SourceType", "VEN_DUE", DbType.String, ParameterDirection.Input);
-                    var attBank = await _sqlDataAccess.QueryAll<Attachment>("dbo.SP_AttachmentList_Load", adp, "Vendor-GetByUserIdAttachmentLoad");
-                    if (attBank != null)
-                    {
-                        dueDiligence.AttachmentValue = attBank.ToList();
-                    }
-                    newDueDiligenceList.Add(dueDiligence);
-                }
-                vendor.DueDiligenceList = newDueDiligenceList;
+                p.Add("@TaxId", taxId, DbType.String, ParameterDirection.Input);
             }
+            _ = await cn.QueryAsync<Vendor, DueDiligence, Bank, string, string, int, Vendor>(taxId == null ? "dbo.SP_VendorByUserId" : "dbo.SP_VendorByTaxId",
+                (vendor, dueDiligence, bank, repComp, repProd, product) =>
+                {
+                    if (!result.ContainsKey(vendor.VendorId))
+                    {
+                        vendor.DueDiligenceList = new();
+                        vendor.BankList = new();
+                        vendor.RepresentedCompanyList = new();
+                        vendor.RepresentedProductList = new();
+                        vendor.ProvidedProductIdList = new();
+                        result.Add(vendor.VendorId, vendor);
+                    }
+                    var currentVendor = result[vendor.VendorId];
+                    if (dueDiligence != null && !currentVendor.DueDiligenceList.Select(e => e.DueDiligenceDesignId).Contains(dueDiligence.DueDiligenceDesignId)) { currentVendor.DueDiligenceList.Add(dueDiligence); }
+                    if (bank != null && !currentVendor.BankList.Select(e => e.BankId).Contains(bank.BankId)) { currentVendor.BankList.Add(bank); }
+                    if (repComp != null && !currentVendor.RepresentedCompanyList.Contains(repComp)) { currentVendor.RepresentedCompanyList.Add(repComp); }
+                    if (repProd != null && !currentVendor.RepresentedProductList.Contains(repProd)) { currentVendor.RepresentedProductList.Add(repProd); }
+                    if (product != null && !currentVendor.ProvidedProductIdList.Contains(product)) { currentVendor.ProvidedProductIdList.Add(product); }
+                    return vendor;
+                },
+                param: p,
+                splitOn: "VendorId,DueDiligenceDesignId,BankId,RepresentedCompanyName,RepresentedProductName,ProductServiceId",
+                commandType: CommandType.StoredProcedure);
+
+            vendor = result.Values.FirstOrDefault();
+
+            if (vendor != null)
+            {
+                var alp = new DynamicParameters();
+                alp.Add("@SourceId", vendor.VendorId, DbType.Int32, ParameterDirection.Input);
+                alp.Add("@Reference", null, DbType.String, ParameterDirection.Input);
+                alp.Add("@SourceType", "VEN_LOGO", DbType.String, ParameterDirection.Input);
+                var attLogo = await _sqlDataAccess.QueryAll<Attachment>("dbo.SP_AttachmentList_Load", alp, "Vendor-GetByUserIdAttachmentLoad");
+                if (attLogo != null) { vendor.CompanyLogo = attLogo.ToList(); }
+
+                var aop = new DynamicParameters();
+                aop.Add("@SourceId", vendor.VendorId, DbType.Int32, ParameterDirection.Input);
+                aop.Add("@Reference", null, DbType.String, ParameterDirection.Input);
+                aop.Add("@SourceType", "VEN_OLET", DbType.String, ParameterDirection.Input);
+                var attOfletter = await _sqlDataAccess.QueryAll<Attachment>("dbo.SP_AttachmentList_Load", aop, "Vendor-GetByUserIdAttachmentLoad");
+                if (attOfletter != null) { vendor.OfficialLetter = attOfletter.ToList(); }
+
+                if (vendor.BankList != null && vendor.BankList.Any())
+                {
+                    var newBankList = new List<Bank>();
+                    foreach (var bank in vendor.BankList)
+                    {
+                        var abp = new DynamicParameters();
+                        abp.Add("@SourceId", bank.BankId, DbType.Int32, ParameterDirection.Input);
+                        abp.Add("@Reference", null, DbType.String, ParameterDirection.Input);
+                        abp.Add("@SourceType", "VEN_BNK", DbType.String, ParameterDirection.Input);
+                        var attBank = await _sqlDataAccess.QueryAll<Attachment>("dbo.SP_AttachmentList_Load", abp, "Vendor-GetByUserIdAttachmentLoad");
+                        if (attBank != null)
+                        {
+                            bank.BankLetter = attBank.ToList();
+                        }
+                        newBankList.Add(bank);
+                    }
+                    vendor.BankList = newBankList;
+                }
+
+                if (vendor.DueDiligenceList != null && vendor.DueDiligenceList.Any())
+                {
+                    var newDueDiligenceList = new List<DueDiligence>();
+                    foreach (var dueDiligence in vendor.DueDiligenceList)
+                    {
+                        var adp = new DynamicParameters();
+                        adp.Add("@SourceId", dueDiligence.VendorDueDiligenceId, DbType.Int32, ParameterDirection.Input);
+                        adp.Add("@Reference", null, DbType.String, ParameterDirection.Input);
+                        adp.Add("@SourceType", "VEN_DUE", DbType.String, ParameterDirection.Input);
+                        var attBank = await _sqlDataAccess.QueryAll<Attachment>("dbo.SP_AttachmentList_Load", adp, "Vendor-GetByUserIdAttachmentLoad");
+                        if (attBank != null)
+                        {
+                            dueDiligence.AttachmentValue = attBank.ToList();
+                        }
+                        newDueDiligenceList.Add(dueDiligence);
+                    }
+                    vendor.DueDiligenceList = newDueDiligenceList;
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            var message = e.Message;
         }
         return vendor;
     }
@@ -292,7 +277,7 @@ public class VendorService : BaseModelService<Vendor>
 
     public async Task<SqlResult?> SaveSupplier(Vendor vendor, AppUser user, List<int> deletedAttachmentIdList)
     {
-        _ = await _appUserService.UpdateAsync(user);
+        var userSaveResult = await _appUserService.UpdateAsync(user);
 
         var supplierResult = new SqlResult();
         var currentUser = await _appUserService.GetCurrentUserAsync();
@@ -315,6 +300,8 @@ public class VendorService : BaseModelService<Vendor>
         p.Add("@Country", vendor.CountryCode, DbType.String, ParameterDirection.Input);
         p.Add("@UserId", currentUser.Id, DbType.Int32, ParameterDirection.Input);
         p.Add("@OtherProducts", vendor.OtherProducts, DbType.String, ParameterDirection.Input);
+        p.Add("@CompanyAddress", vendor.CompanyAddress, DbType.String, ParameterDirection.Input);
+        p.Add("@CompanyRegistrationDate", vendor.CompanyRegistrationDate, DbType.DateTime, ParameterDirection.Input);
         p.Add("@NewVendorId", DbType.Int32, direction: ParameterDirection.Output);
         supplierResult = await _sqlDataAccess.ExecuteSql("dbo.SP_Vendors_IUD", p, "Vendor-Save");
 
@@ -456,7 +443,7 @@ public class VendorService : BaseModelService<Vendor>
                     dd.Add("@RadioboxValue", item.RadioboxValue, DbType.Boolean, ParameterDirection.Input);
                     dd.Add("@IntValue", item.IntValue, DbType.Int32, ParameterDirection.Input);
                     dd.Add("@DecimalValue", item.DecimalValue, DbType.Decimal, ParameterDirection.Input);
-                    dd.Add("@DateTimeValue", new DateTime(item.DateTimeValue.Year, item.DateTimeValue.Month, item.DateTimeValue.Day), DbType.DateTime, ParameterDirection.Input);
+                    dd.Add("@DateTimeValue", item.DateTimeValue, DbType.DateTime, ParameterDirection.Input);
                     dd.Add("@Scoring", item.Scoring, DbType.Decimal, ParameterDirection.Input);
                     var dueResult = await _sqlDataAccess.QueryReturnInteger("dbo.SP_VendorDueDiligence_IUD", dd, "Vendor-SaveDueDiligence");
                     if (dueResult != null && dueResult.QueryResultMessage != null) { supplierResult.QueryResultMessage = dueResult.QueryResultMessage; return supplierResult; }

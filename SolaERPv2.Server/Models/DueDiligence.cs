@@ -11,7 +11,7 @@ public class DueDiligence
     public bool RadioboxValue { get; set; }
     public int IntValue { get; set; }
     public decimal DecimalValue { get; set; }
-    public DateTime DateTimeValue { get; set; }
+    public DateTime DateTimeValue { get; set; } = new DateTime(1800,1,1);
     public List<Attachment>? AttachmentValue { get; set; }
     public List<Bank>? BankList { get; set; }
     public decimal Scoring { get; set; } = 100m;

@@ -106,14 +106,25 @@ public class AppUserService : BaseModelService<AppUser>
 
     public async Task<SqlResult?> UpdateAsync(AppUser appUser)
     {
-        var p = new DynamicParameters();
-        p.Add("@Id", appUser.Id, DbType.Int32, ParameterDirection.Input);
-        p.Add("@FullName", appUser.FullName, DbType.String, ParameterDirection.Input);
-        p.Add("@Position", appUser.Position, DbType.String, ParameterDirection.Input);
-        p.Add("@PhoneNumber", appUser.PhoneNumber, DbType.String, ParameterDirection.Input);
-        p.Add("@Photo", appUser.Photo, DbType.Binary, ParameterDirection.Input);
-        var sql = $"UPDATE Config.AppUser SET FullName = @FullName, Position = @Position, PhoneNumber = @PhoneNumber, Photo = @Photo WHERE Id = @Id";
-        return await _sqlDataAccess.ExecuteSql(sql, p, "AppUser-Update", CommandType.Text);
+        var sqlResult = new SqlResult();
+        try
+        {
+
+            var p = new DynamicParameters();
+            p.Add("@UserId", appUser.Id, DbType.Int32, ParameterDirection.Input);
+            p.Add("@FullName", appUser.FullName, DbType.String, ParameterDirection.Input);
+            p.Add("@Position", appUser.Position, DbType.String, ParameterDirection.Input);
+            p.Add("@PhoneNumber", appUser.PhoneNumber, DbType.String, ParameterDirection.Input);
+            p.Add("@Photo", appUser.Photo, DbType.Binary, ParameterDirection.Input);
+
+            using IDbConnection cn = new SqlConnection(_sqlDataAccess.ConnectionString);
+            _ = await cn.ExecuteAsync("dbo.SP_UserData_U", p, commandType: CommandType.StoredProcedure);
+        }
+        catch (Exception e)
+        {
+            sqlResult.QueryResultMessage = "AppUser-Update: " + e.Message;
+        }
+        return sqlResult;
     }
 
     public async Task<SqlResult?> UserLoggedIn()

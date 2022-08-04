@@ -1,7 +1,7 @@
 ﻿<MudCard Class="k-p-8" Style="max-width:1280px; margin:auto">
     <h3 class="k-mb-4">CONFIDENTIALITY AGREEMENT</h3>
 
-    <RegisterSupplierAgreement CurrentBusinessUnit="new BusinessUnit()" CurrentVendor="@(CurrentVendor)" />
+    <RegisterSupplierAgreement GlobalBusinessUnit="@GlobalBusinessUnit" CurrentVendor="@CurrentVendor" CurrentPerson="@CurrentPerson" />
     <div class="k-px-4">
         <TelerikGridLayout ColumnSpacing="16px">
             <GridLayoutRows>
@@ -10,11 +10,11 @@
             </GridLayoutRows>
             <GridLayoutItems>
                 <GridLayoutItem Row="1" Column="1">
-                    <strong>SOCAR-STP</strong>
+                    <strong>@(GlobalBusinessUnit?.BusinessUnitName)</strong>
                 </GridLayoutItem>
                 <GridLayoutItem Row="1" Column="2">
-                    <strong>@(CurrentVendor.VendorName)</strong>
-                    <div class="k-my-2">@(SessionData.CurrentUser.FullName)</div>
+                    <strong>@(CurrentVendor?.VendorName)</strong>
+                    <div class="k-my-2">@(SessionData?.CurrentUser?.FullName)</div>
                 </GridLayoutItem>
                 <GridLayoutItem Row="2" Column="1" ColumnSpan="2">
                     <div class="k-px-4 k-py-2" style="background: var(--checkbox-background)">
@@ -37,6 +37,7 @@
     [Parameter] public EventCallback<Vendor> CurrentVendorChanged { get; set; }
     [Parameter] public List<int> DeletedAttachmentIdList { get; set; } = new();
     [Parameter] public EventCallback<List<int>> DeletedAttachmentIdListChanged { get; set; }
+    [Parameter] public BusinessUnit? GlobalBusinessUnit { get; set; } = new();
 
     FluentValidationValidator? _ndaValidator;
     //bool _isNdaAgree = false;

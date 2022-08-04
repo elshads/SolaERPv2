@@ -4,4 +4,5 @@ public class Analysis : BaseModel
 {
     public string? AnalysisCode { get; set; }
     public string? AnalysisName { get; set; }
+    public int Days { get; set; }
 }

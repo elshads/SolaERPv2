@@ -30,7 +30,7 @@
                         <Template>
                             <label for="taxid" class="k-label k-form-label">Tax ID / VÖEN: </label>
                             <div class="k-form-field-wrap">
-                                <TelerikTextBox Id="taxid" @bind-Value="@(CurrentVendor.TaxId)" OnBlur="@(() => TaxIdBlured(CurrentVendor.TaxId))" />
+                                <TelerikTextBox Id="taxid" @bind-Value="@(CurrentVendor.TaxId)" OnBlur="@TaxIdBlured" />
                                 <TelerikValidationMessage For="@(() => CurrentVendor.TaxId)" />
                             </div>
                         </Template>
@@ -278,14 +278,14 @@
         }
     }
 
-    async Task TaxIdBlured(string taxId)
+    async Task TaxIdBlured()
     {
         Vendor? vendor = new();
-        if (CurrentVendor != null && CurrentVendor.TaxId != null) { vendor = await VendorService.GetByTaxIdAsync(CurrentVendor.TaxId); }
+        if (CurrentVendor != null && CurrentVendor.TaxId != null) { vendor = await VendorService.GetByUserIdOrTaxIdAsync(CurrentVendor.TaxId); }
         if (vendor != null && vendor.TaxId != null && vendor.TaxId.Length > 0)
         {
-            CurrentVendor = vendor;
-            if (CurrentVendor.StatusId > 0)
+            SetModelNewInstance(vendor);
+            if (CurrentVendor?.StatusId > 0)
             {
                 CurrentVendor.Exists = true;
             }
@@ -298,5 +298,37 @@
         {
             CurrentVendor.Exists = false;
         }
+    }
+
+    void SetModelNewInstance(Vendor vendor)
+    {
+        CurrentVendor.VendorId = vendor.VendorId;
+        CurrentVendor.BusinessUnitId = vendor.BusinessUnitId;
+        CurrentVendor.VendorCode = vendor.VendorCode;
+        CurrentVendor.VendorName = vendor.VendorName;
+        CurrentVendor.CompanyAddress = vendor.CompanyAddress;
+        CurrentVendor.CompanyRegistrationDate = vendor.CompanyRegistrationDate;
+        CurrentVendor.PrequalificationCategoryIdList = vendor.PrequalificationCategoryIdList;
+        CurrentVendor.PrequalificationCategoryList = vendor.PrequalificationCategoryList;
+        CurrentVendor.TaxId = vendor.TaxId;
+        CurrentVendor.CompanyLocation = vendor.CompanyLocation;
+        CurrentVendor.CompanyWebsite = vendor.CompanyWebsite;
+        CurrentVendor.CompanyLogo = vendor.CompanyLogo;
+        CurrentVendor.OfficialLetter = vendor.OfficialLetter;
+        CurrentVendor.CreditDays = vendor.CreditDays;
+        CurrentVendor.PaymentTermsCode = vendor.PaymentTermsCode;
+        CurrentVendor.CountryCode = vendor.CountryCode;
+        CurrentVendor.PaymentTerms = vendor.PaymentTerms;
+        CurrentVendor.ProvidedProductIdList = vendor.ProvidedProductIdList;
+        CurrentVendor.ProvidedProductList = vendor.ProvidedProductList;
+        CurrentVendor.BankList = vendor.BankList;
+        CurrentVendor.OtherProducts = vendor.OtherProducts;
+        CurrentVendor.RepresentedProductList = vendor.RepresentedProductList;
+        CurrentVendor.RepresentedCompanyList = vendor.RepresentedCompanyList;
+        CurrentVendor.AgreeWithDefaultDays = vendor.AgreeWithDefaultDays;
+        CurrentVendor.Exists = vendor.Exists;
+        CurrentVendor.StatusId = vendor.StatusId;
+
+        CurrentVendor.DueDiligenceList = vendor.DueDiligenceList;
     }
 }
