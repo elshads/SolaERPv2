@@ -8,6 +8,25 @@
             <MudGrid Spacing="1">
                 <MudItem xs="12" md="8"></MudItem>
                 <MudItem xs="12" md="4">
+                    <MudGrid Spacing="1">
+                        <MudItem xs="4"><div class="pr-2 scoring-title"></div></MudItem>
+                        <MudItem xs="4"><div class="pr-2 scoring-title"></div></MudItem>
+                        <MudItem xs="4">
+                            <div class="pr-2">
+                                <TelerikNumericTextBox Class="@_outcomeStyle" Value="@_totalOutcome" ValueExpression="() => _totalOutcome" Arrows="false" Enabled=false />
+                            </div>
+                        </MudItem>
+                    </MudGrid>
+                </MudItem>
+            </MudGrid>
+        </MudItem>
+    </MudGrid>
+    <MudGrid Spacing="1">
+        <MudItem xs="12" md="4"></MudItem>
+        <MudItem xs="12" md="8">
+            <MudGrid Spacing="1">
+                <MudItem xs="12" md="8"></MudItem>
+                <MudItem xs="12" md="4">
                     <MudGrid Spacing="1" Class="scoring-values">
                         <MudItem xs="4"><div class="pr-2 scoring-title">Scoring</div></MudItem>
                         <MudItem xs="4"><div class="pr-2 scoring-title">Weight</div></MudItem>
@@ -17,6 +36,7 @@
             </MudGrid>
         </MudItem>
     </MudGrid>
+
 
     <TelerikForm Model="@CurrentVendor?.DueDiligenceList" Orientation="FormOrientation.Horizontal">
         <FormValidation>
@@ -51,23 +71,34 @@
                                                                Layout="RadioGroupLayout.Horizontal"
                                                                ValueField="Value"
                                                                TextField="Text"
+                                                               OnChange="@((object value) => OnValueChange(value, currentDueDiligence, design))"
                                                                Enabled="!_disabledLines.Contains(design.LineNo)" />
                                                             }
                                                             @if (design.HasCheckbox)
                                                             {
-                                                                <TelerikCheckBox Enabled="!_disabledLines.Contains(design.LineNo)" Class="mr-4" @bind-Value="@currentDueDiligence.CheckboxValue" />
+                                                                <TelerikCheckBox OnChange="@((object value) => OnValueChange(value, currentDueDiligence, design))"
+                                                             Enabled="!_disabledLines.Contains(design.LineNo)"
+                                                             Class="mr-4" @bind-Value="@currentDueDiligence.CheckboxValue" />
                                                             }
                                                             @if (design.HasInt)
                                                             {
-                                                                <TelerikNumericTextBox Enabled="!_disabledLines.Contains(design.LineNo)" Class="mr-4" @bind-Value="currentDueDiligence.IntValue" Arrows="false" />
+                                                                <TelerikNumericTextBox OnChange="@((object value) => OnValueChange(value, currentDueDiligence, design))"
+                                                                   Enabled="!_disabledLines.Contains(design.LineNo)"
+                                                                   Class="mr-4" @bind-Value="currentDueDiligence.IntValue"
+                                                                   Arrows="false" />
                                                             }
                                                             @if (design.HasDecimal)
                                                             {
-                                                                <TelerikNumericTextBox Enabled="!_disabledLines.Contains(design.LineNo)" Class="mr-4" @bind-Value="currentDueDiligence.DecimalValue" Arrows="false" />
+                                                                <TelerikNumericTextBox OnChange="@((object value) => OnValueChange(value, currentDueDiligence, design))"
+                                                                   Enabled="!_disabledLines.Contains(design.LineNo)"
+                                                                   Class="mr-4" @bind-Value="currentDueDiligence.DecimalValue"
+                                                                   Arrows="false" />
                                                             }
                                                             @if (design.HasTextbox)
                                                             {
-                                                                <TelerikTextBox Enabled="!_disabledLines.Contains(design.LineNo)" Class="mr-4" @bind-Value="@currentDueDiligence.TextboxValue" />
+                                                                <TelerikTextBox OnChange="@((object value) => OnValueChange(value, currentDueDiligence, design))"
+                                                            Enabled="!_disabledLines.Contains(design.LineNo)"
+                                                            Class="mr-4" @bind-Value="@currentDueDiligence.TextboxValue" />
                                                             }
                                                             @if (design.HasTextarea)
                                                             {
@@ -75,7 +106,9 @@
                                                             }
                                                             @if (design.HasDateTime)
                                                             {
-                                                                <TelerikDatePicker T="DateTime" Enabled="!_disabledLines.Contains(design.LineNo)" Class="mr-4" @bind-Value="@currentDueDiligence.DateTimeValue" />
+                                                                <TelerikDatePicker OnChange="@((object value) => OnValueChange(value, currentDueDiligence, design))"
+                                                               Enabled="!_disabledLines.Contains(design.LineNo)"
+                                                               Class="mr-4" @bind-Value="@currentDueDiligence.DateTimeValue" />
                                                             }
                                                             @if (design.HasBankList)
                                                             {
@@ -97,13 +130,38 @@
                                                                  TItem="Bank"
                                                                  TValue="string"
                                                                  Class="mr-4"
+                                                                 OnChange="@((object value) => OnValueChange(value, currentDueDiligence, design))"
                                                                  TextField="@nameof(Bank.BankAccountNumber)"
                                                                  ValueField="@nameof(Bank.BankAccountNumber)" />
                                                             }
                                                             @if (design.HasAttachment)
                                                             {
                                                                 <div class="mr-4">
-                                                                    <AttachmentDialog @bind-AttachmentList="@currentDueDiligence.AttachmentValue" />
+                                                                    <AttachmentDialog @bind-AttachmentList="@currentDueDiligence.AttachmentValue"
+                                                                  OnChange="@((object value) => OnValueChange(value, currentDueDiligence, design))" />
+                                                                </div>
+                                                            }
+                                                            @if (design.HasGrid)
+                                                            {
+                                                                <div class="mr-4">
+                                                                    <GridButton @bind-GridValue="@currentDueDiligence.GridValue"
+                                                            ButtonName="DataGrid"
+                                                            GridColumnLimit="@design.GridColumnCount"
+                                                            GridRowLimit="@design.GridRowLimit"
+                                                            Column1="@design.Column1Alias"
+                                                            Column2="@design.Column2Alias"
+                                                            Column3="@design.Column3Alias"
+                                                            Column4="@design.Column4Alias"
+                                                            Column5="@design.Column5Alias"
+                                                            OnChange="@((object value) => OnValueChange(value, currentDueDiligence, design))" />
+                                                                </div>
+                                                            }
+                                                            @if (design.HasAgreement)
+                                                            {
+                                                                <div class="mr-4">
+                                                                    <AgreementButton AgreementHtmlText="@design.AgreementText"
+                                                                 OnChange="@((object value) => OnValueChange(value, currentDueDiligence, design))" 
+                                                                 @bind-AgreementValue="@currentDueDiligence.AgreementValue" />
                                                                 </div>
                                                             }
                                                         </div>
@@ -113,15 +171,16 @@
                                                     <MudGrid Spacing="1" Class="scoring-values">
                                                         @if (currentDueDiligence != null)
                                                         {
-                                                            var outcome = _totalWeight != 0 ? currentDueDiligence.Scoring * (design.Weight / _totalWeight) : 0;
                                                             <MudItem xs="4">
-                                                                <TelerikNumericTextBox Class="scoring" @bind-Value="currentDueDiligence.Scoring" Arrows="false" Min="1" Max="100" />
+                                                                <TelerikNumericTextBox Class="scoring" @bind-Value="currentDueDiligence.Scoring" OnChange="@(() => StateHasChanged())" Arrows="false" Min="0" Max="100" Enabled=false />
                                                             </MudItem>
                                                             <MudItem xs="4">
-                                                                <TelerikNumericTextBox Class="weight" Value="design.Weight" ValueExpression="() => design.Weight" Arrows="false" Enabled=false />
+                                                                <span class="k-numerictextbox k-input weight k-disabled  k-valid telerik-blazor k-input-solid k-rounded-md k-input-md weight">
+                                                                    <input class="k-input-inner" value="@((decimal)design.Weight / 10)%" readonly />
+                                                                </span>
                                                             </MudItem>
                                                             <MudItem xs="4">
-                                                                <TelerikNumericTextBox Class="outcome" Value="outcome" ValueExpression="() => outcome" Arrows="false" Enabled=false />
+                                                                <TelerikNumericTextBox Class="outcome" Value="currentDueDiligence.Outcome" ValueExpression="() => currentDueDiligence.Outcome" Arrows="false" Enabled=false />
                                                             </MudItem>
                                                         }
                                                     </MudGrid>
@@ -138,7 +197,6 @@
         </FormItems>
         <FormButtons />
     </TelerikForm>
-
 </MudCard>
 
 
@@ -154,10 +212,11 @@
     [Parameter] public IEnumerable<DueDiligenceDesign>? DueDiligenceDesignList { get; set; } = new List<DueDiligenceDesign>();
 
     FluentValidationValidator? _dueDiligenceValidator;
+    decimal _totalOutcome => CurrentVendor.DueDiligenceList.Sum(e => e.Outcome);
 
+    string _outcomeStyle => "total-outcome " + (_totalOutcome >= 95m ? "excellent" : _totalOutcome >= 75m ? "good" : _totalOutcome >= 60m ? "satisfactory" : _totalOutcome >= 50m ? "adequate" : "unsatisfactory");
 
     List<RadioSelection> _radioSelectionList = new() { new RadioSelection { Value = false, Text = "No" }, new RadioSelection { Value = true, Text = "Yes" } };
-    DueDiligence? _currentDueDiligence = new();
     IEnumerable<string>? _dueDiligenceGroupList => DueDiligenceDesignList != null ? DueDiligenceDesignList?.Select(e => e.Title)?.Distinct() : new List<string>();
 
     string _selectedBankAccount = "";
@@ -168,6 +227,14 @@
     {
         _selectedBankAccount = CurrentVendor != null && CurrentVendor.BankList != null && CurrentVendor.BankList.Any() ? CurrentVendor.BankList.FirstOrDefault().BankAccountNumber : "";
         SetDueDiligenceValues();
+        @foreach (var design in DueDiligenceDesignList)
+        {
+            var currentDueDiligence = CurrentVendor?.DueDiligenceList?.FirstOrDefault(e => e.DueDiligenceDesignId == design.DueDiligenceDesignId);
+            if (currentDueDiligence != null)
+            {
+                OnValueChange(1, currentDueDiligence, design);
+            }
+        }
     }
 
     void SetDueDiligenceValues()
@@ -175,7 +242,7 @@
         if (DueDiligenceDesignList != null && DueDiligenceDesignList.Any())
         {
             var dueDiligenceDesignList = DueDiligenceDesignList.ToList();
-            
+
             var design01Index = dueDiligenceDesignList.FindIndex(e => e.LineNo == 1);
             var design02Index = dueDiligenceDesignList.FindIndex(e => e.LineNo == 2);
             var design03Index = dueDiligenceDesignList.FindIndex(e => e.LineNo == 3);
@@ -233,7 +300,7 @@
 
                 if (line06Index > -1)
                 {
-                    CurrentVendor.DueDiligenceList[line06Index].TextboxValue = CurrentVendor.TaxId;
+                    CurrentVendor.DueDiligenceList[line06Index].TextboxValue = CurrentVendor.TaxOffice;
                 }
 
                 if (line07Index > -1)
@@ -263,6 +330,46 @@
         DeletedAttachmentIdList?.AddRange(idList);
         await DeletedAttachmentIdListChanged.InvokeAsync(DeletedAttachmentIdList);
     }
+
+    void OnValueChange(object value, DueDiligence item, DueDiligenceDesign design)
+    {
+        var numberOfComponents = Convert.ToInt32(design.HasRadiobox) + Convert.ToInt32(design.HasCheckbox) + Convert.ToInt32(design.HasInt) + Convert.ToInt32(design.HasDecimal) + Convert.ToInt32(design.HasTextbox) + Convert.ToInt32(design.HasTextarea) + Convert.ToInt32(design.HasDateTime) + Convert.ToInt32(design.HasBankList) + Convert.ToInt32(design.HasAttachment) + Convert.ToInt32(design.HasGrid) + Convert.ToInt32(design.HasAgreement);
+        var radioTextBoxScore = GetRadioTextBoxScore(item, design, numberOfComponents);
+        var checkboxScore = item != null && numberOfComponents > 0 && item.CheckboxValue ? 100m / (decimal)numberOfComponents : 0;
+        var agreementScore = item != null && numberOfComponents > 0 && item.AgreementValue ? 100m / (decimal)numberOfComponents : 0;
+        var intScore = item != null && numberOfComponents > 0 && item.IntValue > 0 ? 100m / (decimal)numberOfComponents : 0;
+        var decimalScore = item != null && numberOfComponents > 0 && item.DecimalValue > 0 ? 100m / (decimal)numberOfComponents : 0;
+        var textareaScore = item != null && numberOfComponents > 0 && !string.IsNullOrEmpty(item.TextareaValue) ? 100m / (decimal)numberOfComponents : 0;
+        var dateTimeScore = item != null && numberOfComponents > 0 && design.HasDateTime && item.DateTimeValue > new DateTime(1800, 1, 1) ? 100m / (decimal)numberOfComponents : 0;
+        var bankListScore = item != null && numberOfComponents > 0 && item.BankList != null && item.BankList.Any() ? 100m / (decimal)numberOfComponents : 0;
+        var gridScore = item != null && numberOfComponents > 0 && item.GridValue != null && item.GridValue.Any() ? 100m / (decimal)numberOfComponents : 0;
+        var attachmentScore = item != null && numberOfComponents > 0 && item.AttachmentValue != null && item.AttachmentValue.Any() ? 100m / (decimal)numberOfComponents : 0;
+        var totalScore = radioTextBoxScore + checkboxScore + intScore + decimalScore + textareaScore + dateTimeScore + bankListScore + attachmentScore + gridScore + agreementScore;
+
+        item.Scoring = totalScore;
+        var totalWeight = DueDiligenceDesignList != null ? DueDiligenceDesignList.Sum(e => e.Weight) : 0;
+        item.Outcome = totalWeight > 0 ? Math.Round(item.Scoring * ((decimal)design.Weight / (decimal)totalWeight), 2) : 0; ;
+    }
+
+    decimal GetRadioTextBoxScore(DueDiligence item, DueDiligenceDesign design, int numberOfComponents)
+    {
+        if (design.HasRadiobox && design.HasTextbox && numberOfComponents == 2)
+        {
+            return !item.RadioboxValue ? 100m : !string.IsNullOrEmpty(item.TextboxValue) ? 100m : 0;
+        }
+        else if (design.HasRadiobox)
+        {
+            return item != null && numberOfComponents > 0 && item.RadioboxValue ? 100m / (decimal)numberOfComponents : 0;
+        }
+        else if (design.HasTextbox)
+        {
+            return item != null && numberOfComponents > 0 && !string.IsNullOrEmpty(item.TextboxValue) ? 100m / (decimal)numberOfComponents : 0;
+        }
+        else
+        {
+            return 0;
+        }
+    }
 }
 
 <style>
@@ -275,31 +382,35 @@
             padding: 5px 8px;
         }
 
-        .scoring-values .k-state-disabled, .k-widget[disabled], .k-disabled {
-            opacity: 1;
-        }
+    .total-outcome .k-input-inner {
+        text-align: end;
+    }
 
-        .scoring-values .scoring-title {
-            color: var(--mud-palette-info);
-            text-align: end;
-        }
+    .scoring-values .k-state-disabled, .k-widget[disabled], .k-disabled {
+        opacity: 1;
+    }
 
-        .scoring-values .scoring {
-            color: var(--mud-palette-info);
-        }
+    .scoring-values .scoring-title {
+        color: var(--mud-palette-info);
+        text-align: end;
+    }
 
-        .scoring-values .weight {
-            color: var(--mud-palette-info);
-        }
+    .scoring-values .scoring {
+        color: var(--mud-palette-info);
+    }
 
-        .scoring-values .outcome {
-            color: #fff;
-            background-color: var(--mud-palette-info);
-        }
+    .scoring-values .weight {
+        color: var(--mud-palette-info);
+    }
 
-            .scoring-values .outcome.k-rounded-md {
-                border-radius: 16px;
-            }
+    .scoring-values .outcome {
+        color: #fff;
+        background-color: var(--mud-palette-info);
+    }
+
+        .scoring-values .outcome.k-rounded-md {
+            border-radius: 16px;
+        }
 
     .radio-value .k-radio-list-horizontal, .k-radio-list.k-list-horizontal {
         min-width: 6.875rem;

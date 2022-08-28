@@ -1,6 +1,5 @@
 ﻿@typeparam TItem where TItem : IBaseModel, new()
 
-@implements IDisposable
 
 <TelerikGrid @ref="@gridRef"
              @key="@Key"
@@ -280,16 +279,6 @@
     // local variables - end
 
     // -----------------------
-
-    protected override void OnInitialized()
-    {
-        AppState.OnMobileViewChanged += OnMobileViewChanged;
-    }
-
-    void IDisposable.Dispose()
-    {
-        AppState.OnMobileViewChanged -= OnMobileViewChanged;
-    }
 
     protected override void OnParametersSet()
     {

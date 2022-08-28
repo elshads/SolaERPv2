@@ -1,0 +1,194 @@
+﻿<MudBadge Content="GridValue?.Count" Color="Color.Primary" Overlap="true" Bordered="true">
+    <MudButton Disabled="@Disabled" Size="Size.Small" StartIcon="@Icons.Filled.NoteAdd" Variant="Variant.Filled" Color="Color.Secondary" OnClick="@(() => _isVisible = true)">@ButtonName</MudButton>
+</MudBadge>
+
+
+<MudDialog IsVisible="@_isVisible" IsVisibleChanged="IsVisibleChangedHandler">
+    <TitleContent>
+        <MudText Typo="Typo.h6">@ButtonName</MudText>
+    </TitleContent>
+    <DialogContent>
+        <TelerikGrid @ref="_gridRef"
+                     @key="_gridKey"
+                     Data="@GridValue"
+                     Sortable="true"
+                     Navigable="true"
+                     Resizable="true"
+                     Reorderable="true"
+                     ShowColumnMenu="true"
+                     ConfirmDelete="true"
+                     EnableLoaderContainer="true"
+                     SelectionMode="@GridSelectionMode.Multiple"
+                     EditMode="GridEditMode.Inline"
+                     SelectedItems="@SelectedItems"
+                     SelectedItemsChanged="@((IEnumerable<GridValueModel> selectedItems) => SelectedItemsChangedHandler(selectedItems))"
+                     OnAdd="@AddHandler"
+                     OnCreate="@CreateHandler"
+                     OnEdit="@EditHandler"
+                     OnCancel="@CancelHandler"
+                     OnUpdate="@UpdateHandler"
+                     OnDelete="@DeleteHandler">
+            <GridToolBar>
+                <GridCommandButton Command="Add" Icon="add" Enabled="!_inEditMode && ((GridValue != null ? GridValue.Count() : 0) < GridRowLimit)">Add row</GridCommandButton>
+                <GridCommandButton Icon="delete" OnClick="DeleteSelectedItems" Enabled="!_inEditMode && SelectedItems != null && SelectedItems.Any()">Delete</GridCommandButton>
+            </GridToolBar>
+            <GridColumns>
+                <GridCommandColumn ShowColumnMenu="false" Reorderable="false" Width="90px">
+                    <GridCommandButton Command="Edit" Icon="edit" ShowInEdit="false" Enabled="!_inEditMode" />
+                    <GridCommandButton Command="Save" Icon="save" ShowInEdit="true" />
+                    <GridCommandButton Command="Delete" Icon="delete" ShowInEdit="false" Enabled="!_inEditMode" />
+                    <GridCommandButton Command="Cancel" Icon="cancel" ShowInEdit="true" />
+                </GridCommandColumn>
+                <GridCheckboxColumn SelectAll="true" ShowColumnMenu="false" Width="45px" />
+                <GridColumn Field="@(nameof(GridValueModel.Column1))" Title="@Column1" Visible="GridColumnLimit > 0" ShowColumnMenu="false" />
+                <GridColumn Field="@(nameof(GridValueModel.Column2))" Title="@Column2" Visible="GridColumnLimit > 1" ShowColumnMenu="false" />
+                <GridColumn Field="@(nameof(GridValueModel.Column3))" Title="@Column3" Visible="GridColumnLimit > 2" ShowColumnMenu="false" />
+                <GridColumn Field="@(nameof(GridValueModel.Column4))" Title="@Column4" Visible="GridColumnLimit > 3" ShowColumnMenu="false" />
+                <GridColumn Field="@(nameof(GridValueModel.Column5))" Title="@Column5" Visible="GridColumnLimit > 4" ShowColumnMenu="false" />
+            </GridColumns>
+        </TelerikGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseDialog" Class="mr-2">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+@code {
+    [CascadingParameter] public DialogFactory? Dialogs { get; set; }
+
+
+    [Parameter] public List<GridValueModel>? GridValue { get; set; } = new();
+    [Parameter] public EventCallback<List<GridValueModel>> GridValueChanged { get; set; }
+    [Parameter] public EventCallback<List<GridValueModel>> DeletedItemsChanged { get; set; }
+    [Parameter] public IEnumerable<GridValueModel>? SelectedItems { get; set; } = new List<GridValueModel>();
+    [Parameter] public EventCallback<IEnumerable<GridValueModel>> SelectedItemsChanged { get; set; }
+    [Parameter] public EventCallback OnChange { get; set; }
+    [Parameter] public int GridColumnLimit { get; set; } = 5;
+    [Parameter] public int GridRowLimit { get; set; } = 10;
+    [Parameter] public string? ButtonName { get; set; } = "DataGrid";
+    [Parameter] public bool Disabled { get; set; } = false;
+    [Parameter] public string? Column1 { get; set; } = "Column1";
+    [Parameter] public string? Column2 { get; set; } = "Column2";
+    [Parameter] public string? Column3 { get; set; } = "Column3";
+    [Parameter] public string? Column4 { get; set; } = "Column4";
+    [Parameter] public string? Column5 { get; set; } = "Column5";
+
+    List<GridValueModel>? _deletedItems { get; set; } = new();
+    TelerikGrid<GridValueModel>? _gridRef;
+    Guid _gridKey;
+    GridValueModel? _selectedItem;
+    bool _isVisible = false;
+    bool _inEditMode = false;
+
+    void CloseDialog()
+    {
+        _isVisible = false;
+    }
+
+    void IsVisibleChangedHandler(bool isVisible)
+    {
+        _isVisible = isVisible;
+    }
+
+    async Task SelectedItemsChangedHandler(IEnumerable<GridValueModel> selectedItems)
+    {
+        SelectedItems = selectedItems;
+        await SelectedItemsChanged.InvokeAsync(SelectedItems);
+    }
+
+    async Task AddHandler(GridCommandEventArgs args)
+    {
+        await SetEditMode();
+    }
+
+    async Task SetEditMode()
+    {
+        _inEditMode = true;
+        SelectedItems = new List<GridValueModel>();
+        await SelectedItemsChanged.InvokeAsync(SelectedItems);
+    }
+
+    async Task CreateHandler(GridCommandEventArgs args)
+    {
+        _selectedItem = args.Item as GridValueModel;
+        GridValue ??= new();
+        if (_selectedItem != null) GridValue?.Add(_selectedItem);
+        _inEditMode = false;
+        await GridValueChanged.InvokeAsync(GridValue);
+        await OnChange.InvokeAsync();
+    }
+
+    async Task EditHandler(GridCommandEventArgs args)
+    {
+        await SetEditMode();
+        var argsItem = args.Item as GridValueModel;
+        _selectedItem = argsItem;
+        //_selectedItemIndex = argsItem != null && GridValue != null ? GridValue.IndexOf(argsItem) : -1;
+    }
+
+    async Task UpdateHandler(GridCommandEventArgs args)
+    {
+        var argsItem = args.Item as GridValueModel;
+        var rowIndex = argsItem != null && GridValue != null ? GridValue.IndexOf(_selectedItem) : -1;
+        if (rowIndex > -1 && GridValue != null && argsItem != null)
+        {
+            GridValue[rowIndex] = argsItem;
+            await GridValueChanged.InvokeAsync(GridValue);
+            await OnChange.InvokeAsync();
+        }
+        _selectedItem = null;
+        _inEditMode = false;
+    }
+
+    void CancelHandler(GridCommandEventArgs args)
+    {
+        _selectedItem = null;
+        _inEditMode = false;
+    }
+
+    async Task DeleteHandler(GridCommandEventArgs args)
+    {
+        var argsItem = args.Item as GridValueModel;
+        if (argsItem != null)
+        {
+            _deletedItems?.Add(argsItem);
+            GridValue?.Remove(argsItem);
+        }
+        SelectedItems = new List<GridValueModel>();
+        await DeletedItemsChanged.InvokeAsync(_deletedItems);
+        await SelectedItemsChanged.InvokeAsync(SelectedItems);
+        await GridValueChanged.InvokeAsync(GridValue);
+        await OnChange.InvokeAsync();
+        _gridKey = Guid.NewGuid();
+    }
+
+    async Task DeleteSelectedItems()
+    {
+        var count = SelectedItems?.Count();
+        var isConfirmed = count > 0 && Dialogs != null && await Dialogs.ConfirmAsync($"Are you sure you want to delete {count} record(s)?", "Delete!");
+
+        if (isConfirmed && SelectedItems != null)
+        {
+            foreach (var item in SelectedItems)
+            {
+                _deletedItems?.Add(item);
+                GridValue?.Remove(item);
+            }
+            SelectedItems = new List<GridValueModel>();
+            await DeletedItemsChanged.InvokeAsync(_deletedItems);
+            await SelectedItemsChanged.InvokeAsync(SelectedItems);
+            await GridValueChanged.InvokeAsync(GridValue);
+            await OnChange.InvokeAsync();
+            _gridKey = Guid.NewGuid();
+        }
+    }
+}
+
+
+<style>
+    .dialog {
+        min-width: 16rem;
+        min-height: 8rem;
+    }
+</style>

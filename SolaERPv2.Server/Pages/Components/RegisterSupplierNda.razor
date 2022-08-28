@@ -1,30 +1,34 @@
 ﻿<MudCard Class="k-p-8" Style="max-width:1280px; margin:auto">
     <h3 class="k-mb-4">CONFIDENTIALITY AGREEMENT</h3>
 
-    <RegisterSupplierAgreement GlobalBusinessUnit="@GlobalBusinessUnit" CurrentVendor="@CurrentVendor" CurrentPerson="@CurrentPerson" />
-    <div class="k-px-4">
-        <TelerikGridLayout ColumnSpacing="16px">
-            <GridLayoutRows>
-                <GridLayoutRow Height="52px"></GridLayoutRow>
-                <GridLayoutRow></GridLayoutRow>
-            </GridLayoutRows>
-            <GridLayoutItems>
-                <GridLayoutItem Row="1" Column="1">
-                    <strong>@(GlobalBusinessUnit?.BusinessUnitName)</strong>
-                </GridLayoutItem>
-                <GridLayoutItem Row="1" Column="2">
-                    <strong>@(CurrentVendor?.VendorName)</strong>
-                    <div class="k-my-2">@(SessionData?.CurrentUser?.FullName)</div>
-                </GridLayoutItem>
-                <GridLayoutItem Row="2" Column="1" ColumnSpan="2">
-                    <div class="k-px-4 k-py-2" style="background: var(--checkbox-background)">
-                        <TelerikCheckBox Id="cbxAgree" Size="lg" @bind-Value="@(CurrentVendor.IsAgree)" />
-                        <span class="k-pl-2">I agree</span>
-                    </div>
-                </GridLayoutItem>
-            </GridLayoutItems>
-        </TelerikGridLayout>
-    </div>
+    <TelerikGrid Data=@BusinessUnitList
+                 SelectionMode="GridSelectionMode.Multiple"
+                 Navigable="true"
+                 Resizable="true"
+                 Width="400px"
+                 Class="mb-4"
+                 SelectedItems="@_currentVendorBusinessUnitList"
+                 SelectedItemsChanged="@((IEnumerable<BusinessUnit> selectedItems) => BusinessUnitListChanged(selectedItems))">
+        <GridColumns>
+            <GridCheckboxColumn></GridCheckboxColumn>
+            <GridColumn Field="@nameof(BusinessUnit.BusinessUnitName)" Title="Select applicable Business Unit(s)" />
+        </GridColumns>
+    </TelerikGrid>
+
+    <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6">
+        @if (CurrentVendor != null && CurrentVendor.BusinessUnitList != null)
+        {
+            @foreach (var businessUnit in CurrentVendor.BusinessUnitList)
+            {
+                <MudTabPanel Text="@businessUnit.BusinessUnitName">
+                    <RegisterSupplierAgreement BusinessUnit="@businessUnit"
+                                       BusinessUnitChanged="@BusinessUnitChangedHandler"
+                                       CurrentVendor="@CurrentVendor"
+                                       CurrentPerson="@CurrentPerson" />
+                </MudTabPanel>
+            }
+        }
+    </MudTabs>
 </MudCard>
 
 
@@ -37,20 +41,28 @@
     [Parameter] public EventCallback<Vendor> CurrentVendorChanged { get; set; }
     [Parameter] public List<int> DeletedAttachmentIdList { get; set; } = new();
     [Parameter] public EventCallback<List<int>> DeletedAttachmentIdListChanged { get; set; }
-    [Parameter] public BusinessUnit? GlobalBusinessUnit { get; set; } = new();
+    [Parameter] public IEnumerable<BusinessUnit>? BusinessUnitList { get; set; } = new List<BusinessUnit>();
+
+    IEnumerable<BusinessUnit>? _currentVendorBusinessUnitList = new List<BusinessUnit>();
 
     FluentValidationValidator? _ndaValidator;
     //bool _isNdaAgree = false;
+
+    protected override void OnInitialized()
+    {
+        _currentVendorBusinessUnitList = CurrentVendor != null && CurrentVendor.BusinessUnitList != null ? CurrentVendor.BusinessUnitList : new List<BusinessUnit>();
+    }
 
     public async Task<bool> Validate()
     {
         await CurrentPersonChanged.InvokeAsync(CurrentPerson);
         await CurrentVendorChanged.InvokeAsync(CurrentVendor);
-        if (!CurrentVendor.IsAgree)
+        var isAgree = CurrentVendor != null && CurrentVendor.BusinessUnitList != null ? CurrentVendor.BusinessUnitList.Min(e => Convert.ToInt32(e.IsAgree)) : 0;
+        if (isAgree == 0)
         {
             AppState.ShowAlert("Check an agreement to continue", Severity.Error);
         }
-        return CurrentVendor.IsAgree;
+        return isAgree > 0;
     }
 
     async Task OnAttachmentDeleteHandler(List<Attachment> deletedAttachments)
@@ -58,5 +70,17 @@
         var idList = deletedAttachments.Select(e => e.AttachmentId);
         DeletedAttachmentIdList.AddRange(idList);
         await DeletedAttachmentIdListChanged.InvokeAsync(DeletedAttachmentIdList);
+    }
+
+    void BusinessUnitListChanged(IEnumerable<BusinessUnit> selectedItems)
+    {
+        _currentVendorBusinessUnitList = selectedItems;
+        CurrentVendor.BusinessUnitList = selectedItems.ToList();
+    }
+
+    void BusinessUnitChangedHandler(BusinessUnit businessUnit)
+    {
+        var index = CurrentVendor.BusinessUnitList.FindIndex(e => e.BusinessUnitId == businessUnit.BusinessUnitId);
+        CurrentVendor.BusinessUnitList[index].IsAgree = businessUnit.IsAgree;
     }
 }

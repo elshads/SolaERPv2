@@ -1,0 +1,53 @@
+﻿<MudBadge Color="@(AgreementValue ? Color.Success : Color.Error)" Overlap="true" Bordered="true">
+    <MudButton Disabled="@Disabled" Size="Size.Small" StartIcon="@Icons.Filled.Description" Variant="Variant.Filled" Color="Color.Secondary" OnClick="@(() => _isVisible = true)">@ButtonName</MudButton>
+</MudBadge>
+
+
+<MudDialog IsVisible="@_isVisible" IsVisibleChanged="IsVisibleChangedHandler" Class="dialog">
+    <TitleContent>
+        <MudText Typo="Typo.h6">@ButtonName</MudText>
+    </TitleContent>
+    <DialogContent>
+        @if (AgreementHtmlText != null)
+        {
+            @((MarkupString)AgreementHtmlText)
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Success" OnClick="CloseDialog" Class="mr-2">Agree and Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+@code {
+    [CascadingParameter] public DialogFactory? Dialogs { get; set; }
+
+    [Parameter] public string? ButtonName { get; set; } = "Agreement";
+    [Parameter] public string? AgreementHtmlText { get; set; } = "";
+    [Parameter] public bool Disabled { get; set; } = false;
+    [Parameter] public EventCallback OnChange { get; set; }
+    [Parameter] public bool AgreementValue { get; set; } = false;
+    [Parameter] public EventCallback<bool> AgreementValueChanged { get; set; }
+
+    bool _isVisible = false;
+
+    async Task CloseDialog()
+    {
+        AgreementValue = true;
+        _isVisible = false;
+        await OnChange.InvokeAsync();
+    }
+
+    void IsVisibleChangedHandler(bool isVisible)
+    {
+        _isVisible = isVisible;
+    }
+}
+
+
+<style>
+    .dialog {
+        min-width: 16rem;
+        min-height: 8rem;
+    }
+</style>

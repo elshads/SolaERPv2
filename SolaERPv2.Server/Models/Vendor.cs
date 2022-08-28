@@ -7,8 +7,10 @@ public class Vendor : BaseModel
     public string? VendorCode { get; set; }
     public string? VendorName { get; set; }
     public string? TaxId { get; set; }
+    public string? TaxOffice { get; set; }
     public string? CompanyLocation { get; set; }
     public string? CompanyAddress { get; set; }
+    public string? PhoneNumber { get; set; }
     public DateTime CompanyRegistrationDate{ get; set; } = DateTime.Now;
     public string? CompanyWebsite { get; set; }
     public List<Attachment>? CompanyLogo { get; set; }
@@ -28,6 +30,10 @@ public class Vendor : BaseModel
     public List<ApproveStage>? ApproveStageList { get; set; }
     public List<PrequalificationCategory>? PrequalificationCategoryList { get; set; }
     public List<int>? PrequalificationCategoryIdList { get; set; }
+    public List<BusinessCategory>? BusinessCategoryList { get; set; }
+    public List<int>? BusinessCategoryListIdList { get; set; }
+    public List<BusinessUnit>? BusinessUnitList { get; set; }
+    public List<int>? BusinessUnitListIdList { get; set; }
     public int NumberOfUsers { get; set; }
     public string? OtherProducts { get; set; }
     public List<string>? RepresentedProductList { get; set; }
@@ -40,4 +46,5 @@ public class Vendor : BaseModel
     public bool IsAgree { get; set; }
     public string? ApproveStatusName { get; set; }
     public List<DueDiligence>? DueDiligenceList { get; set; }
+    public List<Prequalification>? PrequalificationList { get; set; }
 }

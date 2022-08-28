@@ -96,18 +96,18 @@
                         </div>
                     </Template>
                 </FormItem>
-                <FormItem LabelText="Beneficiary Bank Code: " Field="@nameof(Bank.BeneficiaryBankCode)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
+                <FormItem LabelText="Beneficiary Bank Code (SWIFT, BIC and etc.): " Field="@nameof(Bank.BeneficiaryBankCode)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
                     <Template>
-                        <label for="beneficiarybankcode" class="k-label k-form-label">Beneficiary Bank Code: </label>
+                        <label for="beneficiarybankcode" class="k-label k-form-label">Beneficiary Bank Code (SWIFT, BIC and etc.): </label>
                         <div class="k-form-field-wrap">
                             <TelerikTextBox Id="beneficiarybankcode" @bind-Value="@_selectedBank.BeneficiaryBankCode" />
                             <TelerikValidationMessage For="@(() => _selectedBank.BeneficiaryBankCode)" />
                         </div>
                     </Template>
                 </FormItem>
-                <FormItem LabelText="Intermediary Bank Code Number: " Field="@nameof(Bank.IntermediaryBankCodeNumber)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
+                <FormItem LabelText="Correspondent Account: " Field="@nameof(Bank.IntermediaryBankCodeNumber)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists)">
                     <Template>
-                        <label for="intermediarybankcodenumber" class="k-label k-form-label">Intermediary Bank Code Number: </label>
+                        <label for="intermediarybankcodenumber" class="k-label k-form-label">Correspondent Account: </label>
                         <div class="k-form-field-wrap">
                             <TelerikTextBox Id="intermediarybankcodenumber" @bind-Value="@_selectedBank.IntermediaryBankCodeNumber" />
                             <TelerikValidationMessage For="@(() => _selectedBank.IntermediaryBankCodeNumber)" />

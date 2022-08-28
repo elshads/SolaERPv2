@@ -27,6 +27,18 @@ public class VendorValidator : AbstractValidator<Model>
                 .NotEmpty().WithMessage("'Country' is mandatory");
         });
 
+        RuleSet(nameof(Model.CompanyAddress), () =>
+        {
+            RuleFor(p => p.CompanyAddress)
+                .NotEmpty().WithMessage("'Company Address' is mandatory");
+        });
+
+        RuleSet(nameof(Model.CompanyRegistrationDate), () =>
+        {
+            RuleFor(p => p.CompanyRegistrationDate)
+                .NotEmpty().WithMessage("'Registration Date' is mandatory");
+        });
+
         RuleSet(nameof(Model.CompanyLocation), () =>
         {
             RuleFor(p => p.CompanyLocation)

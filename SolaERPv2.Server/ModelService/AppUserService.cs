@@ -109,7 +109,6 @@ public class AppUserService : BaseModelService<AppUser>
         var sqlResult = new SqlResult();
         try
         {
-
             var p = new DynamicParameters();
             p.Add("@UserId", appUser.Id, DbType.Int32, ParameterDirection.Input);
             p.Add("@FullName", appUser.FullName, DbType.String, ParameterDirection.Input);

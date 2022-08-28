@@ -102,7 +102,7 @@ else if (WithButton && IconButton)
     [Parameter] public long AllowedFileSize { get; set; } = 2147483647; // max 2147483647
     [Parameter] public string? AllowedFileTypes { get; set; } = "*";
     [Parameter] public string? ButtonClass { get; set; } = "";
-    
+
     [Parameter] public bool Disabled { get; set; } = false;
     [Parameter] public bool CanUpload { get; set; } = true;
     [Parameter] public bool CanDownload { get; set; } = true;
@@ -113,7 +113,8 @@ else if (WithButton && IconButton)
 
     [Parameter] public List<Attachment>? AttachmentList { get; set; } = new();
     [Parameter] public EventCallback<List<Attachment>> AttachmentListChanged { get; set; }
-    
+    [Parameter] public EventCallback OnChange { get; set; }
+
     [Parameter] public EventCallback<Attachment> OnDownloadClick { get; set; }
     [Parameter] public EventCallback<List<Attachment>> OnDeleteClick { get; set; }
 
@@ -126,7 +127,7 @@ else if (WithButton && IconButton)
     IReadOnlyList<IBrowserFile>? _selectedFiles = new List<IBrowserFile>();
     IBrowserFile? _selectedFile;
     Attachment? _selectedAttachment = new();
-    
+
     bool _isUpLoading = false;
     bool _isDownLoading = false;
     string? _dragClass = "border-2 border-dashed";
@@ -210,6 +211,7 @@ else if (WithButton && IconButton)
         }
         _isUpLoading = false;
         await AttachmentListChanged.InvokeAsync(AttachmentList);
+        await OnChange.InvokeAsync();
     }
 
     string GetExtensionFromFileName(string fileName)
@@ -269,6 +271,7 @@ else if (WithButton && IconButton)
         }
         _fileTypeAlert = false;
         _maxFileSizeAlert = false;
+        await OnChange.InvokeAsync();
     }
     
     void SetDragClass()

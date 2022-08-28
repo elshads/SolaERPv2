@@ -125,12 +125,13 @@ public class VendorService : BaseModelService<Vendor>
             {
                 p.Add("@TaxId", taxId, DbType.String, ParameterDirection.Input);
             }
-            _ = await cn.QueryAsync<Vendor, DueDiligence, Bank, string, string, int, Vendor>(taxId == null ? "dbo.SP_VendorByUserId" : "dbo.SP_VendorByTaxId",
-                (vendor, dueDiligence, bank, repComp, repProd, product) =>
+            _ = await cn.QueryAsync<Vendor, DueDiligence, Prequalification, Bank, string, string, int, Vendor>(taxId == null ? "dbo.SP_VendorByUserId" : "dbo.SP_VendorByTaxId",
+                (vendor, dueDiligence, prequalification, bank, repComp, repProd, product) =>
                 {
                     if (!result.ContainsKey(vendor.VendorId))
                     {
                         vendor.DueDiligenceList = new();
+                        vendor.PrequalificationList = new();
                         vendor.BankList = new();
                         vendor.RepresentedCompanyList = new();
                         vendor.RepresentedProductList = new();
@@ -139,6 +140,7 @@ public class VendorService : BaseModelService<Vendor>
                     }
                     var currentVendor = result[vendor.VendorId];
                     if (dueDiligence != null && !currentVendor.DueDiligenceList.Select(e => e.DueDiligenceDesignId).Contains(dueDiligence.DueDiligenceDesignId)) { currentVendor.DueDiligenceList.Add(dueDiligence); }
+                    if (prequalification != null && !currentVendor.PrequalificationList.Select(e => e.PrequalificationDesignId).Contains(prequalification.PrequalificationDesignId)) { currentVendor.PrequalificationList.Add(prequalification); }
                     if (bank != null && !currentVendor.BankList.Select(e => e.BankId).Contains(bank.BankId)) { currentVendor.BankList.Add(bank); }
                     if (repComp != null && !currentVendor.RepresentedCompanyList.Contains(repComp)) { currentVendor.RepresentedCompanyList.Add(repComp); }
                     if (repProd != null && !currentVendor.RepresentedProductList.Contains(repProd)) { currentVendor.RepresentedProductList.Add(repProd); }
@@ -146,7 +148,7 @@ public class VendorService : BaseModelService<Vendor>
                     return vendor;
                 },
                 param: p,
-                splitOn: "VendorId,DueDiligenceDesignId,BankId,RepresentedCompanyName,RepresentedProductName,ProductServiceId",
+                splitOn: "VendorId,DueDiligenceDesignId,PrequalificationDesignId,BankId,RepresentedCompanyName,RepresentedProductName,ProductServiceId",
                 commandType: CommandType.StoredProcedure);
 
             vendor = result.Values.FirstOrDefault();
@@ -159,6 +161,7 @@ public class VendorService : BaseModelService<Vendor>
                 alp.Add("@SourceType", "VEN_LOGO", DbType.String, ParameterDirection.Input);
                 var attLogo = await _sqlDataAccess.QueryAll<Attachment>("dbo.SP_AttachmentList_Load", alp, "Vendor-GetByUserIdAttachmentLoad");
                 if (attLogo != null) { vendor.CompanyLogo = attLogo.ToList(); }
+
 
                 var aop = new DynamicParameters();
                 aop.Add("@SourceId", vendor.VendorId, DbType.Int32, ParameterDirection.Input);
@@ -203,6 +206,59 @@ public class VendorService : BaseModelService<Vendor>
                         newDueDiligenceList.Add(dueDiligence);
                     }
                     vendor.DueDiligenceList = newDueDiligenceList;
+                }
+
+                if (vendor.DueDiligenceList != null && vendor.DueDiligenceList.Any())
+                {
+                    var newDueDiligenceList = new List<DueDiligence>();
+                    foreach (var dueDiligence in vendor.DueDiligenceList)
+                    {
+                        var grp = new DynamicParameters();
+                        grp.Add("@DueDiligenceDesignId", dueDiligence.DueDiligenceDesignId, DbType.Int32, ParameterDirection.Input);
+                        var grid = await _sqlDataAccess.QueryAll<GridValueModel>("dbo.SP_DueDiligenceGridData_Load", grp, "Vendor-GetByUserIdGridLoad");
+                        if (grid != null)
+                        {
+                            dueDiligence.GridValue = grid.ToList();
+                        }
+                        newDueDiligenceList.Add(dueDiligence);
+                    }
+                    vendor.DueDiligenceList = newDueDiligenceList;
+                }
+
+                if (vendor.PrequalificationList != null && vendor.PrequalificationList.Any())
+                {
+                    var newPrequalificationList = new List<Prequalification>();
+                    foreach (var prequalification in vendor.PrequalificationList)
+                    {
+                        var adp = new DynamicParameters();
+                        adp.Add("@SourceId", prequalification.VendorPrequalificationId, DbType.Int32, ParameterDirection.Input);
+                        adp.Add("@Reference", null, DbType.String, ParameterDirection.Input);
+                        adp.Add("@SourceType", "VEN_PREQ", DbType.String, ParameterDirection.Input);
+                        var att = await _sqlDataAccess.QueryAll<Attachment>("dbo.SP_AttachmentList_Load", adp, "Vendor-GetByUserIdAttachmentLoad");
+                        if (att != null)
+                        {
+                            prequalification.AttachmentValue = att.ToList();
+                        }
+                        newPrequalificationList.Add(prequalification);
+                    }
+                    vendor.PrequalificationList = newPrequalificationList;
+                }
+
+                if (vendor.PrequalificationList != null && vendor.PrequalificationList.Any())
+                {
+                    var newPrequalificationList = new List<Prequalification>();
+                    foreach (var prequalification in vendor.PrequalificationList)
+                    {
+                        var grp = new DynamicParameters();
+                        grp.Add("@PrequalificationDesignId", prequalification.PrequalificationDesignId, DbType.Int32, ParameterDirection.Input);
+                        var grid = await _sqlDataAccess.QueryAll<GridValueModel>("dbo.SP_PrequalificationGridData_Load", grp, "Vendor-GetByUserIdGridLoad");
+                        if (grid != null)
+                        {
+                            prequalification.GridValue = grid.ToList();
+                        }
+                        newPrequalificationList.Add(prequalification);
+                    }
+                    vendor.PrequalificationList = newPrequalificationList;
                 }
             }
         }
@@ -277,9 +333,7 @@ public class VendorService : BaseModelService<Vendor>
 
     public async Task<SqlResult?> SaveSupplier(Vendor vendor, AppUser user, List<int> deletedAttachmentIdList)
     {
-        var userSaveResult = await _appUserService.UpdateAsync(user);
-
-        var supplierResult = new SqlResult();
+        var supplierResult = await _appUserService.UpdateAsync(user);
         var currentUser = await _appUserService.GetCurrentUserAsync();
 
         foreach (var attachmentId in deletedAttachmentIdList)
@@ -292,6 +346,7 @@ public class VendorService : BaseModelService<Vendor>
         p.Add("@BusinessUnitId", 1, DbType.Int32, ParameterDirection.Input);
         p.Add("@VendorName", vendor.VendorName, DbType.String, ParameterDirection.Input);
         p.Add("@TaxId", vendor.TaxId, DbType.String, ParameterDirection.Input);
+        p.Add("@TaxOffice", vendor.TaxOffice, DbType.String, ParameterDirection.Input);
         p.Add("@Location", vendor.CompanyLocation, DbType.String, ParameterDirection.Input);
         p.Add("@Website", vendor.CompanyWebsite, DbType.String, ParameterDirection.Input);
         p.Add("@PaymentTerms", vendor.PaymentTermsCode, DbType.String, ParameterDirection.Input);
@@ -444,6 +499,7 @@ public class VendorService : BaseModelService<Vendor>
                     dd.Add("@IntValue", item.IntValue, DbType.Int32, ParameterDirection.Input);
                     dd.Add("@DecimalValue", item.DecimalValue, DbType.Decimal, ParameterDirection.Input);
                     dd.Add("@DateTimeValue", item.DateTimeValue, DbType.DateTime, ParameterDirection.Input);
+                    dd.Add("@AgreementValue", item.AgreementValue, DbType.Boolean, ParameterDirection.Input);
                     dd.Add("@Scoring", item.Scoring, DbType.Decimal, ParameterDirection.Input);
                     var dueResult = await _sqlDataAccess.QueryReturnInteger("dbo.SP_VendorDueDiligence_IUD", dd, "Vendor-SaveDueDiligence");
                     if (dueResult != null && dueResult.QueryResultMessage != null) { supplierResult.QueryResultMessage = dueResult.QueryResultMessage; return supplierResult; }
@@ -466,6 +522,83 @@ public class VendorService : BaseModelService<Vendor>
                             dda.Add("@Size", attachment.Size, DbType.Int32, ParameterDirection.Input);
                             var dueAttachmentResult = await _sqlDataAccess.ExecuteSql("dbo.SP_Attachments_IUD", dda, "Vendor-SaveDueDiligenceAttachments");
                             if (dueAttachmentResult != null && dueAttachmentResult.QueryResultMessage != null) { supplierResult.QueryResultMessage = dueAttachmentResult.QueryResultMessage; return supplierResult; }
+                        }
+                    }
+
+                    if (item.GridValue != null && item.GridValue.Any() && dueResult != null && dueResult.QueryResult > 0)
+                    {
+                        foreach (var grid in item.GridValue)
+                        {
+                            var dda = new DynamicParameters();
+                            dda.Add("@DueDiligenceGridDataId", grid.DueDiligenceGridDataId, DbType.Int32, ParameterDirection.Input);
+                            dda.Add("@DueDiligenceDesignId", item.DueDiligenceDesignId, DbType.Int32, ParameterDirection.Input);
+                            dda.Add("@Column1", grid.Column1, DbType.String, ParameterDirection.Input);
+                            dda.Add("@Column2", grid.Column2, DbType.String, ParameterDirection.Input);
+                            dda.Add("@Column3", grid.Column3, DbType.String, ParameterDirection.Input);
+                            dda.Add("@Column4", grid.Column4, DbType.String, ParameterDirection.Input);
+                            dda.Add("@Column5", grid.Column5, DbType.String, ParameterDirection.Input);
+                            var dueGridResult = await _sqlDataAccess.ExecuteSql("dbo.SP_DueDiligenceGridData_IUD", dda, "Vendor-SaveDueDiligenceGridValue");
+                            if (dueGridResult != null && dueGridResult.QueryResultMessage != null) { supplierResult.QueryResultMessage = dueGridResult.QueryResultMessage; return supplierResult; }
+                        }
+                    }
+                }
+            }
+
+            if (vendor.PrequalificationList != null && vendor.PrequalificationList.Any())
+            {
+                foreach (var item in vendor.PrequalificationList)
+                {
+                    var dd = new DynamicParameters();
+                    dd.Add("@VendorPrequalificationId", item.VendorPrequalificationId, DbType.Int32, ParameterDirection.Input);
+                    dd.Add("@PrequalificationDesignId", item.PrequalificationDesignId, DbType.Int32, ParameterDirection.Input);
+                    dd.Add("@VendorId", vendor.VendorId, DbType.Int32, ParameterDirection.Input);
+                    dd.Add("@TextboxValue", item.TextboxValue, DbType.String, ParameterDirection.Input);
+                    dd.Add("@TextareaValue", item.TextareaValue, DbType.String, ParameterDirection.Input);
+                    dd.Add("@CheckboxValue", item.CheckboxValue, DbType.Boolean, ParameterDirection.Input);
+                    dd.Add("@RadioboxValue", item.RadioboxValue, DbType.Boolean, ParameterDirection.Input);
+                    dd.Add("@IntValue", item.IntValue, DbType.Int32, ParameterDirection.Input);
+                    dd.Add("@DecimalValue", item.DecimalValue, DbType.Decimal, ParameterDirection.Input);
+                    dd.Add("@DateTimeValue", item.DateTimeValue, DbType.DateTime, ParameterDirection.Input);
+                    //dd.Add("@AgreementValue", item.AgreementValue, DbType.Boolean, ParameterDirection.Input);
+                    dd.Add("@Scoring", item.Scoring, DbType.Decimal, ParameterDirection.Input);
+                    var preqResult = await _sqlDataAccess.QueryReturnInteger("dbo.SP_VendorPrequalification_IUD", dd, "Vendor-SavePrequalification");
+                    if (preqResult != null && preqResult.QueryResultMessage != null) { supplierResult.QueryResultMessage = preqResult.QueryResultMessage; return supplierResult; }
+
+                    if (item.AttachmentValue != null && item.AttachmentValue.Any() && preqResult != null && preqResult.QueryResult > 0)
+                    {
+                        foreach (var attachment in item.AttachmentValue)
+                        {
+                            var dda = new DynamicParameters();
+                            dda.Add("@AttachmentId", attachment.AttachmentId, DbType.Int32, ParameterDirection.Input);
+                            dda.Add("@FileName", attachment.FileName, DbType.String, ParameterDirection.Input);
+                            dda.Add("@FileData", attachment.FileData, DbType.Binary, ParameterDirection.Input);
+                            dda.Add("@SourceId", preqResult.QueryResult, DbType.Int32, ParameterDirection.Input);
+                            dda.Add("@SourceType", "VEN_PREQ", DbType.String, ParameterDirection.Input);
+                            dda.Add("@Reference", attachment.Reference, DbType.String, ParameterDirection.Input);
+                            dda.Add("@ExtensionType", attachment.ExtensionType, DbType.String, ParameterDirection.Input);
+                            dda.Add("@AttachmentTypeId", attachment.AttachmentTypeId, DbType.Int32, ParameterDirection.Input);
+                            dda.Add("@AttachmentSubTypeId", attachment.AttachmentSubTypeId, DbType.Int32, ParameterDirection.Input);
+                            dda.Add("@UploadDateTime", attachment.UploadDateTime, DbType.DateTime, ParameterDirection.Input);
+                            dda.Add("@Size", attachment.Size, DbType.Int32, ParameterDirection.Input);
+                            var preqAttachmentResult = await _sqlDataAccess.ExecuteSql("dbo.SP_Attachments_IUD", dda, "Vendor-SavePrequalificationAttachments");
+                            if (preqAttachmentResult != null && preqAttachmentResult.QueryResultMessage != null) { supplierResult.QueryResultMessage = preqAttachmentResult.QueryResultMessage; return supplierResult; }
+                        }
+                    }
+
+                    if (item.GridValue != null && item.GridValue.Any() && preqResult != null && preqResult.QueryResult > 0)
+                    {
+                        foreach (var grid in item.GridValue)
+                        {
+                            var dda = new DynamicParameters();
+                            dda.Add("@PrequalificationGridDataId", grid.PrequalificationGridDataId, DbType.Int32, ParameterDirection.Input);
+                            dda.Add("@PrequalificationDesignId", item.PrequalificationDesignId, DbType.Int32, ParameterDirection.Input);
+                            dda.Add("@Column1", grid.Column1, DbType.String, ParameterDirection.Input);
+                            dda.Add("@Column2", grid.Column2, DbType.String, ParameterDirection.Input);
+                            dda.Add("@Column3", grid.Column3, DbType.String, ParameterDirection.Input);
+                            dda.Add("@Column4", grid.Column4, DbType.String, ParameterDirection.Input);
+                            dda.Add("@Column5", grid.Column5, DbType.String, ParameterDirection.Input);
+                            var preqGridResult = await _sqlDataAccess.ExecuteSql("dbo.SP_PrequalificationGridData_IUD", dda, "Vendor-SavePrequalificationGridValue");
+                            if (preqGridResult != null && preqGridResult.QueryResultMessage != null) { supplierResult.QueryResultMessage = preqGridResult.QueryResultMessage; return supplierResult; }
                         }
                     }
                 }

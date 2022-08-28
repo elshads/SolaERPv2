@@ -1,7 +1,235 @@
-﻿<MudCard Class="k-p-8" Style="max-width:1280px; margin:auto">
-    <h3 class="k-mb-4">PRE-QUALIFICATION</h3>
+﻿
+<MudCard Class="k-p-8" Style="max-width:1280px; margin:auto">
+    <h3 class="k-mb-4">PRE QUALIFICATION FORM</h3>
+
+    @if (_disciplineGroupList != null)
+    {
+        @foreach (var discipline in _disciplineGroupList)
+        {
+            var disciplineAverage = CalculateDisciplineAverage(discipline);
+            <MudGrid Spacing="1">
+                <MudItem xs="12" md="8"></MudItem>
+                <MudItem xs="12" md="4">
+                    <MudGrid Spacing="1">
+                        <MudItem xs="2" md="2">
+                            <label style="font-size: 0.75rem;">@discipline</label>
+                        </MudItem>
+                        <MudItem xs="10" md="10">
+                            <MudProgressLinear Color="@(disciplineAverage >= 95 ? Color.Success : disciplineAverage >= 75 ? Color.Tertiary : disciplineAverage >= 60 ? Color.Info : disciplineAverage >= 50 ? Color.Warning : Color.Error)" Size="Size.Large" Value="disciplineAverage">
+                                <MudText Typo="Typo.subtitle1">
+                                    <b>@disciplineAverage%</b>
+                                </MudText>
+                            </MudProgressLinear>
+                        </MudItem>
+                    </MudGrid>
+                </MudItem>
+            </MudGrid>
+        }
+    }
+
+    <MudGrid Spacing="1">
+        <MudItem xs="12" md="4"></MudItem>
+        <MudItem xs="12" md="8">
+            <MudGrid Spacing="1">
+                <MudItem xs="12" md="8"></MudItem>
+                <MudItem xs="12" md="4">
+                    <MudGrid Spacing="1">
+                        <MudItem xs="4"><div class="pr-2 scoring-title"></div></MudItem>
+                        <MudItem xs="4"><div class="pr-2 scoring-title"></div></MudItem>
+                        <MudItem xs="4">
+                            <div class="pr-2">
+                                <TelerikNumericTextBox Class="@_outcomeStyle" Value="@_totalOutcome" ValueExpression="() => _totalOutcome" Arrows="false" Enabled=false />
+                            </div>
+                        </MudItem>
+                    </MudGrid>
+                </MudItem>
+            </MudGrid>
+        </MudItem>
+    </MudGrid>
+    <MudGrid Spacing="1">
+        <MudItem xs="12" md="4" />
+        <MudItem xs="12" md="8">
+            <MudGrid Spacing="1">
+                <MudItem xs="12" md="6" />
+                <MudItem xs="12" md="2"><div class="pr-2 scoring-title">Discipline</div></MudItem>
+                <MudItem xs="12" md="4">
+                    <MudGrid Spacing="1" Class="scoring-values">
+                        <MudItem xs="4"><div class="pr-2 scoring-title">Scoring</div></MudItem>
+                        <MudItem xs="4"><div class="pr-2 scoring-title">Weight</div></MudItem>
+                        <MudItem xs="4"><div class="pr-2 scoring-title">Outcome</div></MudItem>
+                    </MudGrid>
+                </MudItem>
+            </MudGrid>
+        </MudItem>
+    </MudGrid>
 
 
+    <TelerikForm Model="@CurrentVendor?.PrequalificationList" Orientation="FormOrientation.Horizontal">
+        <FormValidation>
+            <FluentValidationValidator @ref="_prequalificationValidator" DisableAssemblyScanning="true" />
+        </FormValidation>
+        <FormItems>
+            @foreach (var group in _prequalificationGroupList)
+            {
+                <FormGroup LabelText="@group">
+                    @foreach (var design in PrequalificationDesignList)
+                    {
+                        var currentGroup = PrequalificationDesignList?.FirstOrDefault(e => design.Title == group);
+                        var currentPrequalification = CurrentVendor?.PrequalificationList?.FirstOrDefault(e => e.PrequalificationDesignId == design.PrequalificationDesignId);
+                        var isValueRow = design.HasAttachment || design.HasCheckbox || design.HasDateTime || design.HasDecimal || design.HasInt || design.HasList || design.HasRadiobox || design.HasTextarea || design.HasTextbox;
+                        @if (currentGroup != null)
+                        {
+                            <FormItem>
+                                <Template>
+                                    <MudGrid Spacing="1">
+                                        <MudItem xs="12" md="4">
+                                            <label class="pt-1 mr-4">@design.Label</label>
+                                        </MudItem>
+                                        <MudItem xs="12" md="8">
+                                            <MudGrid Spacing="1">
+                                                <MudItem xs="12" md="6">
+                                                    @if (currentPrequalification != null)
+                                                    {
+                                                        <div class="d-flex flex-nowrap">
+                                                            @if (design.HasRadiobox)
+                                                            {
+                                                                <TelerikRadioGroup Class="mr-4 radio-value" Data="@_radioSelectionList"
+                                                               @bind-Value="@currentPrequalification.RadioboxValue"
+                                                               Layout="RadioGroupLayout.Horizontal"
+                                                               ValueField="Value"
+                                                               TextField="Text"
+                                                               OnChange="@((object value) => OnValueChange(value, currentPrequalification, design))"
+                                                               Enabled="!_disabledLines.Contains(design.LineNo)" />
+                                                            }
+                                                            @if (design.HasCheckbox)
+                                                            {
+                                                                <TelerikCheckBox OnChange="@((object value) => OnValueChange(value, currentPrequalification, design))"
+                                                             Enabled="!_disabledLines.Contains(design.LineNo)"
+                                                             Class="mr-4" @bind-Value="@currentPrequalification.CheckboxValue" />
+                                                            }
+                                                            @if (design.HasInt)
+                                                            {
+                                                                <TelerikNumericTextBox OnChange="@((object value) => OnValueChange(value, currentPrequalification, design))"
+                                                                   Enabled="!_disabledLines.Contains(design.LineNo)"
+                                                                   Class="mr-4" @bind-Value="currentPrequalification.IntValue"
+                                                                   Arrows="false" />
+                                                            }
+                                                            @if (design.HasDecimal)
+                                                            {
+                                                                <TelerikNumericTextBox OnChange="@((object value) => OnValueChange(value, currentPrequalification, design))"
+                                                                   Enabled="!_disabledLines.Contains(design.LineNo)"
+                                                                   Class="mr-4" @bind-Value="currentPrequalification.DecimalValue"
+                                                                   Arrows="false" />
+                                                            }
+                                                            @if (design.HasTextbox)
+                                                            {
+                                                                <TelerikTextBox OnChange="@((object value) => OnValueChange(value, currentPrequalification, design))"
+                                                            Enabled="!_disabledLines.Contains(design.LineNo)"
+                                                            Class="mr-4" @bind-Value="@currentPrequalification.TextboxValue" />
+                                                            }
+                                                            @if (design.HasTextarea)
+                                                            {
+                                                                <TelerikTextArea Enabled="!_disabledLines.Contains(design.LineNo)" Class="mr-4" @bind-Value="@currentPrequalification.TextareaValue" />
+                                                            }
+                                                            @if (design.HasDateTime)
+                                                            {
+                                                                <TelerikDatePicker OnChange="@((object value) => OnValueChange(value, currentPrequalification, design))"
+                                                               Enabled="!_disabledLines.Contains(design.LineNo)"
+                                                               Class="mr-4" @bind-Value="@currentPrequalification.DateTimeValue" />
+                                                            }
+                                                            @if (design.HasBankList)
+                                                            {
+                                                                @if (CurrentVendor != null && CurrentVendor.BankList != null)
+                                                                {
+                                                                    <span class="mr-4 pt-1" style="white-space: nowrap;">
+                                                                        Bank accounts: @CurrentVendor.BankList.Count()
+                                                                    </span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span class="mr-4 pt-1" style="white-space: nowrap;">
+                                                                        Bank accounts: 0
+                                                                    </span>
+                                                                }
+                                                                <TelerikDropDownList Data="@CurrentVendor.BankList"
+                                                                 Enabled="!_disabledLines.Contains(design.LineNo)"
+                                                                 @bind-Value="@_selectedBankAccount"
+                                                                 TItem="Bank"
+                                                                 TValue="string"
+                                                                 Class="mr-4"
+                                                                 OnChange="@((object value) => OnValueChange(value, currentPrequalification, design))"
+                                                                 TextField="@nameof(Bank.BankAccountNumber)"
+                                                                 ValueField="@nameof(Bank.BankAccountNumber)" />
+                                                            }
+                                                            @if (design.HasAttachment)
+                                                            {
+                                                                <div class="mr-4">
+                                                                    <AttachmentDialog @bind-AttachmentList="@currentPrequalification.AttachmentValue"
+                                                                  OnChange="@((object value) => OnValueChange(value, currentPrequalification, design))" />
+                                                                </div>
+                                                            }
+                                                            @if (design.HasGrid)
+                                                            {
+                                                                <div class="mr-4">
+                                                                    <GridButton @bind-GridValue="@currentPrequalification.GridValue"
+                                                            ButtonName="DataGrid"
+                                                            GridColumnLimit="@design.GridColumnCount"
+                                                            GridRowLimit="@design.GridRowLimit"
+                                                            Column1="@design.Column1Alias"
+                                                            Column2="@design.Column2Alias"
+                                                            Column3="@design.Column3Alias"
+                                                            Column4="@design.Column4Alias"
+                                                            Column5="@design.Column5Alias"
+                                                            OnChange="@((object value) => OnValueChange(value, currentPrequalification, design))" />
+                                                                </div>
+                                                            }
+                                                            @if (design.HasAgreement)
+                                                            {
+                                                                <div class="mr-4">
+                                                                    <AgreementButton AgreementHtmlText="@design.AgreementText"
+                                                                 OnChange="@((object value) => OnValueChange(value, currentPrequalification, design))"
+                                                                 @bind-AgreementValue="@currentPrequalification.AgreementValue" />
+                                                                </div>
+                                                            }
+                                                        </div>
+                                                    }
+                                                </MudItem>
+                                                <MudItem xs="12" md="2">
+                                                    @if (isValueRow)
+                                                    {
+                                                        <TelerikTextBox Enabled="false" Class="mr-4 discipline-values" Value="@design.Discipline" ValueExpression="() => design.Discipline" />
+                                                    }
+                                                </MudItem>
+                                                <MudItem xs="12" md="4">
+                                                    <MudGrid Spacing="1" Class="scoring-values">
+                                                        @if (currentPrequalification != null && isValueRow)
+                                                        {
+                                                            <MudItem xs="4">
+                                                                <TelerikNumericTextBox Class="scoring" @bind-Value="currentPrequalification.Scoring" OnChange="@(() => StateHasChanged())" Arrows="false" Min="0" Max="100" Enabled=false />
+                                                            </MudItem>
+                                                            <MudItem xs="4">
+                                                                <span class="k-numerictextbox k-input weight k-disabled  k-valid telerik-blazor k-input-solid k-rounded-md k-input-md weight">
+                                                                    <input class="k-input-inner" value="@((decimal)design.Weight / 10)%" readonly />
+                                                                </span>
+                                                            </MudItem>
+                                                            <MudItem xs="4">
+                                                                <TelerikNumericTextBox Class="outcome" Value="currentPrequalification.Outcome" ValueExpression="() => currentPrequalification.Outcome" Arrows="false" Enabled=false />
+                                                            </MudItem>
+                                                        }
+                                                    </MudGrid>
+                                                </MudItem>
+                                            </MudGrid>
+                                        </MudItem>
+                                    </MudGrid>
+                                </Template>
+                            </FormItem>
+                        }
+                    }
+                </FormGroup>
+            }
+        </FormItems>
+        <FormButtons />
+    </TelerikForm>
 </MudCard>
 
 
@@ -12,18 +240,139 @@
     [Parameter] public EventCallback<AppUser> CurrentPersonChanged { get; set; }
     [Parameter] public Vendor? CurrentVendor { get; set; } = new();
     [Parameter] public EventCallback<Vendor> CurrentVendorChanged { get; set; }
-    [Parameter] public List<int> DeletedAttachmentIdList { get; set; } = new();
+    [Parameter] public List<int>? DeletedAttachmentIdList { get; set; } = new();
     [Parameter] public EventCallback<List<int>> DeletedAttachmentIdListChanged { get; set; }
+    [Parameter] public IEnumerable<PrequalificationDesign>? PrequalificationDesignList { get; set; } = new List<PrequalificationDesign>();
 
     FluentValidationValidator? _prequalificationValidator;
 
-    List<EvaluationOptions>? _selectOptions = new()
+    IEnumerable<string>? _disciplineGroupList => PrequalificationDesignList != null ? PrequalificationDesignList?.Where(p => !string.IsNullOrEmpty(p.Discipline)).Select(e => e.Discipline)?.Distinct() : new List<string>();
+
+    decimal _totalOutcome => CurrentVendor != null && CurrentVendor.PrequalificationList != null ? CurrentVendor.PrequalificationList.Sum(e => e.Outcome) / _disciplineGroupList.Count() : 0;
+
+    string _outcomeStyle => "total-outcome " + (_totalOutcome >= 95m ? "excellent" : _totalOutcome >= 75m ? "good" : _totalOutcome >= 60m ? "satisfactory" : _totalOutcome >= 50m ? "adequate" : "unsatisfactory");
+
+    List<RadioSelection> _radioSelectionList = new() { new RadioSelection { Value = false, Text = "No" }, new RadioSelection { Value = true, Text = "Yes" } };
+    IEnumerable<string>? _prequalificationGroupList => PrequalificationDesignList != null ? PrequalificationDesignList?.Select(e => e.Title)?.Distinct() : new List<string>();
+
+    string _selectedBankAccount = "";
+    List<int> _disabledLines = new() { 1,2,3,4,5,6,7,8,9,10,11 };
+    decimal _totalWeight => PrequalificationDesignList != null ? PrequalificationDesignList.Sum(e => e.Weight) : 0;
+
+    protected override void OnInitialized()
     {
-        new EvaluationOptions { Selection=5, Name="Yes, documented" },
-        new EvaluationOptions { Selection=3, Name="Yes, but not documented" },
-        new EvaluationOptions { Selection=1, Name="No" },
-        new EvaluationOptions { Selection=0, Name="Not applicable to the industry" },
-    };
+        SetDueDiligenceValues();
+        @foreach (var design in PrequalificationDesignList)
+        {
+            var currentPrequalification = CurrentVendor?.PrequalificationList?.FirstOrDefault(e => e.PrequalificationDesignId == design.PrequalificationDesignId);
+            if (currentPrequalification != null)
+            {
+                OnValueChange(1, currentPrequalification, design);
+            }
+        }
+    }
+
+    void SetDueDiligenceValues()
+    {
+        if (PrequalificationDesignList != null && PrequalificationDesignList.Any())
+        {
+            var prequalificationDesignList = PrequalificationDesignList.ToList();
+
+            var design01Index = prequalificationDesignList.FindIndex(e => e.LineNo == 1);
+            var design02Index = prequalificationDesignList.FindIndex(e => e.LineNo == 2);
+            var design03Index = prequalificationDesignList.FindIndex(e => e.LineNo == 3);
+            var design04Index = prequalificationDesignList.FindIndex(e => e.LineNo == 4);
+            var design05Index = prequalificationDesignList.FindIndex(e => e.LineNo == 5);
+            var design06Index = prequalificationDesignList.FindIndex(e => e.LineNo == 6);
+            var design07Index = prequalificationDesignList.FindIndex(e => e.LineNo == 7);
+            var design08Index = prequalificationDesignList.FindIndex(e => e.LineNo == 8);
+            var design09Index = prequalificationDesignList.FindIndex(e => e.LineNo == 9);
+            var design10Index = prequalificationDesignList.FindIndex(e => e.LineNo == 10);
+            var design11Index = prequalificationDesignList.FindIndex(e => e.LineNo == 11);
+
+            var design01Id = design01Index > -1 ? prequalificationDesignList[design01Index].PrequalificationDesignId : 0;
+            var design02Id = design02Index > -1 ? prequalificationDesignList[design02Index].PrequalificationDesignId : 0;
+            var design03Id = design03Index > -1 ? prequalificationDesignList[design03Index].PrequalificationDesignId : 0;
+            var design04Id = design04Index > -1 ? prequalificationDesignList[design04Index].PrequalificationDesignId : 0;
+            var design05Id = design05Index > -1 ? prequalificationDesignList[design05Index].PrequalificationDesignId : 0;
+            var design06Id = design06Index > -1 ? prequalificationDesignList[design06Index].PrequalificationDesignId : 0;
+            var design07Id = design07Index > -1 ? prequalificationDesignList[design07Index].PrequalificationDesignId : 0;
+            var design08Id = design08Index > -1 ? prequalificationDesignList[design08Index].PrequalificationDesignId : 0;
+            var design09Id = design09Index > -1 ? prequalificationDesignList[design09Index].PrequalificationDesignId : 0;
+            var design10Id = design10Index > -1 ? prequalificationDesignList[design10Index].PrequalificationDesignId : 0;
+            var design11Id = design11Index > -1 ? prequalificationDesignList[design11Index].PrequalificationDesignId : 0;
+
+            if (CurrentVendor != null && CurrentVendor.PrequalificationList != null && CurrentVendor.PrequalificationList.Any())
+            {
+                var line01Index = CurrentVendor.PrequalificationList.FindIndex(e => e.PrequalificationDesignId == design01Id);
+                var line02Index = CurrentVendor.PrequalificationList.FindIndex(e => e.PrequalificationDesignId == design02Id);
+                var line03Index = CurrentVendor.PrequalificationList.FindIndex(e => e.PrequalificationDesignId == design03Id);
+                var line04Index = CurrentVendor.PrequalificationList.FindIndex(e => e.PrequalificationDesignId == design04Id);
+                var line05Index = CurrentVendor.PrequalificationList.FindIndex(e => e.PrequalificationDesignId == design05Id);
+                var line06Index = CurrentVendor.PrequalificationList.FindIndex(e => e.PrequalificationDesignId == design06Id);
+                var line07Index = CurrentVendor.PrequalificationList.FindIndex(e => e.PrequalificationDesignId == design07Id);
+                var line08Index = CurrentVendor.PrequalificationList.FindIndex(e => e.PrequalificationDesignId == design08Id);
+                var line09Index = CurrentVendor.PrequalificationList.FindIndex(e => e.PrequalificationDesignId == design09Id);
+                var line10Index = CurrentVendor.PrequalificationList.FindIndex(e => e.PrequalificationDesignId == design10Id);
+                var line11Index = CurrentVendor.PrequalificationList.FindIndex(e => e.PrequalificationDesignId == design11Id);
+
+                if (line01Index > -1)
+                {
+                    CurrentVendor.PrequalificationList[line01Index].TextboxValue = CurrentVendor.VendorName;
+                }
+
+                if (line02Index > -1)
+                {
+                    CurrentVendor.PrequalificationList[line02Index].TextboxValue = CurrentVendor.CompanyAddress;
+                }
+
+                if (line03Index > -1)
+                {
+                    CurrentVendor.PrequalificationList[line03Index].TextboxValue = CurrentVendor.PhoneNumber;
+                }
+
+                if (line04Index > -1)
+                {
+                    CurrentVendor.PrequalificationList[line04Index].TextboxValue = CurrentVendor.CompanyWebsite;
+                }
+
+                if (line05Index > -1)
+                {
+                    CurrentVendor.PrequalificationList[line05Index].TextboxValue = SessionData.CurrentUser.FullName + " / " + SessionData.CurrentUser.Position;
+                }
+
+                if (line06Index > -1)
+                {
+                    CurrentVendor.PrequalificationList[line06Index].TextboxValue = "Represented Companies: " + (CurrentVendor.RepresentedCompanyList != null ? string.Join(',', CurrentVendor.RepresentedCompanyList) : "none") + "; Represented Products: " + (CurrentVendor.RepresentedProductList != null ? string.Join(',', CurrentVendor.RepresentedProductList) : "none");
+                }
+
+                if (line07Index > -1)
+                {
+                    CurrentVendor.PrequalificationList[line07Index].DateTimeValue = CurrentVendor.CompanyRegistrationDate;
+                }
+
+                if (line08Index > -1)
+                {
+                    CurrentVendor.PrequalificationList[line08Index].TextboxValue = CurrentVendor.CountryCode;
+                }
+
+                if (line09Index > -1)
+                {
+                    CurrentVendor.PrequalificationList[line09Index].DateTimeValue = CurrentVendor.CompanyRegistrationDate;
+                }
+
+                if (line10Index > -1)
+                {
+                    CurrentVendor.PrequalificationList[line10Index].TextboxValue = CurrentVendor.TaxId;
+                }
+
+                if (line11Index > -1)
+                {
+                    CurrentVendor.PrequalificationList[line11Index].TextboxValue = "";
+                }
+            }
+        }
+    }
 
     public async Task<bool> Validate()
     {
@@ -36,13 +385,108 @@
     async Task OnAttachmentDeleteHandler(List<Attachment> deletedAttachments)
     {
         var idList = deletedAttachments.Select(e => e.AttachmentId);
-        DeletedAttachmentIdList.AddRange(idList);
+        DeletedAttachmentIdList?.AddRange(idList);
         await DeletedAttachmentIdListChanged.InvokeAsync(DeletedAttachmentIdList);
     }
 
-    public class EvaluationOptions
+    void OnValueChange(object value, Prequalification item, PrequalificationDesign design)
     {
-        public int Selection { get; set; }
-        public string? Name { get; set; }
+        var numberOfComponents = Convert.ToInt32(design.HasRadiobox) + Convert.ToInt32(design.HasCheckbox) + Convert.ToInt32(design.HasInt) + Convert.ToInt32(design.HasDecimal) + Convert.ToInt32(design.HasTextbox) + Convert.ToInt32(design.HasTextarea) + Convert.ToInt32(design.HasDateTime) + Convert.ToInt32(design.HasBankList) + Convert.ToInt32(design.HasAttachment) + Convert.ToInt32(design.HasGrid) + Convert.ToInt32(design.HasAgreement);
+        var radioTextBoxScore = GetRadioTextBoxScore(item, design, numberOfComponents);
+        var checkboxScore = item != null && numberOfComponents > 0 && item.CheckboxValue ? 100m / (decimal)numberOfComponents : 0;
+        var agreementScore = item != null && numberOfComponents > 0 && item.AgreementValue ? 100m / (decimal)numberOfComponents : 0;
+        var intScore = item != null && numberOfComponents > 0 && item.IntValue > 0 ? 100m / (decimal)numberOfComponents : 0;
+        var decimalScore = item != null && numberOfComponents > 0 && item.DecimalValue > 0 ? 100m / (decimal)numberOfComponents : 0;
+        var textareaScore = item != null && numberOfComponents > 0 && !string.IsNullOrEmpty(item.TextareaValue) ? 100m / (decimal)numberOfComponents : 0;
+        var dateTimeScore = item != null && numberOfComponents > 0 && design.HasDateTime && item.DateTimeValue > new DateTime(1800, 1, 1) ? 100m / (decimal)numberOfComponents : 0;
+        var bankListScore = item != null && numberOfComponents > 0 && item.BankList != null && item.BankList.Any() ? 100m / (decimal)numberOfComponents : 0;
+        var gridScore = item != null && numberOfComponents > 0 && item.GridValue != null && item.GridValue.Any() ? 100m / (decimal)numberOfComponents : 0;
+        var attachmentScore = item != null && numberOfComponents > 0 && item.AttachmentValue != null && item.AttachmentValue.Any() ? 100m / (decimal)numberOfComponents : 0;
+        var totalScore = radioTextBoxScore + checkboxScore + intScore + decimalScore + textareaScore + dateTimeScore + bankListScore + attachmentScore + gridScore + agreementScore;
+
+        item.Scoring = totalScore;
+        var totalWeight = PrequalificationDesignList != null ? PrequalificationDesignList.Where(p => p.Discipline == design.Discipline).Sum(e => e.Weight) : 0;
+        item.Outcome = totalWeight > 0 ? Math.Round(item.Scoring * ((decimal)design.Weight / (decimal)totalWeight), 2) : 0;
+    }
+
+    decimal GetRadioTextBoxScore(Prequalification item, PrequalificationDesign design, int numberOfComponents)
+    {
+        if (design.HasRadiobox && design.HasTextbox && numberOfComponents == 2)
+        {
+            return !item.RadioboxValue ? 100m : !string.IsNullOrEmpty(item.TextboxValue) ? 100m : 0;
+        }
+        else if (design.HasRadiobox)
+        {
+            return item != null && numberOfComponents > 0 && item.RadioboxValue ? 100m / (decimal)numberOfComponents : 0;
+        }
+        else if (design.HasTextbox)
+        {
+            return item != null && numberOfComponents > 0 && !string.IsNullOrEmpty(item.TextboxValue) ? 100m / (decimal)numberOfComponents : 0;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
+    double CalculateDisciplineAverage(string discipline)
+    {
+        var designIdList = PrequalificationDesignList != null ? PrequalificationDesignList.Where(e => e.Discipline == discipline).Select(s => s.PrequalificationDesignId) : null;
+        if (designIdList != null && CurrentVendor != null && CurrentVendor.PrequalificationList != null)
+        {
+            var disciplineAverage = CurrentVendor.PrequalificationList.Where(e => designIdList.Contains(e.PrequalificationDesignId)).Sum(s => s.Outcome);
+            return (double)Math.Round(disciplineAverage, 2);
+        }
+        return 0;
     }
 }
+
+<style>
+    .scoring-values {
+    }
+
+        .scoring-values .k-input-inner {
+            text-align: end;
+            font-size: 0.75rem;
+            padding: 5px 8px;
+        }
+
+    .discipline-values .k-input-inner {
+        font-size: 0.75rem;
+        padding: 5px 8px;
+    }
+
+    .total-outcome .k-input-inner {
+        text-align: end;
+    }
+
+    .scoring-values .k-state-disabled, .k-widget[disabled], .k-disabled {
+        opacity: 1;
+    }
+
+    .scoring-values .scoring-title {
+        color: var(--mud-palette-info);
+        text-align: end;
+    }
+
+    .scoring-values .scoring {
+        color: var(--mud-palette-info);
+    }
+
+    .scoring-values .weight {
+        color: var(--mud-palette-info);
+    }
+
+    .scoring-values .outcome {
+        color: #fff;
+        background-color: var(--mud-palette-info);
+    }
+
+        .scoring-values .outcome.k-rounded-md {
+            border-radius: 16px;
+        }
+
+    .radio-value .k-radio-list-horizontal, .k-radio-list.k-list-horizontal {
+        min-width: 6.875rem;
+    }
+</style>

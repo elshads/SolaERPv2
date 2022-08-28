@@ -10,10 +10,19 @@ public class BusinessUnitService : BaseModelService<BusinessUnit>
         _sqlDataAccess = sqlDataAccess;
     }
 
-    public async Task<IEnumerable<BusinessUnit>?> GetAllAsync()
+    public async Task<IEnumerable<BusinessUnit>> GetAllAsync()
     {
-        var sql = "SELECT * FROM dbo.VW_BusinessUnits_List";
-        return await _sqlDataAccess.QueryAll<BusinessUnit>(sql, null, "BU-GetAll", CommandType.Text);
+        IEnumerable<BusinessUnit> result = new List<BusinessUnit>();
+        try
+        {
+            using IDbConnection cn = new SqlConnection(_sqlDataAccess?.ConnectionString);
+            result = await cn.QueryAsync<BusinessUnit>("SELECT * FROM dbo.VW_BusinessUnits_List");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
+        return result;
     }
 
     public async Task<IEnumerable<BusinessUnit>?> GetByUserIdAsync(int userId)

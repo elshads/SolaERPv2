@@ -1,9 +1,10 @@
 ﻿namespace SolaERPv2.Server.Models;
 
-public class DueDiligenceDesign : BaseModel
+public class PrequalificationDesign : BaseModel
 {
-    public int DueDiligenceDesignId { get; set; }
+    public int PrequalificationDesignId { get; set; }
     public int LineNo { get; set; }
+    public string? Discipline { get; set; }
     public string? Label { get; set; }
     public bool HasTextbox { get; set; }
     public bool HasTextarea { get; set; }
@@ -13,13 +14,13 @@ public class DueDiligenceDesign : BaseModel
     public bool HasDecimal { get; set; }
     public bool HasDateTime { get; set; }
     public bool HasAttachment { get; set; }
+    public bool HasList { get; set; }
     public bool HasBankList { get; set; }
     public bool HasGrid { get; set; }
     public bool HasAgreement { get; set; }
     public string? AgreementText { get; set; }
     public int GridRowLimit { get; set; }
     public int GridColumnCount { get; set; }
-    public bool ParentCompanies { get; set; }
     public string? Title { get; set; }
     public string? Column1Alias { get; set; }
     public string? Column2Alias { get; set; }
@@ -27,5 +28,4 @@ public class DueDiligenceDesign : BaseModel
     public string? Column4Alias { get; set; }
     public string? Column5Alias { get; set; }
     public int Weight { get; set; }
-
 }

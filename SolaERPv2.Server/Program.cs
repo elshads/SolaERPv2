@@ -68,10 +68,12 @@ builder.Services.AddScoped<PaymentDocumentService>();
 builder.Services.AddScoped<VendorService>();
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<PrequalificationCategoryService>();
+builder.Services.AddScoped<BusinessCategoryService>();
 builder.Services.AddScoped<CountryService>();
 builder.Services.AddScoped<CurrencyService>();
 builder.Services.AddScoped<RequestService>();
 builder.Services.AddScoped<DueDiligenceDesignService>();
+builder.Services.AddScoped<PrequalificationDesignService>();
 
 builder.Services.AddTransient<IValidator<AppUser>, AppUserValidator>();
 builder.Services.AddTransient<IValidator<Vendor>, VendorValidator>();

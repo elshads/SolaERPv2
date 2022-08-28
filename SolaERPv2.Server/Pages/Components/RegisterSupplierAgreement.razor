@@ -2,11 +2,11 @@
 <div class="div-gen">
     <p class="p-line">This Confidentiality Agreement (<strong>“Agreement”</strong>) is made on @DateTime.Now.ToString("dd.MM.yyyy") (the “Effective Date”)</p>
     <p class="p-line">BETWEEN:</p>
-    <p class="p-line"><span class="list-ident">(1)</span><strong>@GlobalBusinessUnit?.BusinessUnitName</strong>, (company number @GlobalBusinessUnit?.TaxId) organized and existing under the laws of Azerbaijan and having its principal place of business at @GlobalBusinessUnit?.Address (<strong>“Disclosing Party”</strong>); and</p>
+    <p class="p-line"><span class="list-ident">(1)</span><strong>@BusinessUnit?.BusinessUnitName</strong>, (company number @BusinessUnit?.TaxId) organized and existing under the laws of Azerbaijan and having its principal place of business at @BusinessUnit?.Address (<strong>“Disclosing Party”</strong>); and</p>
     <p class="p-line"><span class="list-ident">(2)</span>@CurrentVendor?.VendorName, (company number @CurrentVendor?.TaxId) organized and existing under the laws of @CurrentVendor?.CountryCode and having its registered address at @CurrentVendor?.CompanyAddress (<strong>“Recipient”</strong>).</p>
     <p class="p-line">The Disclosing Party and the Recipient shall hereinafter be collectively referred to as the “Parties” or individually as a “Party”.</p>
     <p class="p-line">WHEREAS:</p>
-    <p class="p-line">The Disclosing Party wishes to discuss with and disclose to the Recipient certain information in relation to the Disclosing party’s and its subsidiaries current and future operations in @GlobalBusinessUnit?.CountryCode in order to engage the services of the Recipient (the <strong>“Permitted Purpose”</strong>).</p>
+    <p class="p-line">The Disclosing Party wishes to discuss with and disclose to the Recipient certain information in relation to the Disclosing party’s and its subsidiaries current and future operations in @BusinessUnit?.CountryCode in order to engage the services of the Recipient (the <strong>“Permitted Purpose”</strong>).</p>
     <p class="p-line">IT IS HEREBY AGREED AS FOLLOWS:</p>
     <p class="p-line"><span class="list-ident">1.</span>The following definitions shall apply for the purposes of this Agreement:</p>
     <p class="p-line"><strong>“Affiliate”</strong> means in relation to the Disclosing Party:</p>
@@ -40,17 +40,52 @@
     <p class="p-line"><span class="list-ident">16.</span>This Agreement may be entered into by way of exchange of e-mails.</p>
 </div>
 
+<div class="px-4 mt-8">
+    <TelerikGridLayout ColumnSpacing="16px">
+        <GridLayoutRows>
+            <GridLayoutRow Height="52px"></GridLayoutRow>
+            <GridLayoutRow></GridLayoutRow>
+        </GridLayoutRows>
+        <GridLayoutItems>
+            <GridLayoutItem Row="1" Column="1">
+                <strong>@(BusinessUnit?.BusinessUnitName)</strong>
+                <div class="k-my-2">@(BusinessUnit?.FullName)</div>
+                <div class="k-my-2">@(BusinessUnit?.Position)</div>
+            </GridLayoutItem>
+            <GridLayoutItem Row="1" Column="2">
+                <strong>@(CurrentVendor?.VendorName)</strong>
+                <div class="k-my-2">@(SessionData?.CurrentUser?.FullName)</div>
+                <div class="k-my-2">@(SessionData?.CurrentUser?.Position)</div>
+            </GridLayoutItem>
+            <GridLayoutItem Row="2" Column="1" ColumnSpan="2">
+                <div class="k-px-4 k-py-2" style="background: var(--checkbox-background)">
+                    <TelerikCheckBox Id="cbxAgree" Size="lg" Value="@(BusinessUnit.IsAgree)" ValueChanged="@((bool value) => IsAgreeChanged(value))" />
+                    <span class="k-pl-2">I agree</span>
+                </div>
+            </GridLayoutItem>
+        </GridLayoutItems>
+    </TelerikGridLayout>
+</div>
+
 
 @code {
 
-    [Parameter] public BusinessUnit? GlobalBusinessUnit { get; set; } = new();
+    [Parameter] public BusinessUnit? BusinessUnit { get; set; } = new();
+    [Parameter] public EventCallback<BusinessUnit> BusinessUnitChanged { get; set; }
     [Parameter] public Vendor? CurrentVendor { get; set; } = new();
     [Parameter] public AppUser? CurrentPerson { get; set; } = new();
 
+
+    async Task IsAgreeChanged(bool value)
+    {
+        BusinessUnit.IsAgree = value;
+        await BusinessUnitChanged.InvokeAsync(BusinessUnit);
+    }
 }
 
 <style>
-    .div-gen {}
+    .div-gen {
+    }
 
     .p-line {
         line-height: 1.5;

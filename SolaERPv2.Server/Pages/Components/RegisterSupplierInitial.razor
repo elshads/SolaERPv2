@@ -35,6 +35,7 @@
                             </div>
                         </Template>
                     </FormItem>
+                    <FormItem LabelText="Tax Office: " Field="@nameof(Vendor.TaxOffice)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)" />
                     <FormItem LabelText="Company Name: " Field="@nameof(Vendor.VendorName)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)" />
                     <FormItem LabelText="Company Address: " Field="@nameof(Vendor.CompanyAddress)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)" />
                     <FormItem LabelText="Company Registration Date: " Field="@nameof(Vendor.CompanyRegistrationDate)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)" />
@@ -57,17 +58,34 @@
                     </FormItem>
                     <FormItem LabelText="Location: " Field="@nameof(Vendor.CompanyLocation)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)" />
                     <FormItem LabelText="Website: " Field="@nameof(Vendor.CompanyWebsite)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)" />
-                    <FormItem LabelText="Prequalification Category: " Field="@nameof(Vendor.PrequalificationCategoryIdList)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)">
+                    <FormItem LabelText="Business Category: " Field="@nameof(Vendor.BusinessCategoryListIdList)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)">
                         <Template>
-                            <label for="prequalificationcategory" class="k-label k-form-label">Prequalification Category: </label>
+                            <label for="businesscategory" class="k-label k-form-label">Business Category: </label>
+                            <div class="k-form-field-wrap">
+                                <TelerikMultiSelect Id="businesscategory"
+                                                    Data="@BusinessCategoryList"
+                                                    @bind-Value="@CurrentVendor.BusinessCategoryListIdList"
+                                                    TItem="BusinessCategory"
+                                                    TValue="int"
+                                                    TextField="@nameof(BusinessCategory.BusinessCategoryName)"
+                                                    ValueField="@nameof(BusinessCategory.BusinessCategoryId)"
+                                                    Placeholder="Select ..."
+                                                    Filterable="true"
+                                                    FilterOperator="StringFilterOperator.Contains"
+                                                    Width="100%" />
+                                <TelerikValidationMessage For="@(() => CurrentVendor.BusinessCategoryListIdList)" />
+                            </div>
+                        </Template>
+                    </FormItem>
+                    <FormItem LabelText="Prequalification Type: " Field="@nameof(Vendor.PrequalificationCategoryIdList)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)">
+                        <Template>
+                            <label for="prequalificationcategory" class="k-label k-form-label">Prequalification Type: </label>
                             <div class="k-form-field-wrap">
                                 <TelerikMultiSelect Id="prequalificationcategory"
                                                     Data="@PrequalificationCategoryList"
-                                                    Value="@CurrentVendor?.PrequalificationCategoryIdList"
-                                                    ValueChanged="@((List<int> selectedList) => PrequalificationCategoryListChanged(selectedList))"
+                                                    @bind-Value="@CurrentVendor.PrequalificationCategoryIdList"
                                                     TItem="PrequalificationCategory"
                                                     TValue="int"
-                                                    ValueExpression="@(() => CurrentVendor.PrequalificationCategoryIdList)"
                                                     TextField="@nameof(PrequalificationCategory.PrequalificationCategoryName)"
                                                     ValueField="@nameof(PrequalificationCategory.PrequalificationCategoryId)"
                                                     Placeholder="Select ..."
@@ -140,7 +158,9 @@
                     </FormItem>
                     <FormItem LabelText="Attach Official Letter: " Field="@nameof(Vendor.OfficialLetter)" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)">
                         <Template>
-                            <label for="officialletter" class="k-label k-form-label">Attach Official Letter: </label>
+                            <label for="officialletter" class="k-label k-form-label">
+                                Dealership / Distributorship / Channel Partnership Agreement(s) Official Letter
+                            </label>
                             <div class="k-form-field-wrap">
                                 <AttachmentDialog WithButton="true" @bind-AttachmentList="CurrentVendor.OfficialLetter" OnDeleteClick="OnAttachmentDeleteHandler" SourceId="CurrentVendor.VendorId" SourceTypeName="VEN_OLET" />
                                 <TelerikValidationMessage For="@(() => CurrentVendor.OfficialLetter)" />
@@ -151,20 +171,20 @@
                         <Template>
                             <label for="paymentterms" class="k-label k-form-label">Payment Terms: </label>
                             <div class="k-form-field-wrap">
-                                <GridDropDownList Data="@PaymentTermsList"
-                                                  Id="paymentterms"
-                                                  @bind-Value="@CurrentVendor.PaymentTermsCode"
-                                                  TextField="@nameof(Analysis.AnalysisCode)"
-                                                  ValueField="@nameof(Analysis.AnalysisCode)"
-                                                  OnChange="@((string paymentTermCode) => ValidateVendor())"
-                                                  SearchFields="@(new List<string>() {"AnalysisCode", "AnalysisName"})"
-                                                  HeaderNames="@(new List<string>() {"Code", "Name"})" />
+                                <TelerikDropDownList Data="@PaymentTermsList"
+                                                     Id="paymentterms"
+                                                     Value="@CurrentVendor.PaymentTermsCode"
+                                                     ValueChanged="@((string value) => PaymentTermsChanged(value))"
+                                                     ValueExpression="@(() => CurrentVendor.PaymentTermsCode)"
+                                                     TextField="@nameof(Analysis.AnalysisName)"
+                                                     ValueField="@nameof(Analysis.AnalysisCode)"
+                                                     OnChange="@((object paymentTermCode) => ValidateVendor())" />
                                 <label class="k-form-hint">@_paymentTermsName</label>
                                 <TelerikValidationMessage For="@(() => CurrentVendor.PaymentTermsCode)" />
                             </div>
                         </Template>
                     </FormItem>
-                    <FormItem LabelText="Please confirm that you agree with the 60-days payment" Field="@nameof(Vendor.AgreeWithDefaultDays)" Class="k-pb-4" Enabled="@(CurrentVendor != null ? !CurrentVendor.Exists : true)">
+                    <FormItem LabelText="Please confirm that you agree with the 60-days payment" Field="@nameof(Vendor.AgreeWithDefaultDays)" Class="k-pb-4" Enabled="@_defaultDaysEnabled">
                         <Template>
                             <label for="agreement" class="k-label k-form-label">Please confirm that you agree with the 60-days payment </label>
                             <div class="k-form-field-wrap">
@@ -178,7 +198,7 @@
                             </div>
                         </Template>
                     </FormItem>
-                    <FormItem LabelText="Credit Days: " Field="@nameof(Vendor.CreditDays)" Enabled="@(CurrentVendor != null && !CurrentVendor.Exists && !CurrentVendor.AgreeWithDefaultDays)">
+                    <FormItem LabelText="Credit Days: " Field="@nameof(Vendor.CreditDays)" Enabled="@_creditDaysEnabled">
                         <Template>
                             <label for="creditdays" class="k-label k-form-label">Credit Days: </label>
                             <div class="k-form-field-wrap">
@@ -210,9 +230,13 @@
     [Parameter] public IEnumerable<Country>? CountryList { get; set; } = new List<Country>();
     [Parameter] public IEnumerable<Analysis>? PaymentTermsList { get; set; } = new List<Analysis>();
     [Parameter] public IEnumerable<PrequalificationCategory>? PrequalificationCategoryList { get; set; } = new List<PrequalificationCategory>();
+    [Parameter] public IEnumerable<BusinessCategory>? BusinessCategoryList { get; set; } = new List<BusinessCategory>();
 
     bool _otherProductsVisible => CurrentVendor != null && CurrentVendor.ProvidedProductIdList != null && ProductList != null && CurrentVendor.ProvidedProductIdList.Any(p => ProductList.Where(e => e.Other == 1).Select(s => s.ProductServiceId).Contains(p));
-    string? _paymentTermsName => PaymentTermsList?.FirstOrDefault(e => e.AnalysisCode == CurrentVendor?.PaymentTermsCode)?.AnalysisName;
+    string? _paymentTermsName => PaymentTermsList?.FirstOrDefault(e => e.AnalysisCode == CurrentVendor?.PaymentTermsCode)?.AnalysisCode;
+    int _paymentTermDays => PaymentTermsList != null && CurrentVendor != null && CurrentVendor.PaymentTermsCode != null ? PaymentTermsList.FirstOrDefault(e => e.AnalysisCode == CurrentVendor.PaymentTermsCode).Days : 0;
+    bool _creditDaysEnabled => (CurrentVendor != null && !CurrentVendor.Exists && !CurrentVendor.AgreeWithDefaultDays) && _paymentTermDays == 0;
+    bool _defaultDaysEnabled => CurrentVendor != null && !CurrentVendor.Exists && _paymentTermDays == 0;
 
     FluentValidationValidator? _personValidator;
     FluentValidationValidator? _vendorValidator;
@@ -269,6 +293,14 @@
         }
     }
 
+    void BusinessCategoryListChanged(List<int> selectedList)
+    {
+        if (CurrentVendor != null)
+        {
+            CurrentVendor.BusinessCategoryListIdList = selectedList;
+        }
+    }
+    
     void AgreeWithDefaultDaysChanged(bool isAgree)
     {
         if (CurrentVendor != null)
@@ -300,6 +332,12 @@
         }
     }
 
+    void PaymentTermsChanged(string paymentTermsCode)
+    {
+        CurrentVendor.PaymentTermsCode = paymentTermsCode;
+        if (_paymentTermDays > 0) { CurrentVendor.CreditDays = _paymentTermDays; CurrentVendor.AgreeWithDefaultDays = false; }
+    }
+
     void SetModelNewInstance(Vendor vendor)
     {
         CurrentVendor.VendorId = vendor.VendorId;
@@ -308,9 +346,11 @@
         CurrentVendor.VendorName = vendor.VendorName;
         CurrentVendor.CompanyAddress = vendor.CompanyAddress;
         CurrentVendor.CompanyRegistrationDate = vendor.CompanyRegistrationDate;
+        CurrentVendor.BusinessCategoryList = vendor.BusinessCategoryList;
         CurrentVendor.PrequalificationCategoryIdList = vendor.PrequalificationCategoryIdList;
         CurrentVendor.PrequalificationCategoryList = vendor.PrequalificationCategoryList;
         CurrentVendor.TaxId = vendor.TaxId;
+        CurrentVendor.TaxOffice = vendor.TaxOffice;
         CurrentVendor.CompanyLocation = vendor.CompanyLocation;
         CurrentVendor.CompanyWebsite = vendor.CompanyWebsite;
         CurrentVendor.CompanyLogo = vendor.CompanyLogo;
@@ -330,5 +370,6 @@
         CurrentVendor.StatusId = vendor.StatusId;
 
         CurrentVendor.DueDiligenceList = vendor.DueDiligenceList;
+        CurrentVendor.PrequalificationList = vendor.PrequalificationList;
     }
 }
