@@ -299,6 +299,7 @@ public class VendorService : BaseModelService<Vendor>
         var saveResult = await SaveSupplier(vendor, user, deletedIdList);
         var currentUser = await _appUserService.GetCurrentUserAsync();
 
+
         if (saveResult != null && saveResult.QueryResultMessage == null)
         {
             var p = new DynamicParameters();

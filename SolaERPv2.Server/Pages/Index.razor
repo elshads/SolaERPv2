@@ -1,16 +1,11 @@
 ﻿@page "/"
 @using Model = BaseModel
 
+
 <PageTitle>Index</PageTitle>
 
-@if (_showDashboard)
-{
-    <h3>Dashboard Placeholder</h3>
-}
-else
-{
-    
-}
+
+
 
 @code {
     [CascadingParameter] public AppState? AppState { get; set; }
@@ -38,5 +33,4 @@ else
             NavigationManager.NavigateTo("/vendorevaluation");
         }
     }
-    
 }

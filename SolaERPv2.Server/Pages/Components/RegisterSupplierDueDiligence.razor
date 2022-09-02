@@ -210,6 +210,7 @@
     [Parameter] public List<int>? DeletedAttachmentIdList { get; set; } = new();
     [Parameter] public EventCallback<List<int>> DeletedAttachmentIdListChanged { get; set; }
     [Parameter] public IEnumerable<DueDiligenceDesign>? DueDiligenceDesignList { get; set; } = new List<DueDiligenceDesign>();
+    [Parameter] public IEnumerable<Country> CountryList { get; set; } = new List<Country>();
 
     FluentValidationValidator? _dueDiligenceValidator;
     decimal _totalOutcome => CurrentVendor.DueDiligenceList.Sum(e => e.Outcome);
@@ -284,7 +285,8 @@
 
                 if (line03Index > -1)
                 {
-                    CurrentVendor.DueDiligenceList[line03Index].TextboxValue = CurrentVendor.CountryCode;
+                    var countryName = CountryList != null && CurrentVendor != null && CurrentVendor.CountryCode != null ? CountryList?.Where(e => e.CountryCode == CurrentVendor.CountryCode)?.FirstOrDefault()?.CountryName : CurrentVendor.CountryCode;
+                    CurrentVendor.DueDiligenceList[line03Index].TextboxValue = countryName != null ? countryName : CurrentVendor.CountryCode;
                     CurrentVendor.DueDiligenceList[line03Index].DateTimeValue = CurrentVendor.CompanyRegistrationDate;
                 }
 

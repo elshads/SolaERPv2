@@ -7,4 +7,5 @@ public class ApproveData : BaseModel
     public int ApproveStatusId { get; set; }
     public string? Comment { get; set; }
     public int Sequence { get; set; }
+
 }   

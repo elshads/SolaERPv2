@@ -243,6 +243,7 @@
     [Parameter] public List<int>? DeletedAttachmentIdList { get; set; } = new();
     [Parameter] public EventCallback<List<int>> DeletedAttachmentIdListChanged { get; set; }
     [Parameter] public IEnumerable<PrequalificationDesign>? PrequalificationDesignList { get; set; } = new List<PrequalificationDesign>();
+    [Parameter] public IEnumerable<Country> CountryList { get; set; } = new List<Country>();
 
     FluentValidationValidator? _prequalificationValidator;
 
@@ -328,7 +329,7 @@
 
                 if (line03Index > -1)
                 {
-                    CurrentVendor.PrequalificationList[line03Index].TextboxValue = CurrentVendor.PhoneNumber;
+                    CurrentVendor.PrequalificationList[line03Index].TextboxValue = CurrentPerson.PhoneNumber;
                 }
 
                 if (line04Index > -1)
@@ -338,12 +339,12 @@
 
                 if (line05Index > -1)
                 {
-                    CurrentVendor.PrequalificationList[line05Index].TextboxValue = SessionData.CurrentUser.FullName + " / " + SessionData.CurrentUser.Position;
+                    CurrentVendor.PrequalificationList[line05Index].TextboxValue = CurrentPerson.FullName + " / " + CurrentPerson.Position;
                 }
 
                 if (line06Index > -1)
                 {
-                    CurrentVendor.PrequalificationList[line06Index].TextboxValue = "Represented Companies: " + (CurrentVendor.RepresentedCompanyList != null ? string.Join(',', CurrentVendor.RepresentedCompanyList) : "none") + "; Represented Products: " + (CurrentVendor.RepresentedProductList != null ? string.Join(',', CurrentVendor.RepresentedProductList) : "none");
+                    CurrentVendor.PrequalificationList[line06Index].CheckboxValue = CurrentVendor.OfficialLetter != null && CurrentVendor.OfficialLetter.Any();
                 }
 
                 if (line07Index > -1)
@@ -353,7 +354,8 @@
 
                 if (line08Index > -1)
                 {
-                    CurrentVendor.PrequalificationList[line08Index].TextboxValue = CurrentVendor.CountryCode;
+                    var countryName = CountryList != null && CurrentVendor != null && CurrentVendor.CountryCode != null ? CountryList?.Where(e => e.CountryCode == CurrentVendor.CountryCode)?.FirstOrDefault()?.CountryName : CurrentVendor.CountryCode;
+                    CurrentVendor.PrequalificationList[line08Index].TextboxValue = countryName != null ? countryName : CurrentVendor.CountryCode;
                 }
 
                 if (line09Index > -1)
