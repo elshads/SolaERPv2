@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Net.Mail;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading;
@@ -141,6 +142,22 @@ namespace SolaERPv2.Server.Areas.Identity.Pages.Account
                         pageHandler: null,
                         values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
                         protocol: Request.Scheme);
+
+
+                    //
+                    
+                    var emailAdress = new List<string>();
+                    emailAdress.Add(user.Email);
+
+                    string body = string.Empty;
+                    using (StreamReader reader = new StreamReader("Assets/EmailTemplates/ConfirmEmail.html"))
+                    {
+                        body = reader.ReadToEnd();
+                    }
+                    body = body.Replace("{{url}}", callbackUrl);
+                    await _mailService.SendHtmlMailAsync(emailAdress, "Confirm Email", body, null);
+
+                    //
 
                     await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
                         $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
