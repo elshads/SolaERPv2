@@ -36,6 +36,7 @@ public class MailService
             message.Body = htmlBody;
 
 
+            
             using (SmtpClient smtp = new SmtpClient("smtp.gmail.com", 587))
             {
                 smtp.Credentials = new System.Net.NetworkCredential("salimovkhayal@gmail.com", "iqepqgykafupydyf");
