@@ -39,7 +39,7 @@ public class MailService
             
             using (SmtpClient smtp = new SmtpClient("smtp.gmail.com", 587))
             {
-                smtp.Credentials = new System.Net.NetworkCredential("salimovkhayal@gmail.com", "iqepqgykafupydyf");
+                smtp.Credentials = new NetworkCredential("salimovkhayal@gmail.com", "wfczsspipjtqvpjn");
                 smtp.EnableSsl = true;
                 smtp.UseDefaultCredentials = false;
                 smtp.DeliveryMethod = SmtpDeliveryMethod.Network;

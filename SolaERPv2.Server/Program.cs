@@ -18,7 +18,7 @@ builder.Services.AddSingleton<AppSettings>(_ => new AppSettings(appSettings));
 
 builder.Services.AddIdentity<AppUser, AppRole>(options =>
 {
-    options.SignIn.RequireConfirmedAccount = false;
+    options.SignIn.RequireConfirmedAccount = true;
     options.User.RequireUniqueEmail = true;
     options.Password.RequiredLength = 6;
     options.Password.RequiredUniqueChars = 0;
