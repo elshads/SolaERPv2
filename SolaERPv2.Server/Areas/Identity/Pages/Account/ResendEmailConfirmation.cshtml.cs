@@ -58,6 +58,7 @@ namespace SolaERPv2.Server.Areas.Identity.Pages.Account
         {
         }
 
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> OnPostAsync()
         {
             if (!ModelState.IsValid)
