@@ -19,27 +19,20 @@ public class MailService
         try
         {
             using var message = new MailMessage();
-            //var smtp = new SmtpClient();
             message.IsBodyHtml = true;
-          
-            //message.From = new MailAddress(_mailSettings.FromEmail, fromSubject);
-            message.From = new MailAddress("salimovkhayal@gmail.com");
+            message.Subject = subject;
+            message.Body = htmlBody;
+            message.From = new MailAddress(_mailSettings.FromEmail);
 
 
             foreach (var address in toAddresses)
             {
                 message.To.Add(address);
             }
-         
-
-            message.Subject = subject;
-            message.Body = htmlBody;
-
-
             
             using (SmtpClient smtp = new SmtpClient("smtp.gmail.com", 587))
             {
-                smtp.Credentials = new NetworkCredential("salimovkhayal@gmail.com", "wfczsspipjtqvpjn");
+                smtp.Credentials = new NetworkCredential(_mailSettings.FromEmail, _mailSettings.Password);
                 smtp.EnableSsl = true;
                 smtp.UseDefaultCredentials = false;
                 smtp.DeliveryMethod = SmtpDeliveryMethod.Network;
@@ -48,26 +41,13 @@ public class MailService
                 return true;
             }
 
-
-
-
-            //Send
-            //smtp.Host = _mailSettings.Host;
-            //smtp.Port = _mailSettings.Port;
-            //smtp.EnableSsl = _mailSettings.EnableSsl;
-
-            //smtp.Credentials = new NetworkCredential(_mailSettings.Username, _mailSettings.Password);
-            //smtp.Credentials = new NetworkCredential("salimovkhayal@gmail.com", "iqepqgykafupydyf");
-
-            //smtp.UseDefaultCredentials = false;
-            //smtp.DeliveryMethod = SmtpDeliveryMethod.Network;
-            //await smtp.SendMailAsync(message);
-            //return true;
         }
         catch (Exception e)
         {
             Console.WriteLine(e.Message);
             return false;
         }
+
+
     }
 }
