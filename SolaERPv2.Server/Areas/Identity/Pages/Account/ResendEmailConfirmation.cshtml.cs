@@ -23,10 +23,13 @@ namespace SolaERPv2.Server.Areas.Identity.Pages.Account
         private readonly UserManager<AppUser> _userManager;
         private readonly IEmailSender _emailSender;
 
-        public ResendEmailConfirmationModel(UserManager<AppUser> userManager, IEmailSender emailSender)
+        private readonly MailService _mailService;
+
+        public ResendEmailConfirmationModel(UserManager<AppUser> userManager, IEmailSender emailSender, MailService mailService)
         {
             _userManager = userManager;
             _emailSender = emailSender;
+            _mailService = mailService;
         }
 
         /// <summary>
@@ -77,6 +80,22 @@ namespace SolaERPv2.Server.Areas.Identity.Pages.Account
                 pageHandler: null,
                 values: new { userId = userId, code = code },
                 protocol: Request.Scheme);
+
+            //
+
+            var emailAdress = new List<string>();
+            emailAdress.Add(user.Email);
+
+            string body = string.Empty;
+            using (StreamReader reader = new StreamReader("Assets/EmailTemplates/ConfirmEmail.html"))
+            {
+                body = reader.ReadToEnd();
+            }
+            body = body.Replace("{{url}}", callbackUrl);
+            await _mailService.SendHtmlMailAsync(emailAdress, "Confirm Email", body, null);
+
+            //
+
             await _emailSender.SendEmailAsync(
                 Input.Email,
                 "Confirm your email",
