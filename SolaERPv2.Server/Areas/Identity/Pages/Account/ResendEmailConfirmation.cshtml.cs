@@ -103,7 +103,9 @@ namespace SolaERPv2.Server.Areas.Identity.Pages.Account
                 $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
 
             ModelState.AddModelError(string.Empty, "Verification email sent. Please check your email.");
-            return Page();
+            //return Page();
+
+            return RedirectToPage("./ForgotPasswordConfirmation");
         }
     }
 }
