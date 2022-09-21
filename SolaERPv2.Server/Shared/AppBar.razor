@@ -11,16 +11,7 @@
     <MudSpacer />
 
 
-     <MudTooltip Text="@fullName" Duration="500">
-        @if (emailConfirm)
-        {
-            <h1>1</h1>
-        }
-        else
-        {
-                <h2>2</h2>
-        }
-    </MudTooltip>
+
 
     <MudTooltip Text="@fullName" Duration="500">
         <div class="k-mx-2">
@@ -54,7 +45,6 @@
     string? fullName;
     string? initials;
 
-    bool emailConfirm = true;
 
     //bool isDarkMode = false;
 
@@ -62,7 +52,6 @@
     {
 
 
-        emailConfirm = SessionData.CurrentUser.EmailConfirmed;
 
         avatar = (SessionData.CurrentUser != null && SessionData.CurrentUser.Photo != null ? string.Format($"data:image/png;base64," + Convert.ToBase64String(SessionData.CurrentUser.Photo)) : null);
         fullName = (SessionData.CurrentUser != null && SessionData.CurrentUser.FullName != null ? SessionData.CurrentUser.FullName : null);
