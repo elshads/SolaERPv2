@@ -2,31 +2,18 @@
 
 @implements IDisposable
 
-@inject CompanyService _companyService
+@inject CustomerService _customerService
 @inject StageService _stageService
 @inject StageRoleService _stageRoleService
 
 <MudGrid>
    
     <MudItem xs="6">
-
         <MudPaper Class="d-flex align-center justify-center mud-width-full py-8">
-          @*  <TelerikGrid Data="@company?.Stages"
-                         EditMode="@GridEditMode.None"
-                         Pageable="true"
-                         PageSize="20"
-                         OnRowClick="OnRowClickHandler">
-                <GridColumns>
-                    <GridColumn Field=@nameof(Stage.Name) />
-                    <GridColumn Field=@nameof(Stage.Sequence) />
-                </GridColumns>
-            </TelerikGrid>*@
-
-            <DataGrid Data="@company?.Stages"
+            <DataGrid Data="@stageList"
                       CanAdd="true"
                       CanEdit="true"
                       CanDelete="true"
-                      CanExport="true"
                       Height="calc(100vh - 285px)"
                       ShowSearchBar="true"
                       OnRowClick="@OnRowClickHandler"
@@ -42,26 +29,19 @@
     
     <MudItem xs="6">
         <MudPaper Class="d-flex align-center justify-center mud-width-full py-8">
-
-          @*  <TelerikGrid Data="@stage.StageRoles" EditMode="@GridEditMode.Incell"
-                         Height="500px"
-                         Pageable="true" AutoGenerateColumns="true">
-            </TelerikGrid>
-              *@
-
-     <DataGrid Data="@stage?.StageRoles"
-                     
+            <DataGrid Data="@stageRoleList"
+                      CanAdd="true"
+                      CanEdit="true"
+                      CanDelete="true"
                       Height="calc(100vh - 285px)"
                       ShowSearchBar="true"             
-                      SearchFields="@(new List<string> {"Name", "StageId"})">
+                      SearchFields="@(new List<string> {"Name", "Amoun","AmountTo"})">
                 <DataGridColumns>
                     <GridColumn Field="@(nameof(StageRole.Name))" Title="Name" />
-                    <GridColumn Field="@(nameof(StageRole.StageId))" Title="Sequence" />
+                    <GridColumn Field="@(nameof(StageRole.Amount))" Title="Amount" />
+                    <GridColumn Field="@(nameof(StageRole.AmountTo))" Title="AmountTo" />
                 </DataGridColumns>
             </DataGrid>
-
-          
-
         </MudPaper>
     </MudItem>
    
@@ -72,13 +52,11 @@
 @code {
     [CascadingParameter] public AppState? AppState { get; set; }
 
-    int _userId;
+    int _customeId;
     public List<Stage>? stageList = new();
     public List<StageRole>? stageRoleList = new();
 
     Stage? stage = new();
-    Company? company = new();
-    StageRole? stageRole = new();
 
 
     protected override async Task OnInitializedAsync()
@@ -94,33 +72,33 @@
 
         if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("id", out var id))
         {
-            _userId = Convert.ToInt32(id);
+            _customeId = Convert.ToInt32(id);
         }
     }
 
-    //async Task GetStageRoleList()
-    //{
-    //    var _stageRole = await _stageRoleService.GetAllAsync(stage.StageId);
-    //    stageRoleList = _stageRole.ToList();
-    //}
-
     async Task LoadData()
     {
-        company = await _companyService.GetByIdAsync(_userId);
+        var list = await _stageService.GetAllByCustomer(_customeId);
+        stageList = list.ToList();
 
-        var _stageList = await _stageService.GetAll();
-        stageList = _stageList.ToList();
+        var id = stageList.FirstOrDefault()?.StageId;
 
-    
-        var _stageRoleList = await _stageRoleService.GetAll();
-        stageRoleList = _stageRoleList.ToList();
-        //await GetStageRoleList();
+        await GetAllStageRolesToView(id);
 
     }
 
-    void OnRowClickHandler(GridRowClickEventArgs args)
+    async Task OnRowClickHandler(GridRowClickEventArgs args)
     {
         stage = args.Item as Stage;
+
+        await GetAllStageRolesToView(stage?.StageId);
+    }
+
+
+    async Task GetAllStageRolesToView(int? id)
+    {
+        var _stageRoleList = await _stageRoleService.GetAllByStageId(id);
+        stageRoleList = _stageRoleList?.ToList();
     }
 
     void IDisposable.Dispose()
@@ -136,19 +114,19 @@
 
     async void SaveClick()
     {
-        var validated = Validate();
-        if (validated)
-        {
-            var sqlResult = await _companyService.Save(company);
-            if (sqlResult.QueryResultMessage == null)
-            {
-                AppState.ShowAlert("Company successfully saved", Severity.Success);
-            }
-            else
-            {
-                AppState.ShowAlert(sqlResult.QueryResultMessage, Severity.Error);
-            }
-        }
+        //var validated = Validate();
+        //if (validated)
+        //{
+        //    var sqlResult = await _customerService.Save(customer);
+        //    if (sqlResult.QueryResultMessage == null)
+        //    {
+        //        AppState.ShowAlert("Company successfully saved", Severity.Success);
+        //    }
+        //    else
+        //    {
+        //        AppState.ShowAlert(sqlResult.QueryResultMessage, Severity.Error);
+        //    }
+        //}
     }
 
     bool Validate()

@@ -1,4 +1,6 @@
-﻿namespace SolaERPv2.Server.ModelService;
+﻿using SolaERPv2.Server.Models;
+
+namespace SolaERPv2.Server.ModelService;
 
 public class StageRoleService : BaseModelService<StageRole>
 {
@@ -13,7 +15,17 @@ public class StageRoleService : BaseModelService<StageRole>
 
     }
 
+    public async Task<IEnumerable<StageRole>?> GetAllByStageId(int? stageId)
+    {
+        string sql = "dbo.us_GetAllStageRoleByStageId";
+        var p = new DynamicParameters();
+        p.Add("@Id", stageId, DbType.Int32, ParameterDirection.Input);
 
+        var result = await _sqlDataAccess.QueryAll<StageRole>(sql, p, "CS-GetAll");
+        return result;
+
+        
+    }
 
     public async Task<IEnumerable<StageRole>?> GetAll()
     {

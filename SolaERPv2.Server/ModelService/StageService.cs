@@ -17,6 +17,19 @@ public class StageService : BaseModelService<Stage>
 
     }
 
+    public async Task<IEnumerable<Stage>?> GetAllByCustomer(int customerId)
+    {
+
+        string sql = "dbo.us_GetAllStageByCustomerId";
+        var p = new DynamicParameters();
+        p.Add("@Id", customerId, DbType.Int32, ParameterDirection.Input);
+
+        var result = await _sqlDataAccess.QueryAll<Stage>(sql, p, "CS-GetAll");
+        return result;
+
+    }
+
+
     public async Task<IEnumerable<Stage>?> GetAll()
     {
         Dictionary<int, Stage> result = new();

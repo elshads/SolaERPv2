@@ -7,11 +7,7 @@ public class Stage:BaseModel
     public int StageId { get; set; }
     public string Name { get; set; } = "Stage";
     public int Sequence { get; set; }
-
-
-    public Company? Company { get; set; }
-    public int? CompanyId { get; set; }
-
-
-    public List<StageRole>? StageRoles { get; set; }
+    public Customer Customer { get; set; }
+    public int CustomerId { get; set; }
+    public List<StageRole> StageRoles { get; set; }
 }

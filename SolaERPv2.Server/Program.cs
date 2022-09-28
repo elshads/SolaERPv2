@@ -75,8 +75,8 @@ builder.Services.AddScoped<RequestService>();
 builder.Services.AddScoped<DueDiligenceDesignService>();
 builder.Services.AddScoped<PrequalificationDesignService>();
 
-builder.Services.AddScoped<BaseCompanyService>();
-builder.Services.AddScoped<CompanyService>();
+builder.Services.AddScoped<MainCompanyService>();
+builder.Services.AddScoped<CustomerService>();
 builder.Services.AddScoped<StageService>();
 builder.Services.AddScoped<StageRoleService>();
 

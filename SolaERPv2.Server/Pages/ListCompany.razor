@@ -2,25 +2,29 @@
 
 @implements IDisposable
 
-@inject BaseCompanyService _baseCompanyService
-@inject CompanyService _companyService
-@inject StageService _stageService
+@inject MainCompanyService _mainCompanyService
+@inject CustomerService _customerService
 
 
-
+@using Model=Customer
 
 <div class="k-pb-4">
     <label for="bu_list">Business Unit:</label>
-   @* <TelerikDropDownList Data="@baseCompanyList"
-                         ValueField="Id"
-                         TextField="Name"
-                         @bind-Value="@SelectedItem"
-                         Id="selectId"
-                         Width="300px">
-    </TelerikDropDownList>*@
+    <ItemDropDownList Id="bu_list"
+                      Data="@mainCompanyList"
+                      Item="@selectedMainCompany"
+                      ItemChanged="@MainCompanyChanged"
+                      UniqueField="MainCompanyId"
+                      TextField="UnitName"
+                      TValue="int"
+                      TItem="MainCompany"
+                      SearchFields="@(new List<string> { "UnitCode", "UnitName"})"
+                      Width="300px"
+                      PopupWidth="100%"
+                      PopupMaxWidth="500px" />
 </div>
 
-<DataGrid Data="@companyList"
+<DataGrid Data="@modelList"
           CanAdd="true"
           CanEdit="true"
           CanDelete="true"
@@ -30,8 +34,8 @@
           OnRowDoubleClick="@OnRowDoubleClickHandler"
           SearchFields="@(new List<string> {"Name", "Description"})">
     <DataGridColumns>
-        <GridColumn Field="@(nameof(Company.Name))" Title="Name"  />
-        <GridColumn Field="@(nameof(Company.Description))" Title="Description"  />
+        <GridColumn Field="@(nameof(Customer.Name))" Title="Name"  />
+        <GridColumn Field="@(nameof(Customer.Description))" Title="Description"  />
     </DataGridColumns>
 </DataGrid>
 
@@ -39,15 +43,46 @@
 @code {
     [CascadingParameter] public AppState? AppState { get; set; }
 
-    public int SelectedItem { get; set; }
+    IEnumerable<MainCompany>? mainCompanyList = new List<MainCompany>();
+    MainCompany? selectedMainCompany = new();
 
-    public List<BaseCompany>? baseCompanyList = new();
-    public List<Company>? companyList = new();
-    public List<Stage>? stageList = new();
+    List<Model> modelList = new();
+    IEnumerable<Model> selectedModelList = new List<Model>();
+    IEnumerable<Model> selectedItems = new List<Model>();
+
+    Model? selectedModel;
 
 
-    Company? company = new();
-    BaseCompany? baseCompany = new();
+    async Task LoadData()
+    {
+        AppState.Loading = true;
+        await GetMainCompanyList();
+        await GetCustomerList();
+        AppState.Loading = false;
+    }
+
+    async Task MainCompanyChanged(MainCompany mainCompany)
+    {
+        AppState.Loading = true;
+        selectedMainCompany = mainCompany;
+        await GetCustomerList();
+        AppState.Loading = false;
+    }
+
+    async Task GetMainCompanyList()
+    {
+        mainCompanyList = await _mainCompanyService.GetAllAsync();
+        selectedMainCompany = mainCompanyList.Any() ? mainCompanyList.FirstOrDefault() : new();
+    }
+
+    async Task GetCustomerList()
+    {
+       
+        var _modelList = await _customerService.GetAll(selectedMainCompany?.MainCompanyId);
+        modelList = _modelList.ToList();
+    }
+
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -66,25 +101,10 @@
         AppState.OnSaveClick += SaveClick;
     }
 
-    async Task LoadData()
-    {
-        company = new Company();
-        baseCompany = new BaseCompany();
-
-        var _baseCompanyList = await _baseCompanyService.GetAll();
-        var _companyList = await _companyService.GetAll();
-        var _stageList = await _stageService.GetAll();
-
-        baseCompanyList = _baseCompanyList.ToList();
-        companyList = _companyList.ToList();
-        stageList = _stageList.ToList();
-
-    }
-
     void OnRowDoubleClickHandler(GridRowClickEventArgs args)
     {
-        company = args.Item as Company;
-        GoToDetails(company.CompanyId);
+        var argsItem = args.Item as Model;
+        GoToDetails(argsItem.CustomerId);
     }
 
     void GoToDetails(int id)

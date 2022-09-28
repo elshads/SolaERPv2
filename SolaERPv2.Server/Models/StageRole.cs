@@ -2,11 +2,11 @@
 
 public class StageRole: BaseModel
 {
-    public int Id { get; set; }
+    public int StageRoleId { get; set; }
     public string Name { get; set; } = "Role";
-    public double Amount { get; set; }
-    public double AmountTo { get; set; }
+    public decimal Amount { get; set; } = 0.99M;
+    public decimal AmountTo { get; set; } = 0.999999M; 
 
-    public Stage? Stage { get; set; }
-    public int? StageId { get; set; }
+    public Stage Stage { get; set; }
+    public int StageId { get; set; }
 }
