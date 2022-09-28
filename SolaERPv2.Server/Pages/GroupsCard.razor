@@ -38,7 +38,12 @@
             </span>
         </HeaderTemplate>
         <Content>
-            <DoubleGrid ReadOnly="@(!((pageAccess.CreateAccess && currentModel.GroupId == 0) || (pageAccess.EditAccess && currentModel.GroupId > 0)))" Height="calc(100vh - 340px)" @bind-LeftGridData="currentModel.Users" @bind-RightGridData="allUsers" LeftGridTitle="Group Users" RightGridTitle="All Users" SearchFields="@(new List<string> {"FullName", "UserName"})">
+            <DoubleGrid ReadOnly="@(!((pageAccess.CreateAccess && currentModel.GroupId == 0) || (pageAccess.EditAccess && currentModel.GroupId > 0)))" 
+                Height="calc(100vh - 340px)" 
+                @bind-LeftGridData="currentModel.Users" 
+                @bind-RightGridData="allUsers" 
+                LeftGridTitle="Group Users" 
+                RightGridTitle="All Users" SearchFields="@(new List<string> {"FullName", "UserName"})">
                 <GridColumn Field="@(nameof(AppUser.FullName))" Title="Name" />
                 <GridColumn Field="@(nameof(AppUser.UserName))" Title="UserName" />
             </DoubleGrid>

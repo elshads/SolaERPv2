@@ -303,7 +303,7 @@
                 }
             });
 
-        originalData = new List<TItem>(Data);
+        originalData = Data!=null? new List<TItem>(Data):new();
     }
 
     // grid events - start

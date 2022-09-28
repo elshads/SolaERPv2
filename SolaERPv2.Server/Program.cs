@@ -75,6 +75,12 @@ builder.Services.AddScoped<RequestService>();
 builder.Services.AddScoped<DueDiligenceDesignService>();
 builder.Services.AddScoped<PrequalificationDesignService>();
 
+builder.Services.AddScoped<BaseCompanyService>();
+builder.Services.AddScoped<CompanyService>();
+builder.Services.AddScoped<StageService>();
+builder.Services.AddScoped<StageRoleService>();
+
+
 builder.Services.AddTransient<IValidator<AppUser>, AppUserValidator>();
 builder.Services.AddTransient<IValidator<Vendor>, VendorValidator>();
 builder.Services.AddTransient<IValidator<Bank>, BankValidator>();
