@@ -2,13 +2,11 @@
 
 public class MainCompanyService:BaseModelService<MainCompany>
 {
-    AppUserService _appUserService;
     SqlDataAccess _sqlDataAccess;
 
-    public MainCompanyService(SqlDataAccess sqlDataAccess, AppUserService appUserService)
+    public MainCompanyService(SqlDataAccess sqlDataAccess)
     {
         _sqlDataAccess = sqlDataAccess;
-        _appUserService = appUserService;
     }
 
     public async Task<IEnumerable<MainCompany>> GetAllAsync()
@@ -25,7 +23,5 @@ public class MainCompanyService:BaseModelService<MainCompany>
         }
         return result;
     }
-
-
 
 }

@@ -29,4 +29,62 @@ public class ApproveStageService : BaseModelService<ApproveStage>
     {
         return await _sqlDataAccess.QueryAll<ApproveRole>("SELECT * FROM dbo.VW_ApproveRoles_List", null, "ApproveStage-GetAllRoles", CommandType.Text);
     }
+
+
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    public async Task<IEnumerable<ApproveStageMain>?> ApproveStageMainLoad(int? businessUnit)
+    {
+        if (businessUnit == null) return new List<ApproveStageMain>();
+
+        string sql = "dbo.SP_ApproveStageMain_Load";
+        var p = new DynamicParameters();
+        p.Add("@BusinessUnitId", businessUnit, DbType.Int32, ParameterDirection.Input);
+
+        var result = await _sqlDataAccess.QueryAll<ApproveStageMain>(sql, p, "ApproveStageMain_Load-GetAll");
+
+        if (result == null) return new List<ApproveStageMain>();
+
+        return result;
+    }
+
+
+    public async Task<IEnumerable<ApproveStageDetail>?> ApproveStageDetailLoad(int approveMainId)
+    {
+        string sql = "dbo.SP_ApproveStageDetails_Load ";
+        var p = new DynamicParameters();
+        p.Add("@ApproveStageMainId", approveMainId, DbType.Int32, ParameterDirection.Input);
+
+        var result = await _sqlDataAccess.QueryAll<ApproveStageDetail>(sql, p, "ApproveStageDetails_Load-GetAll");
+        return result;
+    }
+
+    public async Task<IEnumerable<ApproveStageRole>?> ApproveStageRoleLoad(int? approveDetailId)
+    {
+        string sql = "dbo.SP_ApproveStageRoles_Load";
+        var p = new DynamicParameters();
+        p.Add("@ApproveStageDetailId", approveDetailId, DbType.Int32, ParameterDirection.Input);
+
+        var result = await _sqlDataAccess.QueryAll<ApproveStageRole>(sql, p, "ApproveStageRoles_Load-GetAll");
+        return result;
+    }
+
+  
+    public async Task<IEnumerable<Procedure>> GetProcedures()
+    {
+        IEnumerable<Procedure> result = new List<Procedure>();
+        try
+        {
+            using IDbConnection cn = new SqlConnection(_sqlDataAccess?.ConnectionString);
+            result = await cn.QueryAsync<Procedure>("select * from dbo.VW_Procedures_List");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
+        return result;
+    }
+
+
 }

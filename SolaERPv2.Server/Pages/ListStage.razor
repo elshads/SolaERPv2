@@ -2,31 +2,67 @@
 
 @implements IDisposable
 
-@inject CustomerService _customerService
 @inject StageService _stageService
-@inject StageRoleService _stageRoleService
+@*@inject StageRoleService _stageRoleService
+*@
+@inject ApproveStageService ApproveStageService
+
+
+
+<div class="k-pb-4">
+    <label for="bu_list">Procedures:</label>
+    <ItemDropDownList Id="bu_list"
+                      Data="@procedureList"
+                      Item="@selectedProcedure"
+                      UniqueField="ProcedureId"
+                      TextField="ProcedureName"
+                      TValue="int"
+                      TItem="Procedure"
+                      SearchFields="@(new List<string> { "ProcedureKey", "ProcedureName"})"
+                      Width="300px"
+                      PopupWidth="100%"
+                      PopupMaxWidth="500px" />
+</div>
+
+
+<div class="k-pb-4">
+    <label for="bu_list">Business Unit:</label>
+    <ItemDropDownList Id="bu_list"
+                      Data="@businessUnitList"
+                      Item="@selectedBusinessUnit"
+                      UniqueField="BusinessUnitId"
+                      TextField="BusinessUnitCode"
+                      TValue="int"
+                      TItem="BusinessUnit"
+                      SearchFields="@(new List<string> { "BusinessUnitCode", "BusinessUnitName"})"
+                      Width="300px"
+                      PopupWidth="100%"
+                      PopupMaxWidth="500px" />
+</div>
+
+
 
 <MudGrid>
-   
+
     <MudItem xs="6">
         <MudPaper Class="d-flex align-center justify-center mud-width-full py-8">
-            <DataGrid Data="@stageList"
+            <DataGrid Data="@stageDetailList"
                       CanAdd="true"
                       CanEdit="true"
                       CanDelete="true"
                       Height="calc(100vh - 285px)"
                       ShowSearchBar="true"
                       OnRowClick="@OnRowClickHandler"
-                      SearchFields="@(new List<string> {"Name", "Sequence"})">
+                      SearchFields="@(new List<string> {"Name", "ApproveStageDetailName"})">
                 <DataGridColumns>
-                    <GridColumn Field="@(nameof(Stage.Name))" Title="Name" />
-                    <GridColumn Field="@(nameof(Stage.Sequence))" Title="Sequence" />
+                    <GridColumn Field="@(nameof(ApproveStageDetail.ApproveStageDetailsName))" Title="Name" />
+                    <GridColumn Field="@(nameof(ApproveStageDetail.Sequence))" Title="Sequence" />
                 </DataGridColumns>
             </DataGrid>
         </MudPaper>
     </MudItem>
- 
-    
+
+
     <MudItem xs="6">
         <MudPaper Class="d-flex align-center justify-center mud-width-full py-8">
             <DataGrid Data="@stageRoleList"
@@ -34,37 +70,35 @@
                       CanEdit="true"
                       CanDelete="true"
                       Height="calc(100vh - 285px)"
-                      ShowSearchBar="true"             
-                      SearchFields="@(new List<string> {"Name", "Amoun","AmountTo"})">
+                      ShowSearchBar="true"
+                      SearchFields="@(new List<string> {"Name", "Amount","AmountTo"})">
                 <DataGridColumns>
-                    <GridColumn Field="@(nameof(StageRole.Name))" Title="Name" />
-                    <GridColumn Field="@(nameof(StageRole.Amount))" Title="Amount" />
-                    <GridColumn Field="@(nameof(StageRole.AmountTo))" Title="AmountTo" />
-                </DataGridColumns>
+@*                    <GridColumn Field="@(nameof(ApproveStageRole.AmountFrom))" Title="Amount" /> ApproveRoleName
+*@                    <GridColumn Field="@(nameof(ApproveStageRole.AmountFrom))" Title="Amount" />
+                    <GridColumn Field="@(nameof(ApproveStageRole.AmountTo))" Title="AmountTo" />
+                </DataGridColumns> 
             </DataGrid>
         </MudPaper>
     </MudItem>
-   
+
 </MudGrid>
 
-
-
-@code {
+@code{
     [CascadingParameter] public AppState? AppState { get; set; }
 
-    int _customeId;
-    public List<Stage>? stageList = new();
-    public List<StageRole>? stageRoleList = new();
+    List<ApproveStageDetail>? stageDetailList = new();
+    List<ApproveStageRole>? stageRoleList = new();
 
-    Stage? stage = new();
+    IEnumerable<Procedure> procedureList = new List<Procedure>(); 
+    Procedure? selectedProcedure = new();
+
+    IEnumerable<BusinessUnit> businessUnitList = new List<BusinessUnit>();
+    BusinessUnit? selectedBusinessUnit = new();
+
+    ApproveStageDetail? stageDetail;
 
 
-    protected override async Task OnInitializedAsync()
-    {
-        SetQueryVariables();
-        await LoadData();
-    }
-
+    int _mainId;
 
     void SetQueryVariables()
     {
@@ -72,33 +106,78 @@
 
         if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("id", out var id))
         {
-            _customeId = Convert.ToInt32(id);
+            _mainId = Convert.ToInt32(id);
         }
+    }
+
+    async Task GetStageDetailList()
+    {
+        var _stageDetailList = await ApproveStageService.ApproveStageDetailLoad(_mainId);
+        stageDetailList = _stageDetailList.ToList();
+    }
+
+    async Task GetStageRoleList(int? id)
+    {
+        var _stageRoleList = await ApproveStageService.ApproveStageRoleLoad(id);
+        stageRoleList = _stageRoleList?.ToList();
+    }
+
+    async Task GetProcedureList()
+    {
+        procedureList = await ApproveStageService.GetProcedures();
+        selectedProcedure = procedureList.Any() ? procedureList.FirstOrDefault() : new();
+    }
+
+    async Task GetBusinessUnitList()
+    {
+        businessUnitList = await BusinessUnitService.GetAllAsync();
+        selectedBusinessUnit = businessUnitList.Any() ? businessUnitList.FirstOrDefault() : new();
+    }
+
+    async Task BusinessUnitChanged(BusinessUnit businessUnit)
+    {
+        AppState.Loading = true;
+        selectedBusinessUnit = businessUnit;
+        await GetStageDetailList();
+        AppState.Loading = false;
+    }
+
+    async Task ProcedureChanged(Procedure procedure)
+    {
+        AppState.Loading = true;
+        selectedProcedure = procedure;
+        await GetStageDetailList();
+        AppState.Loading = false;
     }
 
     async Task LoadData()
     {
-        var list = await _stageService.GetAllByCustomer(_customeId);
-        stageList = list.ToList();
+        await GetBusinessUnitList();
+        await GetProcedureList();
+        await GetStageDetailList();
+    }
 
-        var id = stageList.FirstOrDefault()?.StageId;
-
-        await GetAllStageRolesToView(id);
-
+    protected override async Task OnInitializedAsync()
+    {
+        OnAppStateInitialized();
+        SetQueryVariables();
+        await LoadData();
     }
 
     async Task OnRowClickHandler(GridRowClickEventArgs args)
     {
-        stage = args.Item as Stage;
-
-        await GetAllStageRolesToView(stage?.StageId);
+        stageDetail = args.Item as ApproveStageDetail;
+        await GetStageRoleList(stageDetail?.ApproveStageDetailsId);
     }
 
-
-    async Task GetAllStageRolesToView(int? id)
+    void BackClick()
     {
-        var _stageRoleList = await _stageRoleService.GetAllByStageId(id);
-        stageRoleList = _stageRoleList?.ToList();
+        NavigationManager.NavigateTo("/listcompany");
+    }
+
+    async void SaveClick()
+    {
+
     }
 
     void IDisposable.Dispose()
@@ -107,30 +186,14 @@
         AppState.OnSaveClick -= SaveClick;
     }
 
-    void BackClick()
+    void OnAppStateInitialized()
     {
-        NavigationManager.NavigateTo("/");
-    }
+        AppState?.SetDefaults();
 
-    async void SaveClick()
-    {
-        //var validated = Validate();
-        //if (validated)
-        //{
-        //    var sqlResult = await _customerService.Save(customer);
-        //    if (sqlResult.QueryResultMessage == null)
-        //    {
-        //        AppState.ShowAlert("Company successfully saved", Severity.Success);
-        //    }
-        //    else
-        //    {
-        //        AppState.ShowAlert(sqlResult.QueryResultMessage, Severity.Error);
-        //    }
-        //}
-    }
+        AppState.BackButtonVisible = true;
+        AppState.SaveButtonVisible = true;
 
-    bool Validate()
-    {
-        return true;
+        AppState.OnBackClick += BackClick;
+        AppState.OnSaveClick += SaveClick;
     }
 }

@@ -2,29 +2,25 @@
 
 @implements IDisposable
 
-@inject MainCompanyService _mainCompanyService
-@inject CustomerService _customerService
-
-
-@using Model=Customer
+@inject ApproveStageService ApproveStageService
 
 <div class="k-pb-4">
     <label for="bu_list">Business Unit:</label>
     <ItemDropDownList Id="bu_list"
-                      Data="@mainCompanyList"
-                      Item="@selectedMainCompany"
-                      ItemChanged="@MainCompanyChanged"
-                      UniqueField="MainCompanyId"
-                      TextField="UnitName"
+                      Data="@businessUnitList"
+                      Item="@selectedBusinessUnit"
+                      ItemChanged="@BusinessUnitChanged"
+                      UniqueField="BusinessUnitId"
+                      TextField="BusinessUnitCode"
                       TValue="int"
-                      TItem="MainCompany"
-                      SearchFields="@(new List<string> { "UnitCode", "UnitName"})"
+                      TItem="BusinessUnit"
+                      SearchFields="@(new List<string> { "BusinessUnitCode", "BusinessUnitName"})"
                       Width="300px"
                       PopupWidth="100%"
                       PopupMaxWidth="500px" />
 </div>
 
-<DataGrid Data="@modelList"
+<DataGrid Data="@stageMainList"
           CanAdd="true"
           CanEdit="true"
           CanDelete="true"
@@ -32,56 +28,59 @@
           Height="calc(100vh - 285px)"
           ShowSearchBar="true"
           OnRowDoubleClick="@OnRowDoubleClickHandler"
-          SearchFields="@(new List<string> {"Name", "Description"})">
+          SearchFields="@(new List<string> {"ApproveStageName", "ApproveStageName"})">
     <DataGridColumns>
-        <GridColumn Field="@(nameof(Customer.Name))" Title="Name"  />
-        <GridColumn Field="@(nameof(Customer.Description))" Title="Description"  />
+        <GridColumn Field="@(nameof(ApproveStageMain.ApproveStageName))" Title="Approve Stage Name" />
+        <GridColumn Field="@(nameof(ApproveStageMain.Procedure.ProcedureName))" Title="Procedure Name" />
     </DataGridColumns>
 </DataGrid>
 
-
-@code {
+@code{
     [CascadingParameter] public AppState? AppState { get; set; }
 
-    IEnumerable<MainCompany>? mainCompanyList = new List<MainCompany>();
-    MainCompany? selectedMainCompany = new();
+    IEnumerable<BusinessUnit> businessUnitList = new List<BusinessUnit>();
+    BusinessUnit? selectedBusinessUnit = new();
 
-    List<Model> modelList = new();
-    IEnumerable<Model> selectedModelList = new List<Model>();
-    IEnumerable<Model> selectedItems = new List<Model>();
+    //IEnumerable<Procedure> procedureList = new List<Procedure>();
 
-    Model? selectedModel;
+    List<ApproveStageMain> stageMainList = new();
+    List<Procedure> procedureList = new();
 
+
+    async Task GetBusinessUnitList()
+    {
+        businessUnitList = await BusinessUnitService.GetAllAsync();
+        selectedBusinessUnit = businessUnitList.Any() ? businessUnitList.FirstOrDefault() : new();
+    }
+
+    async Task GetMainStageList()
+    {
+        var _stageMainList = await ApproveStageService.ApproveStageMainLoad(selectedBusinessUnit?.BusinessUnitId);
+        stageMainList = _stageMainList.ToList();
+    }
+
+    async Task GetProcedureList()
+    {
+        var _procedrueList = await ApproveStageService.GetProcedures();
+        procedureList = _procedrueList.ToList();
+    }
+
+    async Task BusinessUnitChanged(BusinessUnit businessUnit)
+    {
+        AppState.Loading = true;
+        selectedBusinessUnit = businessUnit;
+        await GetMainStageList();
+        AppState.Loading = false;
+    }
 
     async Task LoadData()
     {
         AppState.Loading = true;
-        await GetMainCompanyList();
-        await GetCustomerList();
+        await GetBusinessUnitList();
+        await GetMainStageList();
+        await GetProcedureList();
         AppState.Loading = false;
     }
-
-    async Task MainCompanyChanged(MainCompany mainCompany)
-    {
-        AppState.Loading = true;
-        selectedMainCompany = mainCompany;
-        await GetCustomerList();
-        AppState.Loading = false;
-    }
-
-    async Task GetMainCompanyList()
-    {
-        mainCompanyList = await _mainCompanyService.GetAllAsync();
-        selectedMainCompany = mainCompanyList.Any() ? mainCompanyList.FirstOrDefault() : new();
-    }
-
-    async Task GetCustomerList()
-    {
-       
-        var _modelList = await _customerService.GetAll(selectedMainCompany?.MainCompanyId);
-        modelList = _modelList.ToList();
-    }
-
 
 
     protected override async Task OnInitializedAsync()
@@ -90,32 +89,17 @@
         await LoadData();
     }
 
-    void OnAppStateInitialized()
-    {
-        AppState?.SetDefaults();
 
-        AppState.BackButtonVisible = true;
-        AppState.SaveButtonVisible = true;
-
-        AppState.OnBackClick += BackClick;
-        AppState.OnSaveClick += SaveClick;
-    }
 
     void OnRowDoubleClickHandler(GridRowClickEventArgs args)
     {
-        var argsItem = args.Item as Model;
-        GoToDetails(argsItem.CustomerId);
+        var argsItem = args.Item as ApproveStageMain;
+        GoToDetails(argsItem.ApproveStageMainId);
     }
 
     void GoToDetails(int id)
     {
-        NavigationManager.NavigateTo($"/liststage?id={id}");
-    }
-
-    void IDisposable.Dispose()
-    {
-        AppState.OnBackClick -= BackClick;
-        AppState.OnSaveClick -= SaveClick;
+        NavigationManager.NavigateTo($"/liststage?id={id}");  /////
     }
 
     void BackClick()
@@ -123,25 +107,34 @@
         NavigationManager.NavigateTo("/");
     }
 
-    async void SaveClick()
+    void SaveClick()
     {
-        //var validated = Validate();
-        //if (validated)
-        //{
-        //    var sqlResult = await _companyService.Save(company);
-        //    if (sqlResult.QueryResultMessage == null)
-        //    {
-        //        AppState.ShowAlert("Company successfully saved", Severity.Success);
-        //    }
-        //    else
-        //    {
-        //        AppState.ShowAlert(sqlResult.QueryResultMessage, Severity.Error);
-        //    }
-        //}
+        NavigationManager.NavigateTo("/");
     }
 
-    bool Validate()
+    void AddClick()
     {
-        return true;
+        //NavigationManager.NavigateTo($"/payments/generate?bu={selectedBusinessUnit.BusinessUnitId}");
+    }
+
+    void IDisposable.Dispose()
+    {
+        AppState.OnBackClick -= BackClick;
+        AppState.OnSaveClick -= SaveClick;
+        AppState.OnAddClick -= AddClick;
+
+    }
+
+    void OnAppStateInitialized()
+    {
+        AppState?.SetDefaults();
+
+        AppState.BackButtonVisible = true;
+        AppState.SaveButtonVisible = true;
+        AppState.AddButtonVisible = true;
+
+        AppState.OnBackClick += BackClick;
+        AppState.OnSaveClick += SaveClick;
+        AppState.OnAddClick += AddClick;
     }
 }
