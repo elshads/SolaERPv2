@@ -41,8 +41,6 @@
     IEnumerable<BusinessUnit> businessUnitList = new List<BusinessUnit>();
     BusinessUnit? selectedBusinessUnit = new();
 
-    //IEnumerable<Procedure> procedureList = new List<Procedure>();
-
     List<ApproveStageMain> stageMainList = new();
     List<Procedure> procedureList = new();
 
@@ -59,11 +57,6 @@
         stageMainList = _stageMainList.ToList();
     }
 
-    async Task GetProcedureList()
-    {
-        var _procedrueList = await ApproveStageService.GetProcedures();
-        procedureList = _procedrueList.ToList();
-    }
 
     async Task BusinessUnitChanged(BusinessUnit businessUnit)
     {
@@ -78,7 +71,6 @@
         AppState.Loading = true;
         await GetBusinessUnitList();
         await GetMainStageList();
-        await GetProcedureList();
         AppState.Loading = false;
     }
 
@@ -114,7 +106,7 @@
 
     void AddClick()
     {
-        //NavigationManager.NavigateTo($"/payments/generate?bu={selectedBusinessUnit.BusinessUnitId}");
+        NavigationManager.NavigateTo($"/listcompany/generate?bu={selectedBusinessUnit.BusinessUnitId}");
     }
 
     void IDisposable.Dispose()

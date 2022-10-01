@@ -1,4 +1,4 @@
-﻿@page "/liststage"
+﻿@page "/listcompany/generate"
 
 @implements IDisposable
 
@@ -9,47 +9,41 @@
 <MudCard Class="k-mb-4">
     <MudCardContent>
         <TelerikGridLayout RowSpacing="8px" ColumnSpacing="16px" VerticalAlign="GridLayoutVerticalAlign.Top">
+
             <GridLayoutItems>
+                <GridLayoutItem Row="1">
+                    <div class="k-pb-4">
+                        <label for="bu_list">Procedures:</label>
+                        <TelerikComboBox @bind-Value="@selectedProcedure.ProcedureName"
+                                         Id="bu_list"
+                                         Data="@procedureList"
+                                         TextField="ProcedureName"
+                                         ValueField="ProcedureName"
+                                         Placeholder="Select..."
+                                         Filterable="true"
+                                         FilterOperator="StringFilterOperator.Contains" />
+                    </div>
+                </GridLayoutItem>
+
+
                  <GridLayoutItem Row="1">
 
                     <div class="k-pb-4">
-                        <label for="bu_list">Procedures:</label>
-                        <ItemDropDownList Id="bu_list"
-                                          Data="@procedureList"
-                                          Item="@selectedProcedure"
-                                          UniqueField="ProcedureId"
-                                          TextField="ProcedureName"
-                                          TValue="int"
-                                          TItem="Procedure"
-                                          SearchFields="@(new List<string> { "ProcedureKey", "ProcedureName"})"
-                                          Width="300px"
-                                          PopupWidth="100%"
-                                          PopupMaxWidth="500px" />
-                    </div>
-                </GridLayoutItem>
-
-                <GridLayoutItem Row="1">
-                    <div class="k-pb-4">
                         <label for="bu_list">Business Unit:</label>
-                        <ItemDropDownList Id="bu_list"
-                                          Data="@businessUnitList"
-                                          Item="@selectedBusinessUnit"
-                                          UniqueField="BusinessUnitId"
-                                          TextField="BusinessUnitCode"
-                                          TValue="int"
-                                          TItem="BusinessUnit"
-                                          SearchFields="@(new List<string> { "BusinessUnitCode", "BusinessUnitName"})"
-                                          Width="300px"
-                                          PopupWidth="100%"
-                                          PopupMaxWidth="500px" />
-                    </div>
-                </GridLayoutItem>
+                        <TelerikComboBox @bind-Value="@selectedBusinessUnit.BusinessUnitCode"
+                                         Id="bu_list"
+                                         Data="@businessUnitList"
+                                         TextField="BusinessUnitCode"
+                                         ValueField="BusinessUnitCode"
+                                         Placeholder="Select..."
+                                         Filterable="true"
+                                         FilterOperator="StringFilterOperator.Contains" />
 
-                <GridLayoutItem Row="1">
-                    <ReadOnlyField Value="@(selectedBusinessUnit?.BusinessUnitName)" Label="Procedure Name: " />
+                    </div>
                 </GridLayoutItem>
 
             </GridLayoutItems>
+
         </TelerikGridLayout>
     </MudCardContent>
 </MudCard>
@@ -92,20 +86,20 @@
                     <GridColumn Field="@(nameof(ApproveStageRole.ApproveRole.ApproveRoleName))" Title="Role Name" />
                     <GridColumn Field="@(nameof(ApproveStageRole.AmountFrom))" Title="Amount" />
                     <GridColumn Field="@(nameof(ApproveStageRole.AmountTo))" Title="AmountTo" />
-                </DataGridColumns> 
+                </DataGridColumns>
             </DataGrid>
         </MudPaper>
     </MudItem>
 
 </MudGrid>
 
-@code{
+@code {
     [CascadingParameter] public AppState? AppState { get; set; }
 
     List<ApproveStageDetail>? stageDetailList = new();
     List<ApproveStageRole>? stageRoleList = new();
 
-    IEnumerable<Procedure> procedureList = new List<Procedure>(); 
+    IEnumerable<Procedure> procedureList = new List<Procedure>();
     Procedure? selectedProcedure = new();
 
     IEnumerable<BusinessUnit> businessUnitList = new List<BusinessUnit>();
@@ -148,23 +142,6 @@
     {
         businessUnitList = await BusinessUnitService.GetAllAsync();
         selectedBusinessUnit = businessUnitList.Any() ? businessUnitList.FirstOrDefault() : new();
-    }
-
-
-    async Task BusinessUnitChanged(BusinessUnit businessUnit)
-    {
-        AppState.Loading = true;
-        selectedBusinessUnit = businessUnit;
-        await GetStageDetailList();
-        AppState.Loading = false;
-    }
-
-    async Task ProcedureChanged(Procedure procedure)
-    {
-        AppState.Loading = true;
-        selectedProcedure = procedure;
-        await GetStageDetailList();
-        AppState.Loading = false;
     }
 
     async Task LoadData()

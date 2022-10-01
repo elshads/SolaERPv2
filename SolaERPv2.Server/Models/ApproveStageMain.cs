@@ -7,7 +7,9 @@ public class ApproveStageMain:BaseModel
     public int BusinessUnitId { get; set; }
     public string? ApproveStageName { get; set; } = "MainName";
 
-   
+
     public Procedure? Procedure { get; set; }
+    public string? ProcedureName { get; set; }
+
     public List<ApproveStageDetail>? ApproveStageDetails { get; set; }
 }

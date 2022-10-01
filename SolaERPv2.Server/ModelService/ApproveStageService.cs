@@ -86,5 +86,27 @@ public class ApproveStageService : BaseModelService<ApproveStage>
         return result;
     }
 
+    public async Task<Procedure?> GetByIdAsync(int procedurId)
+    {
+        Dictionary<int, Procedure> result = new();
+
+        using IDbConnection cn = new SqlConnection(_sqlDataAccess.ConnectionString);
+        await cn.QueryAsync<Procedure, ApproveStageMain, Procedure>("dbo.sp_Company_Load",
+            (procedure, stage) =>
+            {
+                if (!result.ContainsKey(procedure.ProcedureId))
+                {
+                    procedure.ApproveStageMains = new();
+                    result.Add(procedure.ProcedureId, procedure);
+                }
+                var currentCompany = result[procedure.ProcedureId];
+                return procedure;
+            },
+            param: new { ProcedureId = procedurId },
+            splitOn: "ApproveStageMainId",
+            commandType: CommandType.StoredProcedure);
+
+        return result.Values.FirstOrDefault();
+    }
 
 }
