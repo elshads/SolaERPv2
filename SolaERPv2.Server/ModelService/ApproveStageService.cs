@@ -1,4 +1,6 @@
-﻿namespace SolaERPv2.Server.ModelService;
+﻿using SolaERPv2.Server.ViewModels;
+
+namespace SolaERPv2.Server.ModelService;
 
 public class ApproveStageService : BaseModelService<ApproveStage>
 {
@@ -50,6 +52,10 @@ public class ApproveStageService : BaseModelService<ApproveStage>
     }
 
 
+
+    
+
+
     public async Task<IEnumerable<ApproveStageDetail>?> ApproveStageDetailLoad(int approveMainId)
     {
         string sql = "dbo.SP_ApproveStageDetails_Load ";
@@ -86,6 +92,9 @@ public class ApproveStageService : BaseModelService<ApproveStage>
         return result;
     }
 
+
+
+
     public async Task<Procedure?> GetByIdAsync(int procedurId)
     {
         Dictionary<int, Procedure> result = new();
@@ -107,6 +116,71 @@ public class ApproveStageService : BaseModelService<ApproveStage>
             commandType: CommandType.StoredProcedure);
 
         return result.Values.FirstOrDefault();
+    }
+
+
+    public async Task<SqlResult?> Save(List<ApproveStageMain>  approveStageMainList)
+    {
+        var user = await _appUserService.GetCurrentUserAsync();
+        SqlResult? result = new();
+        using (var cn = new SqlConnection(_sqlDataAccess.ConnectionString))
+        {
+            foreach (var approveStageMain in approveStageMainList)
+            {
+                var p = new DynamicParameters();
+
+
+                p.Add("@ProcedureId", approveStageMain.ProcedureId, DbType.Int32, ParameterDirection.Input);
+                p.Add("@BusinessUnitId", approveStageMain.BusinessUnitId, DbType.Int32, ParameterDirection.Input);
+                p.Add("@ApproveStageName", approveStageMain.ApproveStageName, DbType.String, ParameterDirection.Input);
+                p.Add("@UserId", user.Id, DbType.Int32, ParameterDirection.Input);
+
+                result.QueryResult = await cn.ExecuteAsync("dbo.SP_ApproveStagesMain_IUD", p, commandType: CommandType.StoredProcedure);
+            }
+        }
+
+
+        return result;
+    }
+
+
+    public async Task<IEnumerable<ApproveStageMain>?> GetAllProcdureWithMain(int? businessUnitId)
+    {
+
+        string sql = "dbo.usp_GetAllProcduresWithMain ";
+        var p = new DynamicParameters();
+        p.Add("@BusinessUnitId", businessUnitId, DbType.Int32, ParameterDirection.Input);
+        var sqlResult = await _sqlDataAccess.QueryAll<FullApproveStageMain>(sql, p, "ApproveStageDetails_Load-GetAll");
+        var result = sqlResult.Select(a => new ApproveStageMain {
+            BusinessUnitId = a.BusinessUnitId,
+            ApproveStageMainId = a.ApproveStageMainId,
+            ApproveStageName = a.ApproveStageName,
+            ProcedureId = a.ProcedureId,
+            Procedure = new Procedure {
+                ProcedureId = a.ProcedureId,
+                ProcedureName = a.ProcedureName,
+                ProcedureKey = a.ProcedureKey
+            }
+        }).ToList();
+        return result;
+
+      
+    }
+
+
+    public async Task<Procedure> GetProcuderByStageMainId(int? approveStageMainId)
+    {
+        if (approveStageMainId == null) return new Procedure();
+
+        string sql = "dbo.usp_GetProcedureByApproveStagesMainId";
+        var p = new DynamicParameters();
+        p.Add("@ApproveStageMainId", approveStageMainId, DbType.Int32, ParameterDirection.Input);
+
+        var result = await _sqlDataAccess.QuerySingle<Procedure>(sql, p, "usp_GetProcedureByApproveStagesMainId-Single");
+
+        if (result == null) return new Procedure();
+
+        return result;
     }
 
 }

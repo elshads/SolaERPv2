@@ -46,7 +46,7 @@
                 </GridLayoutItem>
 
                 <GridLayoutItem Row="1">
-                    <ReadOnlyField Value="@(selectedBusinessUnit?.BusinessUnitName)" Label="Procedure Name: " />
+                    <ReadOnlyField Value="@(selectedProcedure?.ProcedureName)" Label="Procedure Name: " />
                 </GridLayoutItem>
 
             </GridLayoutItems>
@@ -113,6 +113,10 @@
 
     ApproveStageDetail? stageDetail;
 
+    IEnumerable<ApproveStageMain> approveStageMainList = new List<ApproveStageMain>();  ///////////
+    ApproveStageMain? selectedAprroveStageMain = new();
+
+
 
     int _mainId;
 
@@ -149,7 +153,20 @@
         businessUnitList = await BusinessUnitService.GetAllAsync();
         selectedBusinessUnit = businessUnitList.Any() ? businessUnitList.FirstOrDefault() : new();
     }
+    async Task LoadProcdureNameByApproveMainId(){
+        selectedProcedure = await ApproveStageService.GetProcuderByStageMainId(_mainId);
+    }
+    //async Task GetMainStageList()
+    //{
+    //    var _approveStageMainList = await ApproveStageService.ApproveStageMainLoad(_mainId);
+    //    approveStageMainList = _approveStageMainList.ToList();
+    //}
 
+    async Task GetMainStageList()////////////////
+    {
+        var _stageMainList = await ApproveStageService.ApproveStageMainLoad(selectedBusinessUnit?.BusinessUnitId);
+        approveStageMainList = _stageMainList.ToList();
+    }
 
     async Task BusinessUnitChanged(BusinessUnit businessUnit)
     {
@@ -169,9 +186,11 @@
 
     async Task LoadData()
     {
+        await GetMainStageList();//////////
         await GetBusinessUnitList();
         await GetProcedureList();
         await GetStageDetailList();
+        await LoadProcdureNameByApproveMainId();
     }
 
     protected override async Task OnInitializedAsync()
