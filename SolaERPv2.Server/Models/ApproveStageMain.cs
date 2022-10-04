@@ -9,7 +9,7 @@ public class ApproveStageMain:BaseModel
 
 
     public Procedure? Procedure { get; set; }
-
+    public string? ProcedureName { get; set; }
 
     public BusinessUnit? BusinessUnit { get; set; }
     public string? BusinessUnitName { get; set; }

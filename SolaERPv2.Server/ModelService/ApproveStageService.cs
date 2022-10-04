@@ -40,7 +40,7 @@ public class ApproveStageService : BaseModelService<ApproveStage>
     {
         if (businessUnit == null) return new List<ApproveStageMain>();
 
-        string sql = "dbo.SP_ApproveStageMain_Load";
+        string sql = "dbo.usp_ApproveStageMain_Load";
         var p = new DynamicParameters();
         p.Add("@BusinessUnitId", businessUnit, DbType.Int32, ParameterDirection.Input);
 
@@ -50,11 +50,6 @@ public class ApproveStageService : BaseModelService<ApproveStage>
 
         return result;
     }
-
-
-
-    
-
 
     public async Task<IEnumerable<ApproveStageDetail>?> ApproveStageDetailLoad(int approveMainId)
     {
@@ -92,6 +87,55 @@ public class ApproveStageService : BaseModelService<ApproveStage>
         return result;
     }
 
+
+    public async Task<IEnumerable<ApproveRole>> GetRoles()
+    {
+        IEnumerable<ApproveRole> result = new List<ApproveRole>();
+        try
+        {
+            using IDbConnection cn = new SqlConnection(_sqlDataAccess?.ConnectionString);
+            result = await cn.QueryAsync<ApproveRole>("select * from dbo.VW_ApproveRoles_List");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
+        return result;
+    }
+
+
+    
+
+    public async Task<Procedure> GetProcuderByMainId(int? approveStageMainId)
+    {
+        if (approveStageMainId == null) return new Procedure();
+
+        string sql = "dbo.usp_ApproveStageHeaderProcedure_Load";
+        var p = new DynamicParameters();
+        p.Add("@ApproveStageMainId", approveStageMainId, DbType.Int32, ParameterDirection.Input);
+
+        var result = await _sqlDataAccess.QuerySingle<Procedure>(sql, p, "GetProcuderByMainId-Single");
+
+        if (result == null) return new Procedure();
+
+        return result;
+    }
+
+
+    public async Task<BusinessUnit> GetBusinessUnitByMainId(int? approveStageMainId)
+    {
+        if (approveStageMainId == null) return new BusinessUnit();
+
+        string sql = "dbo.usp_ApproveStageHeaderBusinessUnit_Load";
+        var p = new DynamicParameters();
+        p.Add("@ApproveStageMainId", approveStageMainId, DbType.Int32, ParameterDirection.Input);
+
+        var result = await _sqlDataAccess.QuerySingle<BusinessUnit>(sql, p, "GetBusinessUnitByMainId-Single");
+
+        if (result == null) return new BusinessUnit();
+
+        return result;
+    }
 
 
 
@@ -144,6 +188,21 @@ public class ApproveStageService : BaseModelService<ApproveStage>
     }
 
 
+    public async Task<ApproveStageRole> GetRoleByStageRoleId(int? stageRoleId)
+    {
+        if (stageRoleId == null) return new ApproveStageRole();
+
+        string sql = "dbo.usp_ApproveStageRole_Load";
+        var p = new DynamicParameters();
+        p.Add("@ApproveStageMainId", stageRoleId, DbType.Int32, ParameterDirection.Input);
+
+        var result = await _sqlDataAccess.QuerySingle<ApproveStageRole>(sql, p, "GetRoleByStageRoleId-Single");
+
+        if (result == null) return new ApproveStageRole();
+
+        return result;
+    }
+
     public async Task<IEnumerable<ApproveStageMain>?> GetAllProcdureWithMain(int? businessUnitId)
     {
 
@@ -164,23 +223,6 @@ public class ApproveStageService : BaseModelService<ApproveStage>
         }).ToList();
         return result;
 
-      
+
     }
-
-
-    public async Task<Procedure> GetProcuderByStageMainId(int? approveStageMainId)
-    {
-        if (approveStageMainId == null) return new Procedure();
-
-        string sql = "dbo.usp_GetProcedureByApproveStagesMainId";
-        var p = new DynamicParameters();
-        p.Add("@ApproveStageMainId", approveStageMainId, DbType.Int32, ParameterDirection.Input);
-
-        var result = await _sqlDataAccess.QuerySingle<Procedure>(sql, p, "usp_GetProcedureByApproveStagesMainId-Single");
-
-        if (result == null) return new Procedure();
-
-        return result;
-    }
-
 }

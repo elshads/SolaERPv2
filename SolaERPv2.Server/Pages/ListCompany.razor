@@ -21,61 +21,32 @@
                       PopupMaxWidth="500px" />
 </div>
 
-<DataGrid Data="@stageMainList"
+<DataGrid @bind-Data="@stageMainList"
           CanAdd="true"
-          OnUpdate="@UpdateHandler"
           CanEdit="true"
           CanDelete="true"
           CanExport="true"
           Height="calc(100vh - 285px)"
           ShowSearchBar="true"
           OnRowDoubleClick="@OnRowDoubleClickHandler"
-          SearchFields="@(new List<string> {"ApproveStageName", "ApproveStageName"})">
+          SearchFields="@(new List<string> {"ApproveStageName", "ProcedureName"})">
     <DataGridColumns>
-        <GridColumn Field="@(nameof(ApproveStageMain.ApproveStageMainId))" Title="Approve Stage Name" />
         <GridColumn Field="@(nameof(ApproveStageMain.ApproveStageName))" Title="Approve Stage Name" />
-        <GridColumn Field="@(nameof(ApproveStageMain.ProcedureId))" Title="P Id" />
-        @*<GridColumn Field="@(nameof(ApproveStageMain.Procedure.ProcedureName))" Title="Procedure Name" />*@
-
-       @* <GridColumn Field=@nameof(ApproveStageMain.BusinessUnit.BusinessUnitId) Title="Procedure Name">
+        <GridColumn Field=@nameof(ApproveStageMain.Procedure.ProcedureName) Title="Procedure Name">     
             <EditorTemplate>
                 @{
-                    
-                    <TelerikDropDownList Data="@businessUnitList" @bind-Value="@selectedBusinessUnit" />
-                }
+                        selectedMain = context as ApproveStageMain;
+                        <TelerikComboBox @bind-Value="@selectedMain.ProcedureId"
+                                     Id="bu_list"
+                                     Data="@procedureList"
+                                     TextField="ProcedureName"
+                                     ValueField="ProcedureId"
+                                     Placeholder="Select..."
+                                     Filterable="true"
+                                     FilterOperator="StringFilterOperator.Contains" />
+                 }     
             </EditorTemplate>
-        </GridColumn>*@
-        @*<GridColumn Field=@nameof(ApproveStageMain.Procedure.ProcedureName) Title="Procedure Name">
-
-           
-        <EditorTemplate>
-
-            @{
-                    aprov = context as ApproveStageMain;
-
-            }
-
-                <TelerikComboBox @bind-Value="@aprov.ProcedureId"
-                                 Id="bu_list"
-                                 Data="@procedureList"
-                                 TextField="ProcedureName"
-                                 ValueField="ProcedureId"
-                                 Placeholder="Select..."
-                                 Filterable="true"
-                                 FilterOperator="StringFilterOperator.Contains" />
-            <ItemDropDownList Id="bu_list"
-                                  Data="@procedureList"
-                                  Item="@aprov.Procedure"
-                                  UniqueField="ProcedureId"
-                                  TextField="ProcedureName"
-                                  TValue="int"
-                                  TItem="Procedure"
-                                  SearchFields="@(new List<string> { "ProcedureKey", "ProcedureName"})"
-                                  Width="300px"
-                                  PopupWidth="100%"
-                                  PopupMaxWidth="500px" />
-        </EditorTemplate>
-        </GridColumn>*@
+        </GridColumn>
 
     </DataGridColumns>
 </DataGrid>
@@ -86,7 +57,7 @@
     IEnumerable<BusinessUnit> businessUnitList = new List<BusinessUnit>();
     BusinessUnit? selectedBusinessUnit = new();
 
-    ApproveStageMain? aprov = new();
+    ApproveStageMain? selectedMain = new();
 
     List<FullApproveStageMain> fullApprove = new();
 
@@ -102,9 +73,15 @@
         selectedBusinessUnit = businessUnitList.Any() ? businessUnitList.FirstOrDefault() : new();
     }
 
+    async Task GetProcedureList()
+    {
+        procedureList = await ApproveStageService.GetProcedures();
+        selectedProcedure = procedureList.Any() ? procedureList.FirstOrDefault() : new();
+    }
+
     async Task GetMainStageList()
     {
-        var _stageMainList = await ApproveStageService.GetAllProcdureWithMain(selectedBusinessUnit?.BusinessUnitId);
+        var _stageMainList = await ApproveStageService.ApproveStageMainLoad(selectedBusinessUnit?.BusinessUnitId);
         stageMainList = _stageMainList.ToList();
     }
 
@@ -117,21 +94,12 @@
         AppState.Loading = false;
     }
 
-    async Task LoadProcdureNameByApproveMainId()
-    {
-        selectedProcedure = await ApproveStageService.GetProcuderByStageMainId(selectedBusinessUnit?.BusinessUnitId);
-    }
-    async Task GetProcedureList()
-    {
-        procedureList = await ApproveStageService.GetProcedures();
-        selectedProcedure = procedureList.Any() ? procedureList.FirstOrDefault() : new();
-    }
+   
     async Task LoadData()
     {
         AppState.Loading = true;
         await GetBusinessUnitList();
         await GetMainStageList();
-        await LoadProcdureNameByApproveMainId();
         await GetProcedureList();
         AppState.Loading = false;
     }
@@ -163,8 +131,6 @@
 
     void SaveClick()
     {
-        var res = ApproveStageService.Save(stageMainList);
-        NavigationManager.NavigateTo("/listcompany");
     }
 
     void AddClick()
@@ -177,9 +143,6 @@
         AppState.OnBackClick -= BackClick;
         AppState.OnSaveClick -= SaveClick;
         AppState.OnAddClick -= AddClick;
-
-    }
-    void UpdateHandler(){
 
     }
 

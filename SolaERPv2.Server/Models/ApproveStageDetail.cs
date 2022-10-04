@@ -4,7 +4,7 @@ public class ApproveStageDetail : BaseModel
 {
     public int ApproveStageDetailsId { get; set; }
     public int ApproveStageMainId { get; set; }
-    public string? ApproveStageDetailsName { get; set; }
+    public string? ApproveStageDetailsName { get; set; } = "Detail";
     public int Sequence { get; set; }
 
 

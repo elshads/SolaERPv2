@@ -12,6 +12,6 @@ public class ApproveStageRole : BaseModel
     public ApproveStageDetail ApproveStageDetail { get; set; }
 
     public ApproveRole ApproveRole { get; set; }
-    public string? ApproveRoleName { get; set; }
+    public string? ApproveRoleName { get; set; } = "Role";
     public List<ApproveRole> ApproveRoles { get; set; }
 }
