@@ -5,49 +5,65 @@
 @inject ApproveStageService ApproveStageService
 
 
-
-<MudCard Class="k-mb-4">
-    <MudCardContent>
-        <TelerikGridLayout RowSpacing="8px" ColumnSpacing="16px" VerticalAlign="GridLayoutVerticalAlign.Top">
-
-            <GridLayoutItems>
-                <GridLayoutItem Row="1">
-                    <div class="k-pb-4">
-                        <label for="bu_list">Procedures:</label>
-                        <TelerikComboBox @bind-Value="@selectedProcedure.ProcedureName"
-                                         Id="bu_list"
-                                         Data="@procedureList"
-                                         TextField="ProcedureName"
-                                         ValueField="ProcedureName"
-                                         Placeholder="Select..."
-                                         Filterable="true"
-                                         FilterOperator="StringFilterOperator.Contains" />
-                    </div>
-                </GridLayoutItem>
+<TelerikGridLayout RowSpacing="8px" ColumnSpacing="16px" VerticalAlign="GridLayoutVerticalAlign.Top">
+    <GridLayoutItems>
+        <GridLayoutItem Row="1">
 
 
-                 <GridLayoutItem Row="1">
 
-                    <div class="k-pb-4">
-                        <label for="bu_list">Business Unit:</label>
-                        <TelerikComboBox @bind-Value="@selectedBusinessUnit.BusinessUnitCode"
+            <div class="k-form-field k-pb-3">
+                <label for="state-autocomplete" class="k-label k-form-label">Procedur: </label>
+                <div class="k-form-field-wrap">
+                    <TelerikComboBox @bind-Value="@selectedProcedure.ProcedureName"
+                                     Id="bu_list"
+                                     Data="@procedureList"
+                                     TextField="ProcedureName"
+                                     ValueField="ProcedureName"
+                                     Placeholder="@selectedProcedure.ProcedureName"
+                                     Filterable="true"
+                                     FilterOperator="StringFilterOperator.Contains"
+                                     Width="300px"/>
+                </div>
+            </div>
+            <div class="k-form-field">
+                <label class="k-label k-form-label">Business Unit: </label>
+                <div class="k-form-field-wrap">
+                    <TelerikComboBox @bind-Value="@selectedBusinessUnit.BusinessUnitCode"
                                          Id="bu_list"
                                          Data="@businessUnitList"
                                          TextField="BusinessUnitCode"
                                          ValueField="BusinessUnitCode"
                                          Placeholder="Select..."
                                          Filterable="true"
-                                         FilterOperator="StringFilterOperator.Contains" />
+                                         FilterOperator="StringFilterOperator.Contains"
+                                         Width="300px" />
+                </div>
+            </div>
+        </GridLayoutItem>
 
-                    </div>
-                </GridLayoutItem>
 
-            </GridLayoutItems>
 
-        </TelerikGridLayout>
-    </MudCardContent>
-</MudCard>
+        <GridLayoutItem Row="1">
+            <div class="k-form-field">
+                <div class="k-form-field-wrap">
+                    <TelerikForm EditContext="@editContext"
+                                 ValidationMessageType="FormValidationMessageType.Inline"
+                                 Columns="@(AppState.MobileView ? 1 : 2)"
+                                 ColumnSpacing="1rem">
+                        <FormValidation>
+                            <DataAnnotationsValidator></DataAnnotationsValidator>
+                        </FormValidation>
+                        <FormItems>
+                            <FormItem Field="@nameof(ApproveStageMain.ApproveStageName)" LabelText="Approve Stage Name: " Enabled="true"></FormItem>
+                        </FormItems>
+                        <FormButtons />
+                    </TelerikForm>
+                </div>
+            </div>
+        </GridLayoutItem>
 
+    </GridLayoutItems>
+</TelerikGridLayout>
 
 
 <MudGrid>
@@ -55,18 +71,22 @@
     <MudItem xs="6">
         <MudPaper Class="d-flex align-center justify-center mud-width-full py-8">
             <DataGrid Data="@stageDetailList"
+                      GridEditMode="GridEditMode.Incell"
                       CanAdd="true"
-                      CanEdit="true"
                       CanDelete="true"
+                      ShowCheckBoxColumn="false"
+                      ShowToolbar="false"
+                      DeleteButtonText=""
                       Height="calc(100vh - 285px)"
-                      ShowSearchBar="true"
+                      ShowSearchBar="false"
                       OnRowClick="@OnRowClickHandler"
-                      SearchFields="@(new List<string> {"ApproveStageDetailsName", "Sequence"})">
+                      SearchFields="@(new List<string> {"Name", "ApproveStageDetailName"})">
                 <DataGridColumns>
                     <GridColumn Field="@(nameof(ApproveStageDetail.ApproveStageDetailsName))" Title="Details Name" />
-                    <GridColumn Field="@(nameof(ApproveStageDetail.Sequence))" Title="Sequence" />
+                    <GridColumn Field="@(nameof(ApproveStageDetail.Sequence))" Title="Sequence" Editable="false" />
                 </DataGridColumns>
             </DataGrid>
+
         </MudPaper>
     </MudItem>
 
@@ -74,11 +94,14 @@
     <MudItem xs="6">
         <MudPaper Class="d-flex align-center justify-center mud-width-full py-8">
             <DataGrid Data="@stageRoleList"
+                      GridEditMode="GridEditMode.Incell"
                       CanAdd="true"
-                      CanEdit="true"
                       CanDelete="true"
+                      ShowCheckBoxColumn="false"
+                      ShowToolbar="false"
+                      DeleteButtonText=""
                       Height="calc(100vh - 285px)"
-                      ShowSearchBar="true"
+                      ShowSearchBar="false"
                       SearchFields="@(new List<string> {"Name", "Amount","AmountTo"})">
                 <DataGridColumns>
                     <GridColumn Field=@nameof(ApproveStageRole.ApproveRole.ApproveRoleName) Title="Role Name">
@@ -126,6 +149,9 @@
     ApproveRole? selectedRole;
 
 
+    ApproveStageMain? selectedMain = new();
+    EditContext? editContext = new(new ApproveStageMain());
+
     int _mainId;
 
     void SetQueryVariables()
@@ -172,17 +198,19 @@
     {
         selectedProcedure = await ApproveStageService.GetProcuderByMainId(_mainId);
         selectedBusinessUnit = await ApproveStageService.GetBusinessUnitByMainId(_mainId);
+        selectedMain = await ApproveStageService.GetMainByMainId(_mainId);
     }
 
 
 
     async Task LoadData()
     {
+        await LoadDateByApproveMainId();
         await GetRoleList();
         await GetBusinessUnitList();
         await GetProcedureList();
         await GetStageDetailList();
-        await LoadDateByApproveMainId();
+        editContext = new EditContext(selectedMain);
     }
 
     protected override async Task OnInitializedAsync()
@@ -205,7 +233,17 @@
 
     async void SaveClick()
     {
+        AppState.Loading = true;
 
+        var result = await ApproveStageService.Save(selectedMain);
+
+        AppState.Loading = false;
+
+    }
+
+    bool Validate()
+    {
+        return true;
     }
 
     void IDisposable.Dispose()
@@ -225,3 +263,4 @@
         AppState.OnSaveClick += SaveClick;
     }
 }
+

@@ -135,6 +135,21 @@ public class ApproveStageService : BaseModelService<ApproveStage>
         return result;
     }
 
+    public async Task<ApproveStageMain> GetMainByMainId(int? approveStageMainId)
+    {
+        if (approveStageMainId == null) return new ApproveStageMain();
+
+        string sql = "dbo.usp_ApproveStageHeaderMain_Load";
+        var p = new DynamicParameters();
+        p.Add("@ApproveStageMainId", approveStageMainId, DbType.Int32, ParameterDirection.Input);
+
+        var result = await _sqlDataAccess.QuerySingle<ApproveStageMain>(sql, p, "GetMainByMainId-Single");
+
+        if (result == null) return new ApproveStageMain();
+
+        return result;
+    }
+
     public async Task<SqlResult?> Save(ApproveStageMain approveStageMain)
     {
         //var user = await _appUserService.GetCurrentUserAsync();

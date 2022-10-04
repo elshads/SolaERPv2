@@ -5,7 +5,7 @@ public class ApproveStageRole : BaseModel
     public int ApproveStageRoleId { get; set; }
     public int ApproveStageDetailId { get; set; }
     public int ApproveRoleId { get; set; }
-    public decimal AmountFrom { get; set; } = 99;
+    public decimal AmountFrom { get; set; } = 0;
     public decimal AmountTo { get; set; } = 999999999;
 
 

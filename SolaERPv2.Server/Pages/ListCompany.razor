@@ -21,16 +21,27 @@
 </div>
 
 <DataGrid @bind-Data="@stageMainList"
-          CanAdd="true"
-          CanEdit="true"
           CanDelete="true"
-          CanExport="true"
+          ShowCheckBoxColumn="false"
+          ShowToolbar="false"
+          ShowSearchBar="false"
           Height="calc(100vh - 285px)"
-          ShowSearchBar="true"
-          OnRowDoubleClick="@OnRowDoubleClickHandler"
-          SearchFields="@(new List<string> {"ApproveStageName", "ProcedureName"})">
+          OnRowDoubleClick="@OnRowDoubleClickHandler">
     <DataGridColumns>
-        <GridColumn Field="@(nameof(ApproveStageMain.ApproveStageName))" Title="Approve Stage Name" />
+        <GridColumn Field="@(nameof(ApproveStageMain.ApproveStageName))" Title="Approve Stage Name">
+            <Template>
+            @{
+                var selectItem = context as ApproveStageMain;
+            }
+                <LinkText OnClick="@(() => GoToDetails(selectItem.ApproveStageMainId))">
+                    @selectItem.ApproveStageName
+                </LinkText>
+            </Template>
+
+        </GridColumn>
+
+
+
         <GridColumn Field=@nameof(ApproveStageMain.Procedure.ProcedureName) Title="Procedure Name">     
             <EditorTemplate>
                 @{
@@ -50,8 +61,23 @@
     </DataGridColumns>
 </DataGrid>
 
+
+@*<TelerikGrid Data=@stageMainList EditMode="@GridEditMode.None"
+             Height="500px"
+             Sortable="true"
+             Pageable="true"
+             OnRowDoubleClick="@OnRowDoubleClickHandler"
+             SelectionMode="@GridSelectionMode.Single">
+    <GridColumns>
+        <GridColumn Field=@nameof(ApproveStageMain.ApproveStageName) Title="ApproveStage Name" />
+        <GridColumn Field=@nameof(ApproveStageMain.Procedure.ProcedureName) Title="Procedure Name" />
+    </GridColumns>
+</TelerikGrid>
+*@
+
 @code{
     [CascadingParameter] public AppState? AppState { get; set; }
+
 
     IEnumerable<BusinessUnit> businessUnitList = new List<BusinessUnit>();
     BusinessUnit? selectedBusinessUnit = new();
@@ -127,41 +153,9 @@
         NavigationManager.NavigateTo("/");
     }
 
-    async void SaveClick()
-    {
-        //AppState.Loading = true;
-
-        //var validated = Validate();
-
-        //if (validated)
-        //{
-        //    var result = await ApproveStageService.Save(approveStageMain);
-        //    if (result.QueryResultMessage == null)
-        //    {
-        //        NavigationManager.NavigateTo($"/listcompany");
-        //        await GetMainStageList();
-        //        AppState.ShowAlert("Successfully saved", Severity.Success);
-        //    }
-        //    else
-        //    {
-        //        AppState.ShowAlert(result.QueryResultMessage, Severity.Error);
-        //    }
-        //}
-        //AppState.Loading = false;
-    }
-
-    //bool Validate()
-    //{
-    //    if (string.IsNullOrEmpty(approveStageMain.ApproveStageName))
-    //    {
-    //        AppState.ShowAlert("Enter document ApproveStageName", Severity.Error);
-    //        return false;
-    //    }
-    //    return true;
-    //}
 
 
-    void AddClick()
+    void NewClick()
     {
         NavigationManager.NavigateTo($"/listcompany/generate?bu={selectedBusinessUnit.BusinessUnitId}");
     }
@@ -169,9 +163,9 @@
     void IDisposable.Dispose()
     {
         AppState.OnBackClick -= BackClick;
-        AppState.OnSaveClick -= SaveClick;
-        AppState.OnAddClick -= AddClick;
-
+        AppState.OnCustomButton01Click -= NewClick;
+        //AppState.OnCustomButton02Click -= EditClick;
+        //AppState.OnCustomButton03Click -= DeleteClick ;
     }
 
     void OnAppStateInitialized()
@@ -179,11 +173,23 @@
         AppState?.SetDefaults();
 
         AppState.BackButtonVisible = true;
-        AppState.SaveButtonVisible = true;
-        AppState.AddButtonVisible = true;
-
         AppState.OnBackClick += BackClick;
-        AppState.OnSaveClick += SaveClick;
-        AppState.OnAddClick += AddClick;
+
+
+        AppState.CustomButton01Visible = true;
+        AppState.CustomButton01Title = "New";
+        AppState.CustomButton01Icon = "plus";
+        AppState.OnCustomButton01Click += NewClick;
+
+        //AppState.CustomButton02Visible = true;
+        //AppState.CustomButton02Title = "Edit";
+        //AppState.CustomButton02Icon = "pencil";
+        //AppState.OnCustomButton02Click += EditClick;
+
+        //AppState.CustomButton03Visible = true;
+        //AppState.CustomButton03Title = "Delete";
+        //AppState.CustomButton03Icon = "trash";
+        //AppState.OnCustomButton03Click += DeleteClick;
+
     }
 }
