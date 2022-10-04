@@ -8,41 +8,60 @@
 <TelerikGridLayout RowSpacing="8px" ColumnSpacing="16px" VerticalAlign="GridLayoutVerticalAlign.Top">
     <GridLayoutItems>
         <GridLayoutItem Row="1">
-        <div>
-            <label>Procedures:</label>
-            <ItemDropDownList
-                            Data="@procedureList"
-                            Item="@selectedProcedure"
-                            UniqueField="ProcedureId"
-                            TextField="ProcedureName"
-                            TValue="int"
-                            TItem="Procedure"
-                            SearchFields="@(new List<string> { "ProcedureKey", "ProcedureName"})"
-                            Width="300px"
-                            PopupWidth="100%"
-                            PopupMaxWidth="500px" />
-        </div>
-        <div>
-            <label>Business Unit:</label>
-            <ItemDropDownList 
-                            Data="@businessUnitList"
-                            Item="@selectedBusinessUnit"
-                            UniqueField="BusinessUnitId"
-                            TextField="BusinessUnitCode"
-                            TValue="int"
-                            TItem="BusinessUnit"
-                            SearchFields="@(new List<string> { "BusinessUnitCode", "BusinessUnitName"})"
-                            Width="300px"
-                            PopupWidth="100%"
-                            PopupMaxWidth="500px" />
-        </div>
+
+
+
+            <div class="k-form-field k-pb-3">
+                <label for="state-autocomplete" class="k-label k-form-label">Procedur: </label>
+                <div class="k-form-field-wrap">
+                                     <ItemDropDownList
+                                    Data="@procedureList"
+                                    Item="@selectedProcedure"
+                                    UniqueField="ProcedureId"
+                                    TextField="ProcedureName"
+                                    TValue="int"
+                                    TItem="Procedure"
+                                    SearchFields="@(new List<string> { "ProcedureKey", "ProcedureName"})"
+                                    Width="300px"
+                                    PopupWidth="100%"
+                                    PopupMaxWidth="500px" />
+                </div>
+            </div>
+            <div class="k-form-field">
+                <label class="k-label k-form-label">Business Unit: </label>
+                <div class="k-form-field-wrap">
+                    <ItemDropDownList Data="@businessUnitList"
+                                      Item="@selectedBusinessUnit"
+                                      UniqueField="BusinessUnitId"
+                                      TextField="BusinessUnitCode"
+                                      TValue="int"
+                                      TItem="BusinessUnit"
+                                      SearchFields="@(new List<string> { "BusinessUnitCode", "BusinessUnitName"})"
+                                      Width="300px"
+                                      PopupWidth="100%"
+                                      PopupMaxWidth="500px" />
+                </div>
+            </div>
         </GridLayoutItem>
 
 
 
         <GridLayoutItem Row="1">
-            <ReadOnlyField Value="@(selectedProcedure?.ProcedureName)" Label="Procedure: " />
-            <ReadOnlyField Value="@(selectedBusinessUnit?.BusinessUnitName)" Label="Business Unit: " />
+
+            <div class="k-form-field k-pb-3">
+                <label for="state-autocomplete" class="k-label k-form-label">Procedure: </label>
+                <div class="k-form-field-wrap">
+                    <ReadOnlyField Value="@(selectedProcedure?.ProcedureName)"/>
+
+                </div>
+            </div>
+            <div class="k-form-field">
+                <label class="k-label k-form-label">Business Unit: </label>
+                <div class="k-form-field-wrap">
+                    <ReadOnlyField Value="@(selectedBusinessUnit?.BusinessUnitName)"/>
+
+                </div>
+            </div>
         </GridLayoutItem>
 
     </GridLayoutItems>

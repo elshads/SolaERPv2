@@ -50,8 +50,6 @@
 
 
 
-
-
 <MudGrid>
 
     <MudItem xs="6">
@@ -63,9 +61,9 @@
                       Height="calc(100vh - 285px)"
                       ShowSearchBar="true"
                       OnRowClick="@OnRowClickHandler"
-                      SearchFields="@(new List<string> {"Name", "ApproveStageDetailName"})">
+                      SearchFields="@(new List<string> {"ApproveStageDetailsName", "Sequence"})">
                 <DataGridColumns>
-                    <GridColumn Field="@(nameof(ApproveStageDetail.ApproveStageDetailsName))" Title="Name" />
+                    <GridColumn Field="@(nameof(ApproveStageDetail.ApproveStageDetailsName))" Title="Details Name" />
                     <GridColumn Field="@(nameof(ApproveStageDetail.Sequence))" Title="Sequence" />
                 </DataGridColumns>
             </DataGrid>
@@ -83,7 +81,22 @@
                       ShowSearchBar="true"
                       SearchFields="@(new List<string> {"Name", "Amount","AmountTo"})">
                 <DataGridColumns>
-                    <GridColumn Field="@(nameof(ApproveStageRole.ApproveRole.ApproveRoleName))" Title="Role Name" />
+                    <GridColumn Field=@nameof(ApproveStageRole.ApproveRole.ApproveRoleName) Title="Role Name">
+                        <EditorTemplate>
+                            @{
+                                selectedStageRole = context as ApproveStageRole;
+                                <TelerikComboBox @bind-Value="@selectedStageRole.ApproveRoleId"
+                                             Id="bu_list"
+                                             Data="@approveRoleList"
+                                             TextField="ApproveRoleName"
+                                             ValueField="ApproveRoleId"
+                                             Placeholder="Select..."
+                                             Filterable="true"
+                                             FilterOperator="StringFilterOperator.Contains" />
+                            }
+                        </EditorTemplate>
+                    </GridColumn>
+
                     <GridColumn Field="@(nameof(ApproveStageRole.AmountFrom))" Title="Amount" />
                     <GridColumn Field="@(nameof(ApproveStageRole.AmountTo))" Title="AmountTo" />
                 </DataGridColumns>
@@ -97,7 +110,10 @@
     [CascadingParameter] public AppState? AppState { get; set; }
 
     List<ApproveStageDetail>? stageDetailList = new();
+    ApproveStageDetail? selectedStageDetail;
+
     List<ApproveStageRole>? stageRoleList = new();
+    ApproveStageRole? selectedStageRole;
 
     IEnumerable<Procedure> procedureList = new List<Procedure>();
     Procedure? selectedProcedure = new();
@@ -105,7 +121,9 @@
     IEnumerable<BusinessUnit> businessUnitList = new List<BusinessUnit>();
     BusinessUnit? selectedBusinessUnit = new();
 
-    ApproveStageDetail? stageDetail;
+
+    IEnumerable<ApproveRole> approveRoleList = new List<ApproveRole>();
+    ApproveRole? selectedRole;
 
 
     int _mainId;
@@ -144,11 +162,27 @@
         selectedBusinessUnit = businessUnitList.Any() ? businessUnitList.FirstOrDefault() : new();
     }
 
+    async Task GetRoleList()
+    {
+        approveRoleList = await ApproveStageService.GetRoles();
+        selectedRole = approveRoleList.Any() ? approveRoleList.FirstOrDefault() : new();
+    }
+
+    async Task LoadDateByApproveMainId()
+    {
+        selectedProcedure = await ApproveStageService.GetProcuderByMainId(_mainId);
+        selectedBusinessUnit = await ApproveStageService.GetBusinessUnitByMainId(_mainId);
+    }
+
+
+
     async Task LoadData()
     {
+        await GetRoleList();
         await GetBusinessUnitList();
         await GetProcedureList();
         await GetStageDetailList();
+        await LoadDateByApproveMainId();
     }
 
     protected override async Task OnInitializedAsync()
@@ -160,8 +194,8 @@
 
     async Task OnRowClickHandler(GridRowClickEventArgs args)
     {
-        stageDetail = args.Item as ApproveStageDetail;
-        await GetStageRoleList(stageDetail?.ApproveStageDetailsId);
+        selectedStageDetail = args.Item as ApproveStageDetail;
+        await GetStageRoleList(selectedStageDetail?.ApproveStageDetailsId);
     }
 
     void BackClick()
