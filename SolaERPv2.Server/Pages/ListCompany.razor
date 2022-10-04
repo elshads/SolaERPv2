@@ -1,5 +1,4 @@
 ﻿@page "/listcompany"
-@using SolaERPv2.Server.ViewModels
 
 @implements IDisposable
 
@@ -58,8 +57,7 @@
     BusinessUnit? selectedBusinessUnit = new();
 
     ApproveStageMain? selectedMain = new();
-
-    List<FullApproveStageMain> fullApprove = new();
+    ApproveStageMain? approveStageMain = new ApproveStageMain();
 
     List<ApproveStageMain> stageMainList = new();
 
@@ -94,7 +92,7 @@
         AppState.Loading = false;
     }
 
-   
+
     async Task LoadData()
     {
         AppState.Loading = true;
@@ -129,9 +127,39 @@
         NavigationManager.NavigateTo("/");
     }
 
-    void SaveClick()
+    async void SaveClick()
     {
+        //AppState.Loading = true;
+
+        //var validated = Validate();
+
+        //if (validated)
+        //{
+        //    var result = await ApproveStageService.Save(approveStageMain);
+        //    if (result.QueryResultMessage == null)
+        //    {
+        //        NavigationManager.NavigateTo($"/listcompany");
+        //        await GetMainStageList();
+        //        AppState.ShowAlert("Successfully saved", Severity.Success);
+        //    }
+        //    else
+        //    {
+        //        AppState.ShowAlert(result.QueryResultMessage, Severity.Error);
+        //    }
+        //}
+        //AppState.Loading = false;
     }
+
+    //bool Validate()
+    //{
+    //    if (string.IsNullOrEmpty(approveStageMain.ApproveStageName))
+    //    {
+    //        AppState.ShowAlert("Enter document ApproveStageName", Severity.Error);
+    //        return false;
+    //    }
+    //    return true;
+    //}
+
 
     void AddClick()
     {
