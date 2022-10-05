@@ -21,7 +21,6 @@
 </div>
 
 <DataGrid @bind-Data="@stageMainList"
-          CanDelete="true"
           ShowCheckBoxColumn="false"
           ShowToolbar="false"
           ShowSearchBar="false"
@@ -157,7 +156,7 @@
 
     void NewClick()
     {
-        NavigationManager.NavigateTo($"/listcompany/generate?bu={selectedBusinessUnit.BusinessUnitId}");
+        NavigationManager.NavigateTo($"/liststage");
     }
 
     void IDisposable.Dispose()

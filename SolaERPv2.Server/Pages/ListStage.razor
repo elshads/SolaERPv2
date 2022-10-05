@@ -8,15 +8,12 @@
 <TelerikGridLayout RowSpacing="8px" ColumnSpacing="16px" VerticalAlign="GridLayoutVerticalAlign.Top">
     <GridLayoutItems>
         <GridLayoutItem Row="1">
-
-
-
             <div class="k-form-field k-pb-3">
                 <label for="state-autocomplete" class="k-label k-form-label">Procedur: </label>
                 <div class="k-form-field-wrap">
-                                     <ItemDropDownList
+                             <ItemDropDownList
                                     Data="@procedureList"
-                                    Item="@selectedProcedure"
+                                    @bind-Item="@selectedProcedure"
                                     UniqueField="ProcedureId"
                                     TextField="ProcedureName"
                                     TValue="int"
@@ -31,7 +28,7 @@
                 <label class="k-label k-form-label">Business Unit: </label>
                 <div class="k-form-field-wrap">
                     <ItemDropDownList Data="@businessUnitList"
-                                      Item="@selectedBusinessUnit"
+                                      @bind-Item="@selectedBusinessUnit"
                                       UniqueField="BusinessUnitId"
                                       TextField="BusinessUnitCode"
                                       TValue="int"
@@ -47,8 +44,8 @@
 
 
         <GridLayoutItem Row="1">
-            <div class="k-form-field">
-                <div class="k-form-field-wrap">
+            <div class="form-editcontext">
+                <div class="form-editcontext">
                 <TelerikForm EditContext="@editContext"
                              ValidationMessageType="FormValidationMessageType.Inline"
                              Columns="@(AppState.MobileView ? 1 : 2)"
@@ -75,9 +72,10 @@
 
     <MudItem xs="6">
         <MudPaper Class="d-flex align-center justify-center mud-width-full py-8">
-            <DataGrid Data="@stageDetailList"
+            <DataGrid @bind-Data="@stageDetailList"
                 GridEditMode="GridEditMode.Incell"
                       CanAdd="true"
+                      OnCreate="CreateSequence"
                       CanDelete="true"
                       ShowCheckBoxColumn="false"
                       ShowToolbar="false"
@@ -98,7 +96,7 @@
 
     <MudItem xs="6">
         <MudPaper Class="d-flex align-center justify-center mud-width-full py-8">
-            <DataGrid Data="@stageRoleList"
+            <DataGrid @bind-Data="@stageRoleList"
                       GridEditMode="GridEditMode.Incell"
                       CanAdd="true"
                       CanDelete="true"
@@ -112,9 +110,11 @@
                     <GridColumn Field=@nameof(ApproveStageRole.ApproveRole.ApproveRoleName) Title="Role Name">
                         <EditorTemplate>
                             @{
-                                selectedStageRole = context as ApproveStageRole;
-                                <TelerikComboBox @bind-Value="@selectedStageRole.ApproveRoleId"
-                                             Id="bu_list"
+                                var selectedStageRole = context as ApproveStageRole;
+                                    <TelerikComboBox 
+                                             Value="@selectedStageRole.ApproveRoleId"   
+                                             ValueChanged="@((int value)=>ApproveRoleChanged(selectedStageRole,value))"
+                                             ValueExpression="()=>selectedStageRole.ApproveRoleId"
                                              Data="@approveRoleList"
                                              TextField="ApproveRoleName"
                                              ValueField="ApproveRoleId"
@@ -123,6 +123,7 @@
                                              FilterOperator="StringFilterOperator.Contains" />
                             }
                         </EditorTemplate>
+
                     </GridColumn>
 
                     <GridColumn Field="@(nameof(ApproveStageRole.AmountFrom))" Title="Amount" />
@@ -139,9 +140,9 @@
 
     List<ApproveStageDetail>? stageDetailList = new();
     ApproveStageDetail? selectedStageDetail;
-    
+
     List<ApproveStageRole>? stageRoleList = new();
-    ApproveStageRole? selectedStageRole;
+    //ApproveStageRole? selectedStageRole;
 
     IEnumerable<Procedure> procedureList = new List<Procedure>(); 
     Procedure? selectedProcedure = new();
@@ -167,6 +168,20 @@
         {
             _mainId = Convert.ToInt32(id);
         }
+
+    }
+
+    void CreateSequence(GridCommandEventArgs args)
+    {
+        var item = args.Item as ApproveStageDetail;
+        item.Sequence = 10;
+    }
+
+    void ApproveRoleChanged(ApproveStageRole approveStageRole,int value)
+    {
+        approveStageRole.ApproveRoleId = value;
+        var name = approveRoleList?.FirstOrDefault(x => x.ApproveRoleId == value);
+        approveStageRole.ApproveRoleName =name!=null &&  name.ApproveRoleName !=null ? name.ApproveRoleName : "";
     }
 
     async Task GetStageDetailList()
@@ -228,7 +243,8 @@
     async Task OnRowClickHandler(GridRowClickEventArgs args)
     {
         selectedStageDetail = args.Item as ApproveStageDetail;
-        await GetStageRoleList(selectedStageDetail?.ApproveStageDetailsId);
+        stageRoleList = selectedStageDetail != null && selectedStageDetail.ApproveStageRoles !=null ? selectedStageDetail.ApproveStageRoles : new();
+        //await GetStageRoleList(selectedStageDetail?.ApproveStageDetailsId);
     }
 
     void BackClick()
@@ -239,11 +255,22 @@
     async void SaveClick()
     {
         AppState.Loading = true;
+        selectedMain.ProcedureId = selectedProcedure.ProcedureId;
+        selectedMain.BusinessUnitId = selectedBusinessUnit.BusinessUnitId;
 
         var result = await ApproveStageService.Save(selectedMain);
 
         AppState.Loading = false;
 
+    }
+
+    async void DeleteClick()
+    {
+        AppState.Loading = true;
+       
+        //var result = await ApproveStageService.Save(selectedMain);
+
+        AppState.Loading = false;
     }
 
     bool Validate()
@@ -255,6 +282,7 @@
     {
         AppState.OnBackClick -= BackClick;
         AppState.OnSaveClick -= SaveClick;
+        AppState.OnDeleteClick -= DeleteClick;
     }
 
     void OnAppStateInitialized()
@@ -263,9 +291,11 @@
 
         AppState.BackButtonVisible = true;
         AppState.SaveButtonVisible = true;
+        AppState.DeleteButtonVisible = true;
 
         AppState.OnBackClick += BackClick;
         AppState.OnSaveClick += SaveClick;
+        AppState.OnDeleteClick += DeleteClick;
     }
 }
 

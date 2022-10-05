@@ -1,4 +1,6 @@
-﻿namespace SolaERPv2.Server.ModelService;
+﻿using SolaERPv2.Server.Models;
+
+namespace SolaERPv2.Server.ModelService;
 
 public class ApproveStageService : BaseModelService<ApproveStage>
 {
@@ -56,7 +58,14 @@ public class ApproveStageService : BaseModelService<ApproveStage>
         p.Add("@ApproveStageMainId", approveMainId, DbType.Int32, ParameterDirection.Input);
 
         var result = await _sqlDataAccess.QueryAll<ApproveStageDetail>(sql, p, "ApproveStageDetails_Load-GetAll");
-        return result;
+
+        foreach (var item in result)
+        {
+            var roleList = await ApproveStageRoleLoad(item.ApproveStageDetailsId);
+            item.ApproveStageRoles = roleList.ToList();
+        }
+
+        return result; 
     }
 
     public async Task<IEnumerable<ApproveStageRole>?> ApproveStageRoleLoad(int? approveDetailId)
@@ -152,7 +161,7 @@ public class ApproveStageService : BaseModelService<ApproveStage>
 
     public async Task<SqlResult?> Save(ApproveStageMain approveStageMain)
     {
-        //var user = await _appUserService.GetCurrentUserAsync();
+        var user = await _appUserService.GetCurrentUserAsync();
         SqlResult? result = new();
         using (var cn = new SqlConnection(_sqlDataAccess.ConnectionString))
         {
@@ -163,11 +172,9 @@ public class ApproveStageService : BaseModelService<ApproveStage>
             p.Add("@BusinessUnitId", approveStageMain.BusinessUnitId, DbType.Int32, ParameterDirection.Input);
        
 
-            //p.Add("@UserId", user.Id, DbType.Int32, ParameterDirection.Input);
-            p.Add("@NewApproveStageMainId", dbType: DbType.Int32, direction: ParameterDirection.Output);
+            p.Add("@UserId", user.Id, DbType.Int32, ParameterDirection.Input);
 
             result.QueryResult = await cn.ExecuteAsync("dbo.SP_ApproveStagesMain_IUD", p, commandType: CommandType.StoredProcedure);
-            result.QueryResult = p.Get<int>("@NewApproveStageMainId");
         }
 
         return result;
