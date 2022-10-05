@@ -22,6 +22,8 @@
                                     Width="300px"
                                     PopupWidth="100%"
                                     PopupMaxWidth="500px" />
+
+
                 </div>
             </div>
             <div class="k-form-field">
@@ -139,23 +141,18 @@
     [CascadingParameter] public AppState? AppState { get; set; }
 
     List<ApproveStageDetail>? stageDetailList = new();
-    ApproveStageDetail? selectedStageDetail;
-
     List<ApproveStageRole>? stageRoleList = new();
-    //ApproveStageRole? selectedStageRole;
-
     IEnumerable<Procedure> procedureList = new List<Procedure>(); 
+    IEnumerable<BusinessUnit> businessUnitList = new List<BusinessUnit>();
+    IEnumerable<ApproveRole> approveRoleList = new List<ApproveRole>();
+
+    ApproveStageRole stageRole = new();
+    ApproveRole? selectedRole;
+    ApproveStageDetail? selectedDetail = new();
+    ApproveStageMain? selectedMain = new();
+    BusinessUnit? selectedBusinessUnit = new();
     Procedure? selectedProcedure = new();
 
-    IEnumerable<BusinessUnit> businessUnitList = new List<BusinessUnit>();
-    BusinessUnit? selectedBusinessUnit = new();
-
-
-    IEnumerable<ApproveRole> approveRoleList = new List<ApproveRole>();
-    ApproveRole? selectedRole;
-
-
-    ApproveStageMain? selectedMain = new();
     EditContext? editContext = new(new ApproveStageMain());
 
     int _mainId;
@@ -174,7 +171,23 @@
     void CreateSequence(GridCommandEventArgs args)
     {
         var item = args.Item as ApproveStageDetail;
-        item.Sequence = 10;
+
+        item.Sequence = stageDetailList.Max(model => model.Sequence) + 1;
+    }
+
+    void DeleteSequence(IEnumerable<ApproveStageDetail> args)
+    {
+        //var itemObj = args.Item as ApproveStageDetail;
+
+        //int a = 1;
+        //foreach (var item in appDetail)
+        //{
+        //    item.Sequence = a;
+        //    a++;
+        //}
+        //var item = args.Item as ApproveStageDetail;
+
+        //item.Sequence = stageDetailList.Max(model => model.Sequence) + 1;
     }
 
     void ApproveRoleChanged(ApproveStageRole approveStageRole,int value)
@@ -219,17 +232,19 @@
         selectedProcedure = await ApproveStageService.GetProcuderByMainId(_mainId);
         selectedBusinessUnit = await ApproveStageService.GetBusinessUnitByMainId(_mainId);
         selectedMain= await ApproveStageService.GetMainByMainId(_mainId);
+        selectedDetail = await ApproveStageService.GetDetailsByMainId(_mainId);
     }
 
 
 
     async Task LoadData()
-    {       
+    { 
         await GetRoleList();
         await GetBusinessUnitList();
         await GetProcedureList();
         await GetStageDetailList();
         await LoadDateByApproveMainId();
+
         editContext = new EditContext(selectedMain);
     }
 
@@ -242,9 +257,9 @@
 
     async Task OnRowClickHandler(GridRowClickEventArgs args)
     {
-        selectedStageDetail = args.Item as ApproveStageDetail;
-        stageRoleList = selectedStageDetail != null && selectedStageDetail.ApproveStageRoles !=null ? selectedStageDetail.ApproveStageRoles : new();
-        //await GetStageRoleList(selectedStageDetail?.ApproveStageDetailsId);
+        selectedDetail = args.Item as ApproveStageDetail;
+        stageRoleList = selectedDetail != null && selectedDetail.ApproveStageRoles !=null ? selectedDetail.ApproveStageRoles : new();
+        //await GetStageRoleList(selectedDetail?.ApproveStageDetailsId);
     }
 
     void BackClick()
@@ -255,28 +270,33 @@
     async void SaveClick()
     {
         AppState.Loading = true;
+
         selectedMain.ProcedureId = selectedProcedure.ProcedureId;
         selectedMain.BusinessUnitId = selectedBusinessUnit.BusinessUnitId;
+        selectedDetail.ApproveStageMainId=selectedMain.ApproveStageMainId;
+        stageRole.ApproveStageDetailId = selectedDetail.ApproveStageDetailsId;
+        stageRole.ApproveRoleId = selectedRole.ApproveRoleId;
 
-        var result = await ApproveStageService.Save(selectedMain);
+        var result = await ApproveStageService.SaveMain(selectedMain);
+        var result2 = await ApproveStageService.SaveDetails(selectedDetail);
+        var result3 = await ApproveStageService.SaveRoles(stageRole);
+
+
 
         AppState.Loading = false;
 
+
+        NavigationManager.NavigateTo("/listcompany");
     }
 
     async void DeleteClick()
     {
-        AppState.Loading = true;
-       
-        //var result = await ApproveStageService.Save(selectedMain);
-
-        AppState.Loading = false;
+        var deletedId = new List<int>() { selectedMain.ApproveStageMainId };
+        var sqlResult = await ApproveStageService.Delete(deletedId);
+        AppState.ShowAlert("Item successfully deleted", Severity.Success);
+        NavigationManager.NavigateTo("/listcompany");
     }
 
-    bool Validate()
-    {
-        return true;
-    }
 
     void IDisposable.Dispose()
     {

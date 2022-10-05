@@ -235,7 +235,7 @@
     {
         AppState.Loading = true;
 
-        var result = await ApproveStageService.Save(selectedMain);
+        var result = await ApproveStageService.SaveMain(selectedMain);
 
         AppState.Loading = false;
 

@@ -159,7 +159,23 @@ public class ApproveStageService : BaseModelService<ApproveStage>
         return result;
     }
 
-    public async Task<SqlResult?> Save(ApproveStageMain approveStageMain)
+    public async Task<ApproveStageDetail> GetDetailsByMainId(int? approveStageMainId)
+    {
+        if (approveStageMainId == null) return new ApproveStageDetail();
+
+        string sql = "dbo.usp_ApproveStageHeaderDetails_Load";
+        var p = new DynamicParameters();
+        p.Add("@ApproveStageDetailsId", approveStageMainId, DbType.Int32, ParameterDirection.Input);
+
+        var result = await _sqlDataAccess.QuerySingle<ApproveStageDetail>(sql, p, "GetDetailsByMainId-Single");
+
+        if (result == null) return new ApproveStageDetail();
+
+        return result;
+    }
+
+
+    public async Task<SqlResult?> SaveMain(ApproveStageMain approveStageMain)
     {
         var user = await _appUserService.GetCurrentUserAsync();
         SqlResult? result = new();
@@ -170,14 +186,60 @@ public class ApproveStageService : BaseModelService<ApproveStage>
             p.Add("@ApproveStageName", approveStageMain.ApproveStageName, DbType.String, ParameterDirection.Input);
             p.Add("@ProcedureId", approveStageMain.ProcedureId, DbType.Int32, ParameterDirection.Input);
             p.Add("@BusinessUnitId", approveStageMain.BusinessUnitId, DbType.Int32, ParameterDirection.Input);
-       
-
             p.Add("@UserId", user.Id, DbType.Int32, ParameterDirection.Input);
 
             result.QueryResult = await cn.ExecuteAsync("dbo.SP_ApproveStagesMain_IUD", p, commandType: CommandType.StoredProcedure);
         }
 
         return result;
+    }
+
+    public async Task<SqlResult?> SaveDetails(ApproveStageDetail approveStageDetail)
+    {
+        SqlResult? result = new();
+        using (var cn = new SqlConnection(_sqlDataAccess.ConnectionString))
+        {
+            var p = new DynamicParameters();
+            p.Add("@ApproveStageDetailsId", approveStageDetail.ApproveStageDetailsId, DbType.Int32, ParameterDirection.Input);
+            p.Add("@ApproveStageMainId", approveStageDetail.ApproveStageMainId, DbType.Int32, ParameterDirection.Input);
+            p.Add("@@ApproveStageDetailsName", approveStageDetail.ApproveStageDetailsName, DbType.String, ParameterDirection.Input);
+            p.Add("@Sequence", approveStageDetail.Sequence, DbType.Int32, ParameterDirection.Input);
+
+            result.QueryResult = await cn.ExecuteAsync("dbo.SP_ApproveStagesDetails_IUD", p, commandType: CommandType.StoredProcedure);
+        }
+
+        return result;
+    }
+
+    public async Task<SqlResult?> SaveRoles(ApproveStageRole approveStageRole)
+    {
+        SqlResult? result = new();
+        using (var cn = new SqlConnection(_sqlDataAccess.ConnectionString))
+        {
+            var p = new DynamicParameters();
+            p.Add("@ApproveStageRoleId", approveStageRole.ApproveStageRoleId, DbType.Int32, ParameterDirection.Input);
+            p.Add("@ApproveStageDetailId", approveStageRole.ApproveStageDetailId, DbType.Int32, ParameterDirection.Input);
+            p.Add("@ApproveRoleId", approveStageRole.ApproveRoleId, DbType.Int32, ParameterDirection.Input);
+            p.Add("@AmountFrom", approveStageRole.AmountFrom, DbType.Decimal, ParameterDirection.Input);
+            p.Add("@AmountTo", approveStageRole.AmountFrom, DbType.Decimal, ParameterDirection.Input);
+
+            result.QueryResult = await cn.ExecuteAsync("dbo.SP_ApproveStageRoles_IUD", p, commandType: CommandType.StoredProcedure);
+        }
+
+        return result;
+    }
+
+    public async Task<SqlResult?> Delete(IEnumerable<int> approveStageMain)
+    {
+        SqlResult? sqlResult = new();
+        foreach (var item in approveStageMain)
+        {
+            var p = new DynamicParameters();
+            p.Add("@ApproveStageMainId", item, DbType.Int32, ParameterDirection.Input);
+            sqlResult = await _sqlDataAccess.ExecuteSql("dbo.SP_ApproveStagesMain_IUD", p, "AP-Delete");
+            if (sqlResult.QueryResultMessage != null) { return sqlResult; }
+        }
+        return sqlResult;
     }
 
     #region Useless
