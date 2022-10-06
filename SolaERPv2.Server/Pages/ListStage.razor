@@ -5,159 +5,160 @@
 @inject ApproveStageService ApproveStageService
 
 
-<TelerikGridLayout RowSpacing="8px" ColumnSpacing="16px" VerticalAlign="GridLayoutVerticalAlign.Top">
-    <GridLayoutItems>
-        <GridLayoutItem Row="1">
-            <div class="k-form-field k-pb-3">
-                <label for="state-autocomplete" class="k-label k-form-label">Procedur: </label>
-                <div class="k-form-field-wrap">
-                             <ItemDropDownList
-                                    Data="@procedureList"
-                                    @bind-Item="@selectedProcedure"
-                                    UniqueField="ProcedureId"
-                                    TextField="ProcedureName"
-                                    TValue="int"
-                                    TItem="Procedure"
-                                    SearchFields="@(new List<string> { "ProcedureKey", "ProcedureName"})"
-                                    Width="300px"
-                                    PopupWidth="100%"
-                                    PopupMaxWidth="500px" />
+<MudCard Class="k-mb-4">
+    <MudCardContent>
+        <TelerikGridLayout RowSpacing="8px" ColumnSpacing="16px" VerticalAlign="GridLayoutVerticalAlign.Top">
+            <GridLayoutItems>
+                <GridLayoutItem Row="1">
+                    <div class="k-form-field k-pb-3">
+                        <label for="state-autocomplete" class="k-label k-form-label">Procedur: </label>
+                        <div class="k-form-field-wrap">
+                            <ItemDropDownList Data="@procedureList"
+                                              @bind-Item="@procedure"
+                                              UniqueField="ProcedureId"
+                                              TextField="ProcedureName"
+                                              TValue="int"
+                                              TItem="Procedure"
+                                              SearchFields="@(new List<string> { "ProcedureKey", "ProcedureName"})"
+                                              Width="300px"
+                                              PopupWidth="100%"
+                                              PopupMaxWidth="500px" />
 
 
-                </div>
-            </div>
-            <div class="k-form-field">
-                <label class="k-label k-form-label">Business Unit: </label>
-                <div class="k-form-field-wrap">
-                    <ItemDropDownList Data="@businessUnitList"
-                                      @bind-Item="@selectedBusinessUnit"
-                                      UniqueField="BusinessUnitId"
-                                      TextField="BusinessUnitCode"
-                                      TValue="int"
-                                      TItem="BusinessUnit"
-                                      SearchFields="@(new List<string> { "BusinessUnitCode", "BusinessUnitName"})"
-                                      Width="300px"
-                                      PopupWidth="100%"
-                                      PopupMaxWidth="500px" />
-                </div>
-            </div>
-        </GridLayoutItem>
+                        </div>
+                    </div>
+                    <div class="k-form-field">
+                        <label class="k-label k-form-label">Business Unit: </label>
+                        <div class="k-form-field-wrap">
+                            <ItemDropDownList Data="@businessUnitList"
+                                              @bind-Item="@businessUnit"
+                                              UniqueField="BusinessUnitId"
+                                              TextField="BusinessUnitCode"
+                                              TValue="int"
+                                              TItem="BusinessUnit"
+                                              SearchFields="@(new List<string> { "BusinessUnitCode", "BusinessUnitName"})"
+                                              Width="300px"
+                                              PopupWidth="100%"
+                                              PopupMaxWidth="500px" />
+                        </div>
+                    </div>
+                </GridLayoutItem>
+
+                <GridLayoutItem Row="1">
+                    <div class="form-editcontext">
+                        <div class="form-editcontext">
+                            <TelerikForm EditContext="@editContext"
+                                         ValidationMessageType="FormValidationMessageType.Inline"
+                                         Columns="@(AppState.MobileView ? 1 : 2)"
+                                         ColumnSpacing="1rem">
+                                <FormValidation>
+                                    <DataAnnotationsValidator></DataAnnotationsValidator>
+                                </FormValidation>
+                                <FormItems>
+                                    <FormItem Field="@nameof(ApproveStageMain.ApproveStageName)" LabelText="Approve Stage Name: " Enabled="true"></FormItem>
+                                </FormItems>
+                                <FormButtons />
+                            </TelerikForm>
+                        </div>
+                    </div>
+                </GridLayoutItem>
+            </GridLayoutItems>
+        </TelerikGridLayout>
+    </MudCardContent>
+</MudCard>
 
 
 
-        <GridLayoutItem Row="1">
-            <div class="form-editcontext">
-                <div class="form-editcontext">
-                <TelerikForm EditContext="@editContext"
-                             ValidationMessageType="FormValidationMessageType.Inline"
-                             Columns="@(AppState.MobileView ? 1 : 2)"
-                             ColumnSpacing="1rem">
-                    <FormValidation>
-                        <DataAnnotationsValidator></DataAnnotationsValidator>
-                    </FormValidation>
-                    <FormItems>
-                        <FormItem Field="@nameof(ApproveStageMain.ApproveStageName)" LabelText="Approve Stage Name: " Enabled="true"></FormItem>
-                    </FormItems>
-                    <FormButtons />
-                </TelerikForm>
-                </div>
-            </div>
-        </GridLayoutItem>
+<div class="k-mt-2">
+    <TelerikGridLayout RowSpacing="8px" ColumnSpacing="8px">
+        <GridLayoutItems>
+            <GridLayoutItem Row="2" Column="1">
 
-    </GridLayoutItems>
-</TelerikGridLayout>
-
-
-
-
-<MudGrid>
-
-    <MudItem xs="6">
-        <MudPaper Class="d-flex align-center justify-center mud-width-full py-8">
-            <DataGrid @bind-Data="@stageDetailList"
-                GridEditMode="GridEditMode.Incell"
-                      CanAdd="true"
-                      OnCreate="CreateSequence"
-                      CanDelete="true"
-                      ShowCheckBoxColumn="false"
-                      ShowToolbar="false"
-                      DeleteButtonText=""
-                      Height="calc(100vh - 285px)"
-                      ShowSearchBar="false"
-                      OnRowClick="@OnRowClickHandler"
-                      SearchFields="@(new List<string> {"Name", "ApproveStageDetailName"})">
-                <DataGridColumns>
-                    <GridColumn Field="@(nameof(ApproveStageDetail.ApproveStageDetailsName))" Title="Details Name" />
-                    <GridColumn Field="@(nameof(ApproveStageDetail.Sequence))" Title="Sequence" Editable="false" />
-                </DataGridColumns>
-            </DataGrid>
-
-        </MudPaper>
-    </MudItem>
+                <DataGrid @bind-Data="@stageDetailList"
+                          GridEditMode="GridEditMode.Incell"
+                          CanAdd="true"
+                          CanDelete="true"
+                          OnCreate="CreateSequence"
+                          OnDelete="@((IEnumerable<ApproveStageDetail> items) => DeleteSequence(items))"
+                          ShowCheckBoxColumn="true"
+                          ShowToolbar="false"
+                          DeleteButtonText=""
+                          Height="calc(100vh - 285px)"
+                          ShowSearchBar="false"
+                          OnRowClick="@OnRowClickHandler">
+                    <DataGridColumns>
+                        <GridColumn Field="@(nameof(ApproveStageDetail.ApproveStageDetailsName))" Title="Details Name" />
+                        <GridColumn Field="@(nameof(ApproveStageDetail.Sequence))" Title="Sequence" Editable="false" />
+                    </DataGridColumns>
+                </DataGrid>
 
 
-    <MudItem xs="6">
-        <MudPaper Class="d-flex align-center justify-center mud-width-full py-8">
-            <DataGrid @bind-Data="@stageRoleList"
-                      GridEditMode="GridEditMode.Incell"
-                      CanAdd="true"
-                      CanDelete="true"
-                      ShowCheckBoxColumn="false"
-                      ShowToolbar="false"
-                      DeleteButtonText=""
-                      Height="calc(100vh - 285px)"
-                      ShowSearchBar="false"
-                      SearchFields="@(new List<string> {"Name", "Amount","AmountTo"})">
-                <DataGridColumns>
-                    <GridColumn Field=@nameof(ApproveStageRole.ApproveRole.ApproveRoleName) Title="Role Name">
-                        <EditorTemplate>
-                            @{
-                                var selectedStageRole = context as ApproveStageRole;
-                                    <TelerikComboBox 
-                                             Value="@selectedStageRole.ApproveRoleId"   
-                                             ValueChanged="@((int value)=>ApproveRoleChanged(selectedStageRole,value))"
-                                             ValueExpression="()=>selectedStageRole.ApproveRoleId"
-                                             Data="@approveRoleList"
-                                             TextField="ApproveRoleName"
-                                             ValueField="ApproveRoleId"
-                                             Placeholder="Select..."
-                                             Filterable="true"
-                                             FilterOperator="StringFilterOperator.Contains" />
-                            }
-                        </EditorTemplate>
+            </GridLayoutItem>
+            <GridLayoutItem Row="@(!AppState.MobileView? 2 : 3)" Column="@(!AppState.MobileView? 2 : 1)">
 
-                    </GridColumn>
+                <DataGrid @bind-Data="@stageRoleList"
+                          GridEditMode="GridEditMode.Incell"
+                          OnCreate="CreateRole"
+                          CanAdd="true"
+                          CanDelete="true"
+                          ShowToolbar="false"
+                          DeleteButtonText=""
+                          Height="calc(100vh - 285px)"
+                          ShowSearchBar="false">
+                    <DataGridColumns>
+                        <GridColumn Field=@nameof(ApproveStageRole.ApproveRole.ApproveRoleName) Title="Role Name">
+                            <EditorTemplate>
+                                @{
+                                    var selectedStageRole = context as ApproveStageRole;
+                                    <TelerikComboBox Value="@selectedStageRole.ApproveRoleId"
+                                                 ValueChanged="@((int value)=>ApproveRoleChanged(selectedStageRole,value))"
+                                                 ValueExpression="()=>selectedStageRole.ApproveRoleId"
+                                                 Data="@approveRoleList"
+                                                 TextField="ApproveRoleName"
+                                                 ValueField="ApproveRoleId"
+                                                 Placeholder="Select..."
+                                                 Filterable="true"
+                                                 FilterOperator="StringFilterOperator.Contains" />
+                                }
+                            </EditorTemplate>
 
-                    <GridColumn Field="@(nameof(ApproveStageRole.AmountFrom))" Title="Amount" />
-                    <GridColumn Field="@(nameof(ApproveStageRole.AmountTo))" Title="AmountTo" />
-                </DataGridColumns> 
-            </DataGrid>
-        </MudPaper>
-    </MudItem>
+                        </GridColumn>
 
-</MudGrid>
+                        <GridColumn Field="@(nameof(ApproveStageRole.AmountFrom))" Title="Amount" />
+                        <GridColumn Field="@(nameof(ApproveStageRole.AmountTo))" Title="AmountTo" />
+                    </DataGridColumns>
+                </DataGrid>
 
-@code{
+
+            </GridLayoutItem>
+
+        </GridLayoutItems>
+    </TelerikGridLayout>
+</div>
+
+
+
+@code {
     [CascadingParameter] public AppState? AppState { get; set; }
 
     List<ApproveStageDetail>? stageDetailList = new();
     List<ApproveStageRole>? stageRoleList = new();
-    IEnumerable<Procedure> procedureList = new List<Procedure>(); 
+    IEnumerable<Procedure> procedureList = new List<Procedure>();
     IEnumerable<BusinessUnit> businessUnitList = new List<BusinessUnit>();
     IEnumerable<ApproveRole> approveRoleList = new List<ApproveRole>();
 
-    ApproveStageRole stageRole = new();
-    ApproveRole? selectedRole;
-    ApproveStageDetail? selectedDetail = new();
-    ApproveStageMain? selectedMain = new();
-    BusinessUnit? selectedBusinessUnit = new();
-    Procedure? selectedProcedure = new();
+    ApproveRole? approveRole = new();
+    ApproveStageDetail? stageDetail = new();
+    ApproveStageRole? stageRole = new();
+    BusinessUnit? businessUnit = new();
+    Procedure? procedure = new();
+    ApproveStageMain? stageMain = new();
 
     EditContext? editContext = new(new ApproveStageMain());
 
     int _mainId;
 
-    void SetQueryVariables()
+    async Task SetQueryVariables()
     {
         var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
 
@@ -165,7 +166,18 @@
         {
             _mainId = Convert.ToInt32(id);
         }
+        else
+        {
+            AppState.DeleteButtonVisible = false;
+        }
 
+    }
+
+    void CreateRole(GridCommandEventArgs args)
+    {
+        var item = args.Item as ApproveStageRole;
+
+        stageDetail.ApproveStageRoles = stageRoleList;
     }
 
     void CreateSequence(GridCommandEventArgs args)
@@ -177,24 +189,19 @@
 
     void DeleteSequence(IEnumerable<ApproveStageDetail> args)
     {
-        //var itemObj = args.Item as ApproveStageDetail;
-
-        //int a = 1;
-        //foreach (var item in appDetail)
-        //{
-        //    item.Sequence = a;
-        //    a++;
-        //}
-        //var item = args.Item as ApproveStageDetail;
-
-        //item.Sequence = stageDetailList.Max(model => model.Sequence) + 1;
+        int a = 1;
+        foreach (var item in stageDetailList)
+        {
+            item.Sequence = a;
+            a++;
+        }
     }
 
-    void ApproveRoleChanged(ApproveStageRole approveStageRole,int value)
+    void ApproveRoleChanged(ApproveStageRole approveStageRole, int value)
     {
         approveStageRole.ApproveRoleId = value;
         var name = approveRoleList?.FirstOrDefault(x => x.ApproveRoleId == value);
-        approveStageRole.ApproveRoleName =name!=null &&  name.ApproveRoleName !=null ? name.ApproveRoleName : "";
+        approveStageRole.ApproveRoleName = name != null && name.ApproveRoleName != null ? name.ApproveRoleName : "";
     }
 
     async Task GetStageDetailList()
@@ -212,40 +219,43 @@
     async Task GetProcedureList()
     {
         procedureList = await ApproveStageService.GetProcedures();
-        selectedProcedure = procedureList.Any() ? procedureList.FirstOrDefault() : new();
+        procedure = procedureList.Any() ? procedureList.FirstOrDefault() : new();
     }
 
     async Task GetBusinessUnitList()
     {
         businessUnitList = await BusinessUnitService.GetAllAsync();
-        selectedBusinessUnit = businessUnitList.Any() ? businessUnitList.FirstOrDefault() : new();
+        businessUnit = businessUnitList.Any() ? businessUnitList.FirstOrDefault() : new();
     }
 
     async Task GetRoleList()
     {
         approveRoleList = await ApproveStageService.GetRoles();
-        selectedRole = approveRoleList.Any() ? approveRoleList.FirstOrDefault() : new();
+        approveRole = approveRoleList.Any() ? approveRoleList.FirstOrDefault() : new();
     }
 
     async Task LoadDateByApproveMainId()
     {
-        selectedProcedure = await ApproveStageService.GetProcuderByMainId(_mainId);
-        selectedBusinessUnit = await ApproveStageService.GetBusinessUnitByMainId(_mainId);
-        selectedMain= await ApproveStageService.GetMainByMainId(_mainId);
-        selectedDetail = await ApproveStageService.GetDetailsByMainId(_mainId);
+        stageMain = await ApproveStageService.GetMainByMainId(_mainId);
+        procedure = procedureList.FirstOrDefault(x => x.ProcedureId == stageMain.ProcedureId);
+        businessUnit = businessUnitList.FirstOrDefault(x => x.BusinessUnitId== stageMain.BusinessUnitId);
+
+        //stageDetail = await ApproveStageService.GetDetailsByMainId(_mainId);
     }
 
-
-
     async Task LoadData()
-    { 
+    {
         await GetRoleList();
         await GetBusinessUnitList();
         await GetProcedureList();
-        await GetStageDetailList();
-        await LoadDateByApproveMainId();
+        if (_mainId>0)
+        {
+            await LoadDateByApproveMainId();
+            await GetStageDetailList();
+        }
+        editContext = new EditContext(stageMain);
 
-        editContext = new EditContext(selectedMain);
+
     }
 
     protected override async Task OnInitializedAsync()
@@ -257,9 +267,8 @@
 
     async Task OnRowClickHandler(GridRowClickEventArgs args)
     {
-        selectedDetail = args.Item as ApproveStageDetail;
-        stageRoleList = selectedDetail != null && selectedDetail.ApproveStageRoles !=null ? selectedDetail.ApproveStageRoles : new();
-        //await GetStageRoleList(selectedDetail?.ApproveStageDetailsId);
+        stageDetail = args.Item as ApproveStageDetail;
+        stageRoleList = stageDetail != null && stageDetail.ApproveStageRoles != null ? stageDetail.ApproveStageRoles : new();
     }
 
     void BackClick()
@@ -271,17 +280,16 @@
     {
         AppState.Loading = true;
 
-        selectedMain.ProcedureId = selectedProcedure.ProcedureId;
-        selectedMain.BusinessUnitId = selectedBusinessUnit.BusinessUnitId;
-        selectedDetail.ApproveStageMainId=selectedMain.ApproveStageMainId;
-        stageRole.ApproveStageDetailId = selectedDetail.ApproveStageDetailsId;
-        stageRole.ApproveRoleId = selectedRole.ApproveRoleId;
+        stageMain.ProcedureId = procedure.ProcedureId;
+        stageMain.BusinessUnitId = businessUnit.BusinessUnitId;
 
-        var result = await ApproveStageService.SaveMain(selectedMain);
-        var result2 = await ApproveStageService.SaveDetails(selectedDetail);
-        var result3 = await ApproveStageService.SaveRoles(stageRole);
-
-
+        foreach (var item in stageDetailList)
+        {
+            item.ApproveStageMainId = stageMain.ApproveStageMainId;
+        }
+        
+        var result = await ApproveStageService.SaveMain(stageMain);
+        var result2 = await ApproveStageService.SaveDetails(stageDetailList);
 
         AppState.Loading = false;
 
@@ -291,7 +299,7 @@
 
     async void DeleteClick()
     {
-        var deletedId = new List<int>() { selectedMain.ApproveStageMainId };
+        var deletedId = new List<int>() { stageMain.ApproveStageMainId };
         var sqlResult = await ApproveStageService.Delete(deletedId);
         AppState.ShowAlert("Item successfully deleted", Severity.Success);
         NavigationManager.NavigateTo("/listcompany");
@@ -318,4 +326,3 @@
         AppState.OnDeleteClick += DeleteClick;
     }
 }
-

@@ -8,7 +8,7 @@
     <label for="bu_list">Business Unit:</label>
     <ItemDropDownList Id="bu_list"
                       Data="@businessUnitList"
-                      Item="@selectedBusinessUnit"
+                      Item="@businessUnit"
                       ItemChanged="@BusinessUnitChanged"
                       UniqueField="BusinessUnitId"
                       TextField="BusinessUnitCode"
@@ -41,82 +41,47 @@
 
 
 
-        <GridColumn Field=@nameof(ApproveStageMain.Procedure.ProcedureName) Title="Procedure Name">     
-            <EditorTemplate>
-                @{
-                        selectedMain = context as ApproveStageMain;
-                        <TelerikComboBox @bind-Value="@selectedMain.ProcedureId"
-                                     Id="bu_list"
-                                     Data="@procedureList"
-                                     TextField="ProcedureName"
-                                     ValueField="ProcedureId"
-                                     Placeholder="Select..."
-                                     Filterable="true"
-                                     FilterOperator="StringFilterOperator.Contains" />
-                 }     
-            </EditorTemplate>
-        </GridColumn>
+        <GridColumn Field=@nameof(ApproveStageMain.Procedure.ProcedureName) Title="Procedure Name"/>
 
     </DataGridColumns>
 </DataGrid>
 
-
-@*<TelerikGrid Data=@stageMainList EditMode="@GridEditMode.None"
-             Height="500px"
-             Sortable="true"
-             Pageable="true"
-             OnRowDoubleClick="@OnRowDoubleClickHandler"
-             SelectionMode="@GridSelectionMode.Single">
-    <GridColumns>
-        <GridColumn Field=@nameof(ApproveStageMain.ApproveStageName) Title="ApproveStage Name" />
-        <GridColumn Field=@nameof(ApproveStageMain.Procedure.ProcedureName) Title="Procedure Name" />
-    </GridColumns>
-</TelerikGrid>
-*@
-
 @code{
     [CascadingParameter] public AppState? AppState { get; set; }
 
-
-    IEnumerable<BusinessUnit> businessUnitList = new List<BusinessUnit>();
-    BusinessUnit? selectedBusinessUnit = new();
-
-    ApproveStageMain? selectedMain = new();
-    ApproveStageMain? approveStageMain = new ApproveStageMain();
-
     List<ApproveStageMain> stageMainList = new();
-
-
+    IEnumerable<BusinessUnit> businessUnitList = new List<BusinessUnit>();
     IEnumerable<Procedure> procedureList = new List<Procedure>();
-    Procedure? selectedProcedure = new();
+
+    ApproveStageMain? stageMain = new();
+    BusinessUnit? businessUnit = new();
+    Procedure? procedure = new();
 
     async Task GetBusinessUnitList()
     {
         businessUnitList = await BusinessUnitService.GetAllAsync();
-        selectedBusinessUnit = businessUnitList.Any() ? businessUnitList.FirstOrDefault() : new();
+        businessUnit = businessUnitList.Any() ? businessUnitList.FirstOrDefault() : new();
     }
 
     async Task GetProcedureList()
     {
         procedureList = await ApproveStageService.GetProcedures();
-        selectedProcedure = procedureList.Any() ? procedureList.FirstOrDefault() : new();
+        procedure = procedureList.Any() ? procedureList.FirstOrDefault() : new();
     }
 
     async Task GetMainStageList()
     {
-        var _stageMainList = await ApproveStageService.ApproveStageMainLoad(selectedBusinessUnit?.BusinessUnitId);
+        var _stageMainList = await ApproveStageService.ApproveStageMainLoad(businessUnit?.BusinessUnitId);
         stageMainList = _stageMainList.ToList();
     }
 
-
-    async Task BusinessUnitChanged(BusinessUnit businessUnit)
+    async Task BusinessUnitChanged(BusinessUnit businessUnitChanged)
     {
         AppState.Loading = true;
-        selectedBusinessUnit = businessUnit;
+        businessUnit = businessUnitChanged;
         await GetMainStageList();
         AppState.Loading = false;
     }
-
 
     async Task LoadData()
     {
@@ -127,14 +92,11 @@
         AppState.Loading = false;
     }
 
-
     protected override async Task OnInitializedAsync()
     {
         OnAppStateInitialized();
         await LoadData();
     }
-
-
 
     void OnRowDoubleClickHandler(GridRowClickEventArgs args)
     {
@@ -144,15 +106,13 @@
 
     void GoToDetails(int id)
     {
-        NavigationManager.NavigateTo($"/liststage?id={id}");  /////
+        NavigationManager.NavigateTo($"/liststage?id={id}");
     }
 
     void BackClick()
     {
         NavigationManager.NavigateTo("/");
     }
-
-
 
     void NewClick()
     {
@@ -163,8 +123,6 @@
     {
         AppState.OnBackClick -= BackClick;
         AppState.OnCustomButton01Click -= NewClick;
-        //AppState.OnCustomButton02Click -= EditClick;
-        //AppState.OnCustomButton03Click -= DeleteClick ;
     }
 
     void OnAppStateInitialized()
@@ -179,16 +137,5 @@
         AppState.CustomButton01Title = "New";
         AppState.CustomButton01Icon = "plus";
         AppState.OnCustomButton01Click += NewClick;
-
-        //AppState.CustomButton02Visible = true;
-        //AppState.CustomButton02Title = "Edit";
-        //AppState.CustomButton02Icon = "pencil";
-        //AppState.OnCustomButton02Click += EditClick;
-
-        //AppState.CustomButton03Visible = true;
-        //AppState.CustomButton03Title = "Delete";
-        //AppState.CustomButton03Icon = "trash";
-        //AppState.OnCustomButton03Click += DeleteClick;
-
     }
 }

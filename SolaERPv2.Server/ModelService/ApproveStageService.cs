@@ -1,4 +1,5 @@
-﻿using SolaERPv2.Server.Models;
+﻿using Dapper;
+using SolaERPv2.Server.Models;
 
 namespace SolaERPv2.Server.ModelService;
 
@@ -78,7 +79,6 @@ public class ApproveStageService : BaseModelService<ApproveStage>
         return result;
     }
 
-  
     public async Task<IEnumerable<Procedure>> GetProcedures()
     {
         IEnumerable<Procedure> result = new List<Procedure>();
@@ -93,7 +93,6 @@ public class ApproveStageService : BaseModelService<ApproveStage>
         }
         return result;
     }
-
 
     public async Task<IEnumerable<ApproveRole>> GetRoles()
     {
@@ -110,9 +109,6 @@ public class ApproveStageService : BaseModelService<ApproveStage>
         return result;
     }
 
-
-    
-
     public async Task<Procedure> GetProcuderByMainId(int? approveStageMainId)
     {
         if (approveStageMainId == null) return new Procedure();
@@ -127,7 +123,6 @@ public class ApproveStageService : BaseModelService<ApproveStage>
 
         return result;
     }
-
 
     public async Task<BusinessUnit> GetBusinessUnitByMainId(int? approveStageMainId)
     {
@@ -174,7 +169,6 @@ public class ApproveStageService : BaseModelService<ApproveStage>
         return result;
     }
 
-
     public async Task<SqlResult?> SaveMain(ApproveStageMain approveStageMain)
     {
         var user = await _appUserService.GetCurrentUserAsync();
@@ -194,40 +188,76 @@ public class ApproveStageService : BaseModelService<ApproveStage>
         return result;
     }
 
-    public async Task<SqlResult?> SaveDetails(ApproveStageDetail approveStageDetail)
+
+    public async Task<SqlResult?> SaveDetails(List<ApproveStageDetail> approveStageDetailList)
     {
         SqlResult? result = new();
-        using (var cn = new SqlConnection(_sqlDataAccess.ConnectionString))
+        foreach (var item in approveStageDetailList)
         {
-            var p = new DynamicParameters();
-            p.Add("@ApproveStageDetailsId", approveStageDetail.ApproveStageDetailsId, DbType.Int32, ParameterDirection.Input);
-            p.Add("@ApproveStageMainId", approveStageDetail.ApproveStageMainId, DbType.Int32, ParameterDirection.Input);
-            p.Add("@@ApproveStageDetailsName", approveStageDetail.ApproveStageDetailsName, DbType.String, ParameterDirection.Input);
-            p.Add("@Sequence", approveStageDetail.Sequence, DbType.Int32, ParameterDirection.Input);
+            using (var cn = new SqlConnection(_sqlDataAccess.ConnectionString))
+            {
+                var p = new DynamicParameters();
+                p.Add("@ApproveStageDetailsId", item.ApproveStageDetailsId, DbType.Int32, ParameterDirection.Input);
+                p.Add("@ApproveStageMainId", item.ApproveStageMainId, DbType.Int32, ParameterDirection.Input);
+                p.Add("@@ApproveStageDetailsName", item.ApproveStageDetailsName, DbType.String, ParameterDirection.Input);
+                p.Add("@Sequence", item.Sequence, DbType.Int32, ParameterDirection.Input);
 
-            result.QueryResult = await cn.ExecuteAsync("dbo.SP_ApproveStagesDetails_IUD", p, commandType: CommandType.StoredProcedure);
+                result.QueryResult = await cn.QueryFirstOrDefaultAsync<int>("dbo.SP_ApproveStagesDetails_IUD", p, commandType: CommandType.StoredProcedure);
+
+                Console.WriteLine("New Id/////////////////////:" + result.QueryResultMessage);
+            }
+            //using (var cn = new SqlConnection(_sqlDataAccess.ConnectionString))
+            //{
+            //    var p = new DynamicParameters();
+            //    p.Add("@ApproveStageDetailId", result.QueryResult, DbType.Int32, ParameterDirection.Input);
+            //    result.QueryResult = await cn.ExecuteAsync("dbo.SP_ApproveStageRoles_IUD", p, commandType: CommandType.StoredProcedure);
+            //}
+
+            if (item.ApproveStageRoles != null && item.ApproveStageRoles.Any())
+            {
+                foreach (var roleItem in item.ApproveStageRoles)
+                {
+                    using (var cn = new SqlConnection(_sqlDataAccess.ConnectionString))
+                    {
+                        var p = new DynamicParameters();
+                        p.Add("@ApproveStageRoleId", roleItem.ApproveStageRoleId, DbType.Int32, ParameterDirection.Input);
+                        p.Add("@ApproveStageDetailId", result.QueryResult, DbType.Int32, ParameterDirection.Input);
+                        p.Add("@ApproveRoleId", roleItem.ApproveRoleId, DbType.Int32, ParameterDirection.Input);
+                        p.Add("@AmountFrom", roleItem.AmountFrom, DbType.Decimal, ParameterDirection.Input);
+                        p.Add("@AmountTo", roleItem.AmountFrom, DbType.Decimal, ParameterDirection.Input);
+
+                        result.QueryResult = await cn.ExecuteAsync("dbo.SP_ApproveStageRoles_IUD", p, commandType: CommandType.StoredProcedure);
+                    }
+                }
+            }
         }
 
         return result;
     }
 
-    public async Task<SqlResult?> SaveRoles(ApproveStageRole approveStageRole)
+    public async Task<int> GetTestIdAsync(ApproveStageDetail approveStageDetail)
     {
-        SqlResult? result = new();
-        using (var cn = new SqlConnection(_sqlDataAccess.ConnectionString))
+        var result = 0;
+        try
         {
-            var p = new DynamicParameters();
-            p.Add("@ApproveStageRoleId", approveStageRole.ApproveStageRoleId, DbType.Int32, ParameterDirection.Input);
-            p.Add("@ApproveStageDetailId", approveStageRole.ApproveStageDetailId, DbType.Int32, ParameterDirection.Input);
-            p.Add("@ApproveRoleId", approveStageRole.ApproveRoleId, DbType.Int32, ParameterDirection.Input);
-            p.Add("@AmountFrom", approveStageRole.AmountFrom, DbType.Decimal, ParameterDirection.Input);
-            p.Add("@AmountTo", approveStageRole.AmountFrom, DbType.Decimal, ParameterDirection.Input);
-
-            result.QueryResult = await cn.ExecuteAsync("dbo.SP_ApproveStageRoles_IUD", p, commandType: CommandType.StoredProcedure);
+            using IDbConnection cn = new SqlConnection(_sqlDataAccess?.ConnectionString);
+            var p = new
+            {
+                ApproveStageDetailsId = approveStageDetail.ApproveStageDetailsId,
+                ApproveStageMainId = approveStageDetail.ApproveStageMainId,
+                ApproveStageDetailsName = approveStageDetail.ApproveStageDetailsName,
+                Sequence = approveStageDetail.Sequence
+            };
+            result = await cn.QueryFirstOrDefaultAsync<int>("dbo.SP_ApproveStagesDetails_IUD", p, commandType: CommandType.StoredProcedure);
+            Console.WriteLine("New Id: " + result);
         }
-
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
         return result;
     }
+
 
     public async Task<SqlResult?> Delete(IEnumerable<int> approveStageMain)
     {
@@ -244,90 +274,41 @@ public class ApproveStageService : BaseModelService<ApproveStage>
 
     #region Useless
 
-    //public async Task<Procedure?> GetByIdAsync(int procedurId)
+    //public async Task<SqlResult?> SaveDetails(ApproveStageDetail approveStageDetail)
     //{
-    //    Dictionary<int, Procedure> result = new();
-
-    //    using IDbConnection cn = new SqlConnection(_sqlDataAccess.ConnectionString);
-    //    await cn.QueryAsync<Procedure, ApproveStageMain, Procedure>("dbo.sp_Company_Load",
-    //        (procedure, stage) =>
-    //        {
-    //            if (!result.ContainsKey(procedure.ProcedureId))
-    //            {
-    //                procedure.ApproveStageMains = new();
-    //                result.Add(procedure.ProcedureId, procedure);
-    //            }
-    //            var currentCompany = result[procedure.ProcedureId];
-    //            return procedure;
-    //        },
-    //        param: new { ProcedureId = procedurId },
-    //        splitOn: "ApproveStageMainId",
-    //        commandType: CommandType.StoredProcedure);
-
-    //    return result.Values.FirstOrDefault();
-    //}
-
-
-    //public async Task<SqlResult?> Save(List<ApproveStageMain>  approveStageMainList)
-    //{
-    //    var user = await _appUserService.GetCurrentUserAsync();
     //    SqlResult? result = new();
     //    using (var cn = new SqlConnection(_sqlDataAccess.ConnectionString))
     //    {
-    //        foreach (var approveStageMain in approveStageMainList)
-    //        {
-    //            var p = new DynamicParameters();
+    //        var p = new DynamicParameters();
+    //        p.Add("@ApproveStageDetailsId", approveStageDetail.ApproveStageDetailsId, DbType.Int32, ParameterDirection.Input);
+    //        p.Add("@ApproveStageMainId", approveStageDetail.ApproveStageMainId, DbType.Int32, ParameterDirection.Input);
+    //        p.Add("@@ApproveStageDetailsName", approveStageDetail.ApproveStageDetailsName, DbType.String, ParameterDirection.Input);
+    //        p.Add("@Sequence", approveStageDetail.Sequence, DbType.Int32, ParameterDirection.Input);
 
-
-    //            p.Add("@ProcedureId", approveStageMain.ProcedureId, DbType.Int32, ParameterDirection.Input);
-    //            p.Add("@BusinessUnitId", approveStageMain.BusinessUnitId, DbType.Int32, ParameterDirection.Input);
-    //            p.Add("@ApproveStageName", approveStageMain.ApproveStageName, DbType.String, ParameterDirection.Input);
-    //            p.Add("@UserId", user.Id, DbType.Int32, ParameterDirection.Input);
-
-    //            result.QueryResult = await cn.ExecuteAsync("dbo.SP_ApproveStagesMain_IUD", p, commandType: CommandType.StoredProcedure);
-    //        }
+    //        result.QueryResult = await cn.ExecuteAsync("dbo.SP_ApproveStagesDetails_IUD", p, commandType: CommandType.StoredProcedure);
     //    }
 
-
     //    return result;
     //}
 
-
-    //public async Task<ApproveStageRole> GetRoleByStageRoleId(int? stageRoleId)
+    //public async Task<SqlResult?> SaveRoles(ApproveStageRole approveStageRole)
     //{
-    //    if (stageRoleId == null) return new ApproveStageRole();
+    //    SqlResult? result = new();
+    //    using (var cn = new SqlConnection(_sqlDataAccess.ConnectionString))
+    //    {
+    //        var p = new DynamicParameters();
+    //        p.Add("@ApproveStageRoleId", approveStageRole.ApproveStageRoleId, DbType.Int32, ParameterDirection.Input);
+    //        p.Add("@ApproveStageDetailId", approveStageRole.ApproveStageDetailId, DbType.Int32, ParameterDirection.Input);
+    //        p.Add("@ApproveRoleId", approveStageRole.ApproveRoleId, DbType.Int32, ParameterDirection.Input);
+    //        p.Add("@AmountFrom", approveStageRole.AmountFrom, DbType.Decimal, ParameterDirection.Input);
+    //        p.Add("@AmountTo", approveStageRole.AmountFrom, DbType.Decimal, ParameterDirection.Input);
 
-    //    string sql = "dbo.usp_ApproveStageRole_Load";
-    //    var p = new DynamicParameters();
-    //    p.Add("@ApproveStageMainId", stageRoleId, DbType.Int32, ParameterDirection.Input);
-
-    //    var result = await _sqlDataAccess.QuerySingle<ApproveStageRole>(sql, p, "GetRoleByStageRoleId-Single");
-
-    //    if (result == null) return new ApproveStageRole();
+    //        result.QueryResult = await cn.ExecuteAsync("dbo.SP_ApproveStageRoles_IUD", p, commandType: CommandType.StoredProcedure);
+    //    }
 
     //    return result;
     //}
 
-    //public async Task<IEnumerable<ApproveStageMain>?> GetAllProcdureWithMain(int? businessUnitId)
-    //{
-
-    //    string sql = "dbo.usp_GetAllProcduresWithMain ";
-    //    var p = new DynamicParameters();
-    //    p.Add("@BusinessUnitId", businessUnitId, DbType.Int32, ParameterDirection.Input);
-    //    var sqlResult = await _sqlDataAccess.QueryAll<FullApproveStageMain>(sql, p, "ApproveStageDetails_Load-GetAll");
-    //    var result = sqlResult.Select(a => new ApproveStageMain {
-    //        BusinessUnitId = a.BusinessUnitId,
-    //        ApproveStageMainId = a.ApproveStageMainId,
-    //        ApproveStageName = a.ApproveStageName,
-    //        ProcedureId = a.ProcedureId,
-    //        Procedure = new Procedure {
-    //            ProcedureId = a.ProcedureId,
-    //            ProcedureName = a.ProcedureName,
-    //            ProcedureKey = a.ProcedureKey
-    //        }
-    //    }).ToList();
-    //    return result;
-    //}
 
     #endregion
 }
