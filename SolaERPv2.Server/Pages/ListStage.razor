@@ -239,8 +239,6 @@
         stageMain = await ApproveStageService.GetMainByMainId(_mainId);
         procedure = procedureList.FirstOrDefault(x => x.ProcedureId == stageMain.ProcedureId);
         businessUnit = businessUnitList.FirstOrDefault(x => x.BusinessUnitId== stageMain.BusinessUnitId);
-
-        //stageDetail = await ApproveStageService.GetDetailsByMainId(_mainId);
     }
 
     async Task LoadData()
@@ -282,6 +280,8 @@
 
         stageMain.ProcedureId = procedure.ProcedureId;
         stageMain.BusinessUnitId = businessUnit.BusinessUnitId;
+
+        stageDetail.ApproveStageMainId = stageMain.ApproveStageMainId;
 
         foreach (var item in stageDetailList)
         {

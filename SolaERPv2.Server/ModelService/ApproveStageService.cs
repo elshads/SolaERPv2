@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using SolaERPv2.Server.Models;
+using static MudBlazor.CategoryTypes;
 
 namespace SolaERPv2.Server.ModelService;
 
@@ -204,12 +205,13 @@ public class ApproveStageService : BaseModelService<ApproveStage>
 
                 result.QueryResult = await cn.QueryFirstOrDefaultAsync<int>("dbo.SP_ApproveStagesDetails_IUD", p, commandType: CommandType.StoredProcedure);
 
-                Console.WriteLine("New Id/////////////////////:" + result.QueryResultMessage);
+                Console.WriteLine("New Id:" + result);
             }
+
             //using (var cn = new SqlConnection(_sqlDataAccess.ConnectionString))
             //{
             //    var p = new DynamicParameters();
-            //    p.Add("@ApproveStageDetailId", result.QueryResult, DbType.Int32, ParameterDirection.Input);
+            //    p.Add("@ApproveStageDetailId", (item.ApproveStageDetailsId > 0 ? item.ApproveStageDetailsId : result.QueryResult), DbType.Int32, ParameterDirection.Input);
             //    result.QueryResult = await cn.ExecuteAsync("dbo.SP_ApproveStageRoles_IUD", p, commandType: CommandType.StoredProcedure);
             //}
 
@@ -221,10 +223,10 @@ public class ApproveStageService : BaseModelService<ApproveStage>
                     {
                         var p = new DynamicParameters();
                         p.Add("@ApproveStageRoleId", roleItem.ApproveStageRoleId, DbType.Int32, ParameterDirection.Input);
-                        p.Add("@ApproveStageDetailId", result.QueryResult, DbType.Int32, ParameterDirection.Input);
+                        p.Add("@ApproveStageDetailId", (item.ApproveStageDetailsId > 0 ? item.ApproveStageDetailsId : result.QueryResult), DbType.Int32, ParameterDirection.Input);
                         p.Add("@ApproveRoleId", roleItem.ApproveRoleId, DbType.Int32, ParameterDirection.Input);
                         p.Add("@AmountFrom", roleItem.AmountFrom, DbType.Decimal, ParameterDirection.Input);
-                        p.Add("@AmountTo", roleItem.AmountFrom, DbType.Decimal, ParameterDirection.Input);
+                        p.Add("@AmountTo", roleItem.AmountTo, DbType.Decimal, ParameterDirection.Input);
 
                         result.QueryResult = await cn.ExecuteAsync("dbo.SP_ApproveStageRoles_IUD", p, commandType: CommandType.StoredProcedure);
                     }
@@ -235,28 +237,31 @@ public class ApproveStageService : BaseModelService<ApproveStage>
         return result;
     }
 
-    public async Task<int> GetTestIdAsync(ApproveStageDetail approveStageDetail)
-    {
-        var result = 0;
-        try
-        {
-            using IDbConnection cn = new SqlConnection(_sqlDataAccess?.ConnectionString);
-            var p = new
-            {
-                ApproveStageDetailsId = approveStageDetail.ApproveStageDetailsId,
-                ApproveStageMainId = approveStageDetail.ApproveStageMainId,
-                ApproveStageDetailsName = approveStageDetail.ApproveStageDetailsName,
-                Sequence = approveStageDetail.Sequence
-            };
-            result = await cn.QueryFirstOrDefaultAsync<int>("dbo.SP_ApproveStagesDetails_IUD", p, commandType: CommandType.StoredProcedure);
-            Console.WriteLine("New Id: " + result);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e.Message);
-        }
-        return result;
-    }
+
+
+
+    //public async Task<int> GetTestIdAsync(ApproveStageDetail approveStageDetail)
+    //{
+    //    var result = 0;
+    //    try
+    //    {
+    //        using IDbConnection cn = new SqlConnection(_sqlDataAccess?.ConnectionString);
+    //        var p = new
+    //        {
+    //            ApproveStageDetailsId = approveStageDetail.ApproveStageDetailsId,
+    //            ApproveStageMainId = approveStageDetail.ApproveStageMainId,
+    //            ApproveStageDetailsName = approveStageDetail.ApproveStageDetailsName,
+    //            Sequence = approveStageDetail.Sequence
+    //        };
+    //        result = await cn.QueryFirstOrDefaultAsync<int>("dbo.SP_ApproveStagesDetails_IUD", p, commandType: CommandType.StoredProcedure);
+    //        Console.WriteLine("New Id: " + result);
+    //    }
+    //    catch (Exception e)
+    //    {
+    //        Console.WriteLine(e.Message);
+    //    }
+    //    return result;
+    //}
 
 
     public async Task<SqlResult?> Delete(IEnumerable<int> approveStageMain)
