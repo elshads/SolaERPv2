@@ -170,12 +170,13 @@ public class ApproveStageService : BaseModelService<ApproveStage>
         return result;
     }
 
-    public async Task<SqlResult?> SaveMain(ApproveStageMain approveStageMain)
+    public async Task<int?> SaveMain(ApproveStageMain approveStageMain)
     {
+        var mainId = 0;
         var user = await _appUserService.GetCurrentUserAsync();
-        SqlResult? result = new();
         using (var cn = new SqlConnection(_sqlDataAccess.ConnectionString))
         {
+            cn.Open();
             var p = new DynamicParameters();
             p.Add("@ApproveStageMainId", approveStageMain.ApproveStageMainId, DbType.Int32, ParameterDirection.Input);
             p.Add("@ApproveStageName", approveStageMain.ApproveStageName, DbType.String, ParameterDirection.Input);
@@ -183,14 +184,24 @@ public class ApproveStageService : BaseModelService<ApproveStage>
             p.Add("@BusinessUnitId", approveStageMain.BusinessUnitId, DbType.Int32, ParameterDirection.Input);
             p.Add("@UserId", user.Id, DbType.Int32, ParameterDirection.Input);
 
-            result.QueryResult = await cn.ExecuteAsync("dbo.SP_ApproveStagesMain_IUD", p, commandType: CommandType.StoredProcedure);
+            await cn.ExecuteAsync("dbo.SP_ApproveStagesMain_IUD", p, commandType: CommandType.StoredProcedure);
+
+            var cmd = cn.CreateCommand();
+            cmd.CommandText = "select Max(ApproveStageMainId ) as MainID from Config.ApproveStagesMain";
+
+            var reader = cmd.ExecuteReader();
+
+            if (reader.Read())
+            {
+                mainId = (int)reader["MainID"];
+            }
+
         }
 
-        return result;
+        return mainId;
     }
 
-
-    public async Task<SqlResult?> SaveDetails(List<ApproveStageDetail> approveStageDetailList)
+    public async Task<SqlResult?> SaveDetails(List<ApproveStageDetail> approveStageDetailList,int? mainId)
     {
         SqlResult? result = new();
         foreach (var item in approveStageDetailList)
@@ -199,7 +210,7 @@ public class ApproveStageService : BaseModelService<ApproveStage>
             {
                 var p = new DynamicParameters();
                 p.Add("@ApproveStageDetailsId", item.ApproveStageDetailsId, DbType.Int32, ParameterDirection.Input);
-                p.Add("@ApproveStageMainId", item.ApproveStageMainId, DbType.Int32, ParameterDirection.Input);
+                p.Add("@ApproveStageMainId", mainId, DbType.Int32, ParameterDirection.Input);
                 p.Add("@@ApproveStageDetailsName", item.ApproveStageDetailsName, DbType.String, ParameterDirection.Input);
                 p.Add("@Sequence", item.Sequence, DbType.Int32, ParameterDirection.Input);
 
@@ -236,6 +247,18 @@ public class ApproveStageService : BaseModelService<ApproveStage>
 
         return result;
     }
+
+
+    //public async Task Save(ApproveStageMain approveStageMain, List<ApproveStageDetail> approveStageDetailList)
+    //{
+    //    var mainResult = await SaveMain(approveStageMain);
+
+    //    //if (mainResult != null && mainResult.QueryResult > 0)
+    //    //{
+    //    //    await SaveDetails(approveStageDetailList);
+    //    //}
+    //}
+
 
 
 

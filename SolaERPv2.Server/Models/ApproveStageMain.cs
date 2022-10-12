@@ -5,7 +5,7 @@ public class ApproveStageMain:BaseModel
     public int ApproveStageMainId { get; set; }
     public int ProcedureId { get; set; }
     public int BusinessUnitId { get; set; }
-    
+
     [Required(ErrorMessage = "The First name is required")]
     public string ApproveStageName { get; set; }
 

@@ -107,14 +107,13 @@
                           CustomButtonIcon=""
                           Height="calc(100vh - 200px)"
                           ShowSearchBar="false"
-                          
-                     Pageable="false">
+                          Pageable="false">
                     <DataGridColumns>
                         <GridColumn Field=@nameof(ApproveStageRole.ApproveRole.ApproveRoleName) Title="Role Name">
                             <EditorTemplate>
                                 @{
                                     var selectedStageRole = context as ApproveStageRole;
-                                        <TelerikComboBox Value="@selectedStageRole.ApproveRoleId"
+                                    <TelerikComboBox Value="@selectedStageRole.ApproveRoleId"
                                                  ValueChanged="@((int value)=>ApproveRoleChanged(selectedStageRole,value))"
                                                  ValueExpression="()=>selectedStageRole.ApproveRoleId"
                                                  Data="@approveRoleList"
@@ -127,7 +126,7 @@
                             </EditorTemplate>
 
                         </GridColumn>
-                      
+
                         <GridColumn Field="@(nameof(ApproveStageRole.AmountFrom))" Title="Amount" />
                         <GridColumn Field="@(nameof(ApproveStageRole.AmountTo))" Title="AmountTo" />
                     </DataGridColumns>
@@ -200,7 +199,10 @@
             item.Sequence = a;
             a++;
         }
+
+        stageDetailList.Remove(stageDetail);
     }
+
 
     void ApproveRoleChanged(ApproveStageRole approveStageRole, int value)
     {
@@ -213,6 +215,7 @@
     {
         var _stageDetailList = await ApproveStageService.ApproveStageDetailLoad(_mainId);
         stageDetailList = _stageDetailList.ToList();
+        stageDetail = stageDetailList.Any() ? stageDetailList.FirstOrDefault() : new();
     }
 
     async Task GetStageRoleList(int? id)
@@ -243,7 +246,7 @@
     {
         stageMain = await ApproveStageService.GetMainByMainId(_mainId);
         procedure = procedureList.FirstOrDefault(x => x.ProcedureId == stageMain.ProcedureId);
-        businessUnit = businessUnitList.FirstOrDefault(x => x.BusinessUnitId== stageMain.BusinessUnitId);
+        businessUnit = businessUnitList.FirstOrDefault(x => x.BusinessUnitId == stageMain.BusinessUnitId);
     }
 
     async Task LoadData()
@@ -251,7 +254,7 @@
         await GetRoleList();
         await GetBusinessUnitList();
         await GetProcedureList();
-        if (_mainId>0)
+        if (_mainId > 0)
         {
             await LoadDateByApproveMainId();
             await GetStageDetailList();
@@ -272,16 +275,32 @@
         stageRoleList = stageDetail != null && stageDetail.ApproveStageRoles != null ? stageDetail.ApproveStageRoles : new();
     }
 
-    async void BackClick()
-    {
-        NavigationManager.NavigateTo("/listcompany");
-        //WindowVisible=true;
-    }
+    //async void SaveClick()
+    //{
+    //    AppState.Loading = true;
+
+    //    stageMain.ProcedureId = procedure.ProcedureId;
+    //    stageMain.BusinessUnitId = businessUnit.BusinessUnitId;
+
+    //    stageDetail.ApproveStageMainId = stageMain.ApproveStageMainId;
+
+    //    foreach (var item in stageDetailList)
+    //    {
+    //        item.ApproveStageMainId = stageMain.ApproveStageMainId;
+    //    }
+
+    //    await ApproveStageService.Save(stageMain, stageDetailList);
+
+    //    AppState.Loading = false;
+    //    NavigationManager.NavigateTo("/liststage");
+    //}
+
 
     async void SaveClick()
     {
         AppState.Loading = true;
 
+        //int mainId = 0;
         var validated = Validate();
         if (validated)
         {
@@ -295,18 +314,22 @@
                 item.ApproveStageMainId = stageMain.ApproveStageMainId;
             }
 
-            var result = await ApproveStageService.SaveMain(stageMain);
+            var mainId = await ApproveStageService.SaveMain(stageMain);
+
             //var result2 = await ApproveStageService.SaveDetails(stageDetailList);
+            var result2 = await ApproveStageService.SaveDetails(stageDetailList, mainId);
+
         }
 
-        var result2 = await ApproveStageService.SaveDetails(stageDetailList);
         AppState.Loading = false;
         NavigationManager.NavigateTo("/liststage");
     }
 
+
+
     bool Validate()
     {
-        if (stageMain.ApproveStageName ==null)
+        if (stageMain.ApproveStageName == null)
         {
             AppState.ShowAlert("Ad bos ola bilmez", Severity.Error);
             return false;
@@ -351,7 +374,13 @@
 
     }
 
-    bool WindowVisible{ get; set; }
+    async void BackClick()
+    {
+        NavigationManager.NavigateTo("/listcompany");
+        //WindowVisible=true;
+    }
+
+    bool WindowVisible { get; set; }
 
 }
 
