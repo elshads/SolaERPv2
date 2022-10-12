@@ -80,12 +80,13 @@
                           CanDelete="true"
                           OnCreate="CreateSequence"
                           OnDelete="@((IEnumerable<ApproveStageDetail> items) => DeleteSequence(items))"
-                          ShowCheckBoxColumn="true"
+                          ShowCheckBoxColumn="false"
                           ShowToolbar="false"
                           DeleteButtonText=""
-                          Height="calc(100vh - 285px)"
+                          Height="calc(100vh - 200px)"
                           ShowSearchBar="false"
-                          OnRowClick="@OnRowClickHandler">
+                          OnRowClick="@OnRowClickHandler"
+                          Pageable="false">
                     <DataGridColumns>
                         <GridColumn Field="@(nameof(ApproveStageDetail.ApproveStageDetailsName))" Title="Details Name" />
                         <GridColumn Field="@(nameof(ApproveStageDetail.Sequence))" Title="Sequence" Editable="false" />
@@ -102,15 +103,18 @@
                           CanAdd="true"
                           CanDelete="true"
                           ShowToolbar="false"
-                          DeleteButtonText=""
-                          Height="calc(100vh - 285px)"
-                          ShowSearchBar="false">
+                          ShowCheckBoxColumn="false"
+                          CustomButtonIcon=""
+                          Height="calc(100vh - 200px)"
+                          ShowSearchBar="false"
+                          
+                     Pageable="false">
                     <DataGridColumns>
                         <GridColumn Field=@nameof(ApproveStageRole.ApproveRole.ApproveRoleName) Title="Role Name">
                             <EditorTemplate>
                                 @{
                                     var selectedStageRole = context as ApproveStageRole;
-                                    <TelerikComboBox Value="@selectedStageRole.ApproveRoleId"
+                                        <TelerikComboBox Value="@selectedStageRole.ApproveRoleId"
                                                  ValueChanged="@((int value)=>ApproveRoleChanged(selectedStageRole,value))"
                                                  ValueExpression="()=>selectedStageRole.ApproveRoleId"
                                                  Data="@approveRoleList"
@@ -123,7 +127,7 @@
                             </EditorTemplate>
 
                         </GridColumn>
-
+                      
                         <GridColumn Field="@(nameof(ApproveStageRole.AmountFrom))" Title="Amount" />
                         <GridColumn Field="@(nameof(ApproveStageRole.AmountTo))" Title="AmountTo" />
                     </DataGridColumns>
@@ -140,6 +144,7 @@
 
 @code {
     [CascadingParameter] public AppState? AppState { get; set; }
+    [Parameter] public bool CanDelete { get; set; } = false;
 
     List<ApproveStageDetail>? stageDetailList = new();
     List<ApproveStageRole>? stageRoleList = new();
@@ -252,8 +257,6 @@
             await GetStageDetailList();
         }
         editContext = new EditContext(stageMain);
-
-
     }
 
     protected override async Task OnInitializedAsync()
@@ -269,32 +272,53 @@
         stageRoleList = stageDetail != null && stageDetail.ApproveStageRoles != null ? stageDetail.ApproveStageRoles : new();
     }
 
-    void BackClick()
+    async void BackClick()
     {
         NavigationManager.NavigateTo("/listcompany");
+        //WindowVisible=true;
     }
 
     async void SaveClick()
     {
         AppState.Loading = true;
 
-        stageMain.ProcedureId = procedure.ProcedureId;
-        stageMain.BusinessUnitId = businessUnit.BusinessUnitId;
-
-        stageDetail.ApproveStageMainId = stageMain.ApproveStageMainId;
-
-        foreach (var item in stageDetailList)
+        var validated = Validate();
+        if (validated)
         {
-            item.ApproveStageMainId = stageMain.ApproveStageMainId;
+            stageMain.ProcedureId = procedure.ProcedureId;
+            stageMain.BusinessUnitId = businessUnit.BusinessUnitId;
+
+            stageDetail.ApproveStageMainId = stageMain.ApproveStageMainId;
+
+            foreach (var item in stageDetailList)
+            {
+                item.ApproveStageMainId = stageMain.ApproveStageMainId;
+            }
+
+            var result = await ApproveStageService.SaveMain(stageMain);
+            //var result2 = await ApproveStageService.SaveDetails(stageDetailList);
         }
-        
-        var result = await ApproveStageService.SaveMain(stageMain);
+
         var result2 = await ApproveStageService.SaveDetails(stageDetailList);
-
         AppState.Loading = false;
+        NavigationManager.NavigateTo("/liststage");
+    }
 
+    bool Validate()
+    {
+        if (stageMain.ApproveStageName ==null)
+        {
+            AppState.ShowAlert("Ad bos ola bilmez", Severity.Error);
+            return false;
+        }
 
-        NavigationManager.NavigateTo("/listcompany");
+        //if (stageRole.ApproveRoleName==null)
+        //{
+        //    AppState.ShowAlert("Rol Bos ola bilmez 3", Severity.Error);
+        //    return false;
+        //}
+
+        return true;
     }
 
     async void DeleteClick()
@@ -305,12 +329,12 @@
         NavigationManager.NavigateTo("/listcompany");
     }
 
-
     void IDisposable.Dispose()
     {
         AppState.OnBackClick -= BackClick;
         AppState.OnSaveClick -= SaveClick;
         AppState.OnDeleteClick -= DeleteClick;
+
     }
 
     void OnAppStateInitialized()
@@ -324,5 +348,32 @@
         AppState.OnBackClick += BackClick;
         AppState.OnSaveClick += SaveClick;
         AppState.OnDeleteClick += DeleteClick;
+
     }
+
+    bool WindowVisible{ get; set; }
+
 }
+
+
+<TelerikButton Icon="window" OnClick=@(()=> WindowVisible = true)>Open Modal</TelerikButton>
+
+<TelerikWindow Class="demo-window" Width="500px" Height="300px" Centered="true" @bind-Visible=@WindowVisible Modal="true">
+    <WindowTitle>
+        <strong>Modal Window</strong>
+    </WindowTitle>
+    <WindowActions>
+        <WindowAction Name="Close" />
+    </WindowActions>
+    <WindowContent>
+        <p>Click the close button to dismiss this modal dialog.</p>
+    </WindowContent>
+</TelerikWindow>
+
+
+
+<style type="text/css">
+    .demo-window {
+        z-index: 44444;
+    }
+</style>

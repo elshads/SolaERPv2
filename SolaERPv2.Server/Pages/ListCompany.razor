@@ -121,16 +121,12 @@
 
     void IDisposable.Dispose()
     {
-        AppState.OnBackClick -= BackClick;
         AppState.OnCustomButton01Click -= NewClick;
     }
 
     void OnAppStateInitialized()
     {
         AppState?.SetDefaults();
-
-        AppState.BackButtonVisible = true;
-        AppState.OnBackClick += BackClick;
 
 
         AppState.CustomButton01Visible = true;
