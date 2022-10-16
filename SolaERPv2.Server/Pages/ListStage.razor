@@ -157,10 +157,10 @@
     BusinessUnit? businessUnit = new();
     Procedure? procedure = new();
     ApproveStageMain? stageMain = new();
-
+   
     EditContext? editContext = new(new ApproveStageMain());
 
-    int _mainId;
+    int? _mainId;
 
     async Task SetQueryVariables()
     {
@@ -200,15 +200,15 @@
             a++;
         }
 
-       
+
     }
 
     async void DeleteDetail()
     {
         var deletedId = new List<int>() { stageDetail.ApproveStageDetailsId };
-        var sqlResult = await ApproveStageService.DeleteDetail(deletedId);
-        AppState.ShowAlert("Item successfully detail deleted", Severity.Success);
-        NavigationManager.NavigateTo("/liststage");
+        //var sqlResult = await ApproveStageService.DeleteDetail(deletedId);
+        //AppState.ShowAlert("Item successfully detail deleted", Severity.Success);
+        //NavigationManager.NavigateTo("/liststage");
     }
 
     async void DeleteRole()
@@ -229,9 +229,15 @@
 
     async Task GetStageDetailList()
     {
-        var _stageDetailList = await ApproveStageService.ApproveStageDetailLoad(_mainId);
+        var _stageDetailList = await ApproveStageService.ApproveStageDetailLoad(_mainId??0);
         stageDetailList = _stageDetailList.ToList();
         stageDetail = stageDetailList.Any() ? stageDetailList.FirstOrDefault() : new();
+    }
+
+    async Task<IEnumerable<ApproveStageDetail>> GetDbList()
+    {
+        var _stageDetailList = await ApproveStageService.ApproveStageDetailLoad(_mainId ?? 0);
+        return _stageDetailList.ToList();
     }
 
     async Task GetStageRoleList(int? id)
@@ -320,6 +326,17 @@
         var validated = Validate();
         if (validated)
         {
+            var deletedStageList = new List<ApproveStageDetail>();
+            //await GetDbList();
+            foreach (var item in await GetDbList())
+            {
+                bool checkDeleted = stageDetailList.Any(sd => sd.ApproveStageDetailsId == item.ApproveStageDetailsId);
+
+                if (!checkDeleted)
+                    deletedStageList.Add(item);
+            }
+            if (deletedStageList.Any())
+                await ApproveStageService.DeleteDetail(deletedStageList);
             stageMain.ProcedureId = procedure.ProcedureId;
             stageMain.BusinessUnitId = businessUnit.BusinessUnitId;
 
@@ -330,10 +347,14 @@
                 item.ApproveStageMainId = stageMain.ApproveStageMainId;
             }
 
-            var mainId = await ApproveStageService.SaveMain(stageMain);
+           
+            if(_mainId == null){
+                _mainId = await ApproveStageService.SaveMain(stageMain);
+            }
+            
 
             //var result2 = await ApproveStageService.SaveDetails(stageDetailList);
-            var result2 = await ApproveStageService.SaveDetails(stageDetailList, mainId);
+            var result2 = await ApproveStageService.SaveDetails(stageDetailList, _mainId);
 
         }
 
@@ -402,7 +423,7 @@
 
     bool WindowVisible { get; set; }
  
-
+    
 }
 
 

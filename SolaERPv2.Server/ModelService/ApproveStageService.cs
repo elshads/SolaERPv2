@@ -184,7 +184,7 @@ public class ApproveStageService : BaseModelService<ApproveStage>
             p.Add("@BusinessUnitId", approveStageMain.BusinessUnitId, DbType.Int32, ParameterDirection.Input);
             p.Add("@UserId", user.Id, DbType.Int32, ParameterDirection.Input);
 
-            await cn.ExecuteAsync("dbo.SP_ApproveStagesMain_IUD", p, commandType: CommandType.StoredProcedure);
+            await cn.ExecuteAsync("dbo.[SP_ApproveStagesMaintTEST_IUD]", p, commandType: CommandType.StoredProcedure);
 
             var cmd = cn.CreateCommand();
             cmd.CommandText = "select Max(ApproveStageMainId ) as MainID from Config.ApproveStagesMain";
@@ -195,7 +195,7 @@ public class ApproveStageService : BaseModelService<ApproveStage>
             {
                 mainId = (int)reader["MainID"];
             }
-
+            cn.Close();
         }
 
         return mainId;
@@ -264,13 +264,13 @@ public class ApproveStageService : BaseModelService<ApproveStage>
     }
     
 
-    public async Task<SqlResult?> DeleteDetail(IEnumerable<int> stageDetail)
+    public async Task<SqlResult?> DeleteDetail(IEnumerable<ApproveStageDetail> stageDetails)
     {
         SqlResult? sqlResult = new();
-        foreach (var item in stageDetail)
+        foreach (var item in stageDetails)
         {
             var p = new DynamicParameters();
-            p.Add("@ApproveStageDetailsId", item, DbType.Int32, ParameterDirection.Input);
+            p.Add("@ApproveStageDetailsId", item.ApproveStageDetailsId, DbType.Int32, ParameterDirection.Input);
             sqlResult = await _sqlDataAccess.ExecuteSql("dbo.SP_ApproveStagesDetails_IUD", p, "AP-Delete");
             if (sqlResult.QueryResultMessage != null) { return sqlResult; }
         }
