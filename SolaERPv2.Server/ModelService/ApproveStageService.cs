@@ -215,15 +215,16 @@ public class ApproveStageService : BaseModelService<ApproveStage>
                 p.Add("@Sequence", item.Sequence, DbType.Int32, ParameterDirection.Input);
 
                 result.QueryResult = await cn.QueryFirstOrDefaultAsync<int>("dbo.SP_ApproveStagesDetails_IUD", p, commandType: CommandType.StoredProcedure);
-
-                Console.WriteLine("New Id:" + result);
             }
 
-            //using (var cn = new SqlConnection(_sqlDataAccess.ConnectionString))
+            //if (item.ApproveStageRoles == null)
             //{
-            //    var p = new DynamicParameters();
-            //    p.Add("@ApproveStageDetailId", (item.ApproveStageDetailsId > 0 ? item.ApproveStageDetailsId : result.QueryResult), DbType.Int32, ParameterDirection.Input);
-            //    result.QueryResult = await cn.ExecuteAsync("dbo.SP_ApproveStageRoles_IUD", p, commandType: CommandType.StoredProcedure);
+            //    using (var cn = new SqlConnection(_sqlDataAccess.ConnectionString))
+            //    {
+            //        var p = new DynamicParameters();
+            //        p.Add("@ApproveStageDetailId", (item.ApproveStageDetailsId > 0 ? item.ApproveStageDetailsId : result.QueryResult), DbType.Int32, ParameterDirection.Input);
+            //        result.QueryResult = await cn.ExecuteAsync("dbo.SP_ApproveStageRoles_IUD", p, commandType: CommandType.StoredProcedure);
+            //    }
             //}
 
             if (item.ApproveStageRoles != null && item.ApproveStageRoles.Any())
@@ -249,14 +250,57 @@ public class ApproveStageService : BaseModelService<ApproveStage>
     }
 
 
+    public async Task<SqlResult?> Delete(IEnumerable<int> approveStageMain)
+    {
+        SqlResult? sqlResult = new();
+        foreach (var item in approveStageMain)
+        {
+            var p = new DynamicParameters();
+            p.Add("@ApproveStageMainId", item, DbType.Int32, ParameterDirection.Input);
+            sqlResult = await _sqlDataAccess.ExecuteSql("dbo.SP_ApproveStagesMain_IUD", p, "AP-Delete");
+            if (sqlResult.QueryResultMessage != null) { return sqlResult; }
+        }
+        return sqlResult;
+    }
+    
+
+    public async Task<SqlResult?> DeleteDetail(IEnumerable<int> stageDetail)
+    {
+        SqlResult? sqlResult = new();
+        foreach (var item in stageDetail)
+        {
+            var p = new DynamicParameters();
+            p.Add("@ApproveStageDetailsId", item, DbType.Int32, ParameterDirection.Input);
+            sqlResult = await _sqlDataAccess.ExecuteSql("dbo.SP_ApproveStagesDetails_IUD", p, "AP-Delete");
+            if (sqlResult.QueryResultMessage != null) { return sqlResult; }
+        }
+        return sqlResult;
+    }
+
+
+    public async Task<SqlResult?> DeleteRole(IEnumerable<int> stageRole)
+    {
+        SqlResult? sqlResult = new();
+        foreach (var item in stageRole)
+        {
+            var p = new DynamicParameters();
+            p.Add("@ApproveStageRoleId", item, DbType.Int32, ParameterDirection.Input);
+            sqlResult = await _sqlDataAccess.ExecuteSql("dbo.SP_ApproveStageRoles_IUD", p, "AP-Delete");
+            if (sqlResult.QueryResultMessage != null) { return sqlResult; }
+        }
+        return sqlResult;
+    }
+
+    #region Useless
+
     //public async Task Save(ApproveStageMain approveStageMain, List<ApproveStageDetail> approveStageDetailList)
     //{
     //    var mainResult = await SaveMain(approveStageMain);
 
-    //    //if (mainResult != null && mainResult.QueryResult > 0)
-    //    //{
-    //    //    await SaveDetails(approveStageDetailList);
-    //    //}
+    //    if (mainResult != null && mainResult.QueryResult > 0)
+    //    {
+    //        await SaveDetails(approveStageDetailList);
+    //    }
     //}
 
 
@@ -286,21 +330,6 @@ public class ApproveStageService : BaseModelService<ApproveStage>
     //    return result;
     //}
 
-
-    public async Task<SqlResult?> Delete(IEnumerable<int> approveStageMain)
-    {
-        SqlResult? sqlResult = new();
-        foreach (var item in approveStageMain)
-        {
-            var p = new DynamicParameters();
-            p.Add("@ApproveStageMainId", item, DbType.Int32, ParameterDirection.Input);
-            sqlResult = await _sqlDataAccess.ExecuteSql("dbo.SP_ApproveStagesMain_IUD", p, "AP-Delete");
-            if (sqlResult.QueryResultMessage != null) { return sqlResult; }
-        }
-        return sqlResult;
-    }
-
-    #region Useless
 
     //public async Task<SqlResult?> SaveDetails(ApproveStageDetail approveStageDetail)
     //{

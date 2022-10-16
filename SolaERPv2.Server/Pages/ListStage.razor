@@ -104,7 +104,7 @@
                           CanDelete="true"
                           ShowToolbar="false"
                           ShowCheckBoxColumn="false"
-                          CustomButtonIcon=""
+                          DeleteButtonText=""
                           Height="calc(100vh - 200px)"
                           ShowSearchBar="false"
                           Pageable="false">
@@ -200,7 +200,23 @@
             a++;
         }
 
-        stageDetailList.Remove(stageDetail);
+       
+    }
+
+    async void DeleteDetail()
+    {
+        var deletedId = new List<int>() { stageDetail.ApproveStageDetailsId };
+        var sqlResult = await ApproveStageService.DeleteDetail(deletedId);
+        AppState.ShowAlert("Item successfully detail deleted", Severity.Success);
+        NavigationManager.NavigateTo("/liststage");
+    }
+
+    async void DeleteRole()
+    {
+        var deletedId = new List<int>() { stageRole.ApproveStageRoleId };
+        var sqlResult = await ApproveStageService.DeleteRole(deletedId);
+        AppState.ShowAlert("Item successfully role deleted", Severity.Success);
+        NavigationManager.NavigateTo("/liststage");
     }
 
 
