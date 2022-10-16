@@ -392,26 +392,34 @@
 
     async void BackClick()
     {
+        WindowVisible=true;
+    }
+
+    async void BackClickPage()
+    {
         NavigationManager.NavigateTo("/listcompany");
-        //WindowVisible=true;
     }
 
     bool WindowVisible { get; set; }
+ 
 
 }
 
 
 <TelerikButton Icon="window" OnClick=@(()=> WindowVisible = true)>Open Modal</TelerikButton>
 
-<TelerikWindow Class="demo-window" Width="500px" Height="300px" Centered="true" @bind-Visible=@WindowVisible Modal="true">
+<TelerikWindow Class="demo-window" Width="400px" Centered="true" @bind-Visible=@WindowVisible Modal="true">
     <WindowTitle>
-        <strong>Modal Window</strong>
+        <strong>Alert!</strong>
     </WindowTitle>
     <WindowActions>
         <WindowAction Name="Close" />
     </WindowActions>
     <WindowContent>
-        <p>Click the close button to dismiss this modal dialog.</p>
+        <strong>Dəyişiklik etmiş ola bilərsiniz.Yadda saxlamadan yenədə qayıtmaq istiyirsinizmi? </strong>
+        <br />
+        <br />
+        <TelerikButton OnClick="@BackClickPage">Bəli!</TelerikButton>
     </WindowContent>
 </TelerikWindow>
 
