@@ -143,7 +143,6 @@
 
 @code {
     [CascadingParameter] public AppState? AppState { get; set; }
-    [Parameter] public bool CanDelete { get; set; } = false;
 
     List<ApproveStageDetail>? stageDetailList = new();
     List<ApproveStageRole>? stageRoleList = new();
@@ -157,7 +156,7 @@
     BusinessUnit? businessUnit = new();
     Procedure? procedure = new();
     ApproveStageMain? stageMain = new();
-   
+
     EditContext? editContext = new(new ApproveStageMain());
 
     int? _mainId;
@@ -199,26 +198,7 @@
             item.Sequence = a;
             a++;
         }
-
-
     }
-
-    async void DeleteDetail()
-    {
-        var deletedId = new List<int>() { stageDetail.ApproveStageDetailsId };
-        //var sqlResult = await ApproveStageService.DeleteDetail(deletedId);
-        //AppState.ShowAlert("Item successfully detail deleted", Severity.Success);
-        //NavigationManager.NavigateTo("/liststage");
-    }
-
-    async void DeleteRole()
-    {
-        var deletedId = new List<int>() { stageRole.ApproveStageRoleId };
-        var sqlResult = await ApproveStageService.DeleteRole(deletedId);
-        AppState.ShowAlert("Item successfully role deleted", Severity.Success);
-        NavigationManager.NavigateTo("/liststage");
-    }
-
 
     void ApproveRoleChanged(ApproveStageRole approveStageRole, int value)
     {
@@ -231,7 +211,7 @@
     {
         var _stageDetailList = await ApproveStageService.ApproveStageDetailLoad(_mainId??0);
         stageDetailList = _stageDetailList.ToList();
-        stageDetail = stageDetailList.Any() ? stageDetailList.FirstOrDefault() : new();
+        //stageDetail = stageDetailList.Any() ? stageDetailList.FirstOrDefault() : new();
     }
 
     async Task<IEnumerable<ApproveStageDetail>> GetDbList()
@@ -240,9 +220,16 @@
         return _stageDetailList.ToList();
     }
 
+    async Task<IEnumerable<ApproveStageRole>> GetDbRoleList()
+    {
+        var _stageRoleList = await ApproveStageService.ApproveStageRoleLoad(stageDetail.ApproveStageDetailsId);
+        return _stageRoleList.ToList();
+    }
+
+
     async Task GetStageRoleList(int? id)
     {
-        var _stageRoleList = await ApproveStageService.ApproveStageRoleLoad(id);
+        var _stageRoleList =await  ApproveStageService.ApproveStageRoleLoad(id);
         stageRoleList = _stageRoleList?.ToList();
     }
 
@@ -297,37 +284,16 @@
         stageRoleList = stageDetail != null && stageDetail.ApproveStageRoles != null ? stageDetail.ApproveStageRoles : new();
     }
 
-    //async void SaveClick()
-    //{
-    //    AppState.Loading = true;
-
-    //    stageMain.ProcedureId = procedure.ProcedureId;
-    //    stageMain.BusinessUnitId = businessUnit.BusinessUnitId;
-
-    //    stageDetail.ApproveStageMainId = stageMain.ApproveStageMainId;
-
-    //    foreach (var item in stageDetailList)
-    //    {
-    //        item.ApproveStageMainId = stageMain.ApproveStageMainId;
-    //    }
-
-    //    await ApproveStageService.Save(stageMain, stageDetailList);
-
-    //    AppState.Loading = false;
-    //    NavigationManager.NavigateTo("/liststage");
-    //}
-
 
     async void SaveClick()
     {
         AppState.Loading = true;
 
-        //int mainId = 0;
         var validated = Validate();
         if (validated)
         {
             var deletedStageList = new List<ApproveStageDetail>();
-            //await GetDbList();
+
             foreach (var item in await GetDbList())
             {
                 bool checkDeleted = stageDetailList.Any(sd => sd.ApproveStageDetailsId == item.ApproveStageDetailsId);
@@ -337,6 +303,22 @@
             }
             if (deletedStageList.Any())
                 await ApproveStageService.DeleteDetail(deletedStageList);
+
+           
+            var deletedRoleList = new List<ApproveStageRole>();
+                
+            foreach (var item in await GetDbRoleList())
+            {
+                bool checkDeleted = stageRoleList.Any(sd => sd.ApproveStageRoleId == item.ApproveStageRoleId);
+
+                if (!checkDeleted)
+                    deletedRoleList.Add(item);
+            }
+            if (deletedRoleList.Any())
+                await ApproveStageService.DeleteRole(deletedRoleList);
+
+
+
             stageMain.ProcedureId = procedure.ProcedureId;
             stageMain.BusinessUnitId = businessUnit.BusinessUnitId;
 
@@ -351,15 +333,12 @@
             if(_mainId == null){
                 _mainId = await ApproveStageService.SaveMain(stageMain);
             }
-            
-
-            //var result2 = await ApproveStageService.SaveDetails(stageDetailList);
-            var result2 = await ApproveStageService.SaveDetails(stageDetailList, _mainId);
-
+          
+            await ApproveStageService.SaveDetails(stageDetailList, _mainId);
         }
 
         AppState.Loading = false;
-        NavigationManager.NavigateTo("/liststage");
+        NavigationManager.NavigateTo($"/liststage?id={_mainId}");
     }
 
 

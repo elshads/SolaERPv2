@@ -67,7 +67,7 @@ public class ApproveStageService : BaseModelService<ApproveStage>
             item.ApproveStageRoles = roleList.ToList();
         }
 
-        return result; 
+        return result;
     }
 
     public async Task<IEnumerable<ApproveStageRole>?> ApproveStageRoleLoad(int? approveDetailId)
@@ -184,7 +184,7 @@ public class ApproveStageService : BaseModelService<ApproveStage>
             p.Add("@BusinessUnitId", approveStageMain.BusinessUnitId, DbType.Int32, ParameterDirection.Input);
             p.Add("@UserId", user.Id, DbType.Int32, ParameterDirection.Input);
 
-            await cn.ExecuteAsync("dbo.[SP_ApproveStagesMaintTEST_IUD]", p, commandType: CommandType.StoredProcedure);
+            await cn.ExecuteAsync("dbo.[SP_ApproveStagesMain_IUD]", p, commandType: CommandType.StoredProcedure);
 
             var cmd = cn.CreateCommand();
             cmd.CommandText = "select Max(ApproveStageMainId ) as MainID from Config.ApproveStagesMain";
@@ -195,52 +195,46 @@ public class ApproveStageService : BaseModelService<ApproveStage>
             {
                 mainId = (int)reader["MainID"];
             }
-            cn.Close();
         }
 
         return mainId;
     }
 
-    public async Task<SqlResult?> SaveDetails(List<ApproveStageDetail> approveStageDetailList,int? mainId)
+    public async Task<SqlResult?> SaveDetails(List<ApproveStageDetail> approveStageDetailList, int? mainId)
     {
         SqlResult? result = new();
         foreach (var item in approveStageDetailList)
         {
             using (var cn = new SqlConnection(_sqlDataAccess.ConnectionString))
             {
+                await cn.OpenAsync();
                 var p = new DynamicParameters();
                 p.Add("@ApproveStageDetailsId", item.ApproveStageDetailsId, DbType.Int32, ParameterDirection.Input);
                 p.Add("@ApproveStageMainId", mainId, DbType.Int32, ParameterDirection.Input);
                 p.Add("@@ApproveStageDetailsName", item.ApproveStageDetailsName, DbType.String, ParameterDirection.Input);
                 p.Add("@Sequence", item.Sequence, DbType.Int32, ParameterDirection.Input);
 
+
                 result.QueryResult = await cn.QueryFirstOrDefaultAsync<int>("dbo.SP_ApproveStagesDetails_IUD", p, commandType: CommandType.StoredProcedure);
             }
 
-            //if (item.ApproveStageRoles == null)
-            //{
-            //    using (var cn = new SqlConnection(_sqlDataAccess.ConnectionString))
-            //    {
-            //        var p = new DynamicParameters();
-            //        p.Add("@ApproveStageDetailId", (item.ApproveStageDetailsId > 0 ? item.ApproveStageDetailsId : result.QueryResult), DbType.Int32, ParameterDirection.Input);
-            //        result.QueryResult = await cn.ExecuteAsync("dbo.SP_ApproveStageRoles_IUD", p, commandType: CommandType.StoredProcedure);
-            //    }
-            //}
 
             if (item.ApproveStageRoles != null && item.ApproveStageRoles.Any())
             {
                 foreach (var roleItem in item.ApproveStageRoles)
                 {
+
                     using (var cn = new SqlConnection(_sqlDataAccess.ConnectionString))
                     {
+                        cn.Open();
                         var p = new DynamicParameters();
                         p.Add("@ApproveStageRoleId", roleItem.ApproveStageRoleId, DbType.Int32, ParameterDirection.Input);
-                        p.Add("@ApproveStageDetailId", (item.ApproveStageDetailsId > 0 ? item.ApproveStageDetailsId : result.QueryResult), DbType.Int32, ParameterDirection.Input);
+                        p.Add("@ApproveStageDetailId", result.QueryResult > 0 ? result.QueryResult : item.ApproveStageDetailsId, DbType.Int32, ParameterDirection.Input);
                         p.Add("@ApproveRoleId", roleItem.ApproveRoleId, DbType.Int32, ParameterDirection.Input);
                         p.Add("@AmountFrom", roleItem.AmountFrom, DbType.Decimal, ParameterDirection.Input);
                         p.Add("@AmountTo", roleItem.AmountTo, DbType.Decimal, ParameterDirection.Input);
 
-                        result.QueryResult = await cn.ExecuteAsync("dbo.SP_ApproveStageRoles_IUD", p, commandType: CommandType.StoredProcedure);
+                        await cn.ExecuteAsync("dbo.SP_ApproveStageRoles_IUD", p, commandType: CommandType.StoredProcedure);
                     }
                 }
             }
@@ -262,7 +256,7 @@ public class ApproveStageService : BaseModelService<ApproveStage>
         }
         return sqlResult;
     }
-    
+
 
     public async Task<SqlResult?> DeleteDetail(IEnumerable<ApproveStageDetail> stageDetails)
     {
@@ -278,13 +272,13 @@ public class ApproveStageService : BaseModelService<ApproveStage>
     }
 
 
-    public async Task<SqlResult?> DeleteRole(IEnumerable<int> stageRole)
+    public async Task<SqlResult?> DeleteRole(IEnumerable<ApproveStageRole> stageRole)
     {
         SqlResult? sqlResult = new();
         foreach (var item in stageRole)
         {
             var p = new DynamicParameters();
-            p.Add("@ApproveStageRoleId", item, DbType.Int32, ParameterDirection.Input);
+            p.Add("@ApproveStageRoleId", item.ApproveStageRoleId, DbType.Int32, ParameterDirection.Input);
             sqlResult = await _sqlDataAccess.ExecuteSql("dbo.SP_ApproveStageRoles_IUD", p, "AP-Delete");
             if (sqlResult.QueryResultMessage != null) { return sqlResult; }
         }
