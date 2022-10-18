@@ -330,9 +330,7 @@
             }
 
            
-            if(_mainId == null){
-                _mainId = await ApproveStageService.SaveMain(stageMain);
-            }
+            _mainId = await ApproveStageService.SaveMain(stageMain);
           
             await ApproveStageService.SaveDetails(stageDetailList, _mainId);
         }
@@ -351,11 +349,14 @@
             return false;
         }
 
-        //if (stageRole.ApproveRoleName==null)
-        //{
-        //    AppState.ShowAlert("Rol Bos ola bilmez 3", Severity.Error);
-        //    return false;
-        //}
+        foreach (var item in stageRoleList)
+        {
+            if (item.ApproveRoleName == null)
+            {
+                AppState.ShowAlert("Rol Bos ola bilmez", Severity.Error);
+                return false;
+            }
+        }
 
         return true;
     }
@@ -392,7 +393,9 @@
 
     async void BackClick()
     {
-        WindowVisible=true;
+        //WindowVisible=true;
+        NavigationManager.NavigateTo("/listcompany");
+
     }
 
     async void BackClickPage()
@@ -423,10 +426,3 @@
     </WindowContent>
 </TelerikWindow>
 
-
-
-<style type="text/css">
-    .demo-window {
-        z-index: 44444;
-    }
-</style>

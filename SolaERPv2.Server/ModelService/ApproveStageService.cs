@@ -207,13 +207,11 @@ public class ApproveStageService : BaseModelService<ApproveStage>
         {
             using (var cn = new SqlConnection(_sqlDataAccess.ConnectionString))
             {
-                await cn.OpenAsync();
                 var p = new DynamicParameters();
                 p.Add("@ApproveStageDetailsId", item.ApproveStageDetailsId, DbType.Int32, ParameterDirection.Input);
                 p.Add("@ApproveStageMainId", mainId, DbType.Int32, ParameterDirection.Input);
                 p.Add("@@ApproveStageDetailsName", item.ApproveStageDetailsName, DbType.String, ParameterDirection.Input);
                 p.Add("@Sequence", item.Sequence, DbType.Int32, ParameterDirection.Input);
-
 
                 result.QueryResult = await cn.QueryFirstOrDefaultAsync<int>("dbo.SP_ApproveStagesDetails_IUD", p, commandType: CommandType.StoredProcedure);
             }
@@ -226,7 +224,6 @@ public class ApproveStageService : BaseModelService<ApproveStage>
 
                     using (var cn = new SqlConnection(_sqlDataAccess.ConnectionString))
                     {
-                        cn.Open();
                         var p = new DynamicParameters();
                         p.Add("@ApproveStageRoleId", roleItem.ApproveStageRoleId, DbType.Int32, ParameterDirection.Input);
                         p.Add("@ApproveStageDetailId", result.QueryResult > 0 ? result.QueryResult : item.ApproveStageDetailsId, DbType.Int32, ParameterDirection.Input);
