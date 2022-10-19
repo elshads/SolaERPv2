@@ -83,7 +83,7 @@
                           ShowCheckBoxColumn="false"
                           ShowToolbar="false"
                           DeleteButtonText=""
-                          Height="calc(100vh - 200px)"
+                          Height="calc(100vh - 400px)"
                           ShowSearchBar="false"
                           OnRowClick="@OnRowClickHandler"
                           Pageable="false">
@@ -105,7 +105,7 @@
                           ShowToolbar="false"
                           ShowCheckBoxColumn="false"
                           DeleteButtonText=""
-                          Height="calc(100vh - 200px)"
+                          Height="calc(100vh - 400px)"
                           ShowSearchBar="false"
                           Pageable="false">
                     <DataGridColumns>
@@ -144,12 +144,14 @@
 @code {
     [CascadingParameter] public AppState? AppState { get; set; }
 
+    //List
     List<ApproveStageDetail>? stageDetailList = new();
     List<ApproveStageRole>? stageRoleList = new();
     IEnumerable<Procedure> procedureList = new List<Procedure>();
     IEnumerable<BusinessUnit> businessUnitList = new List<BusinessUnit>();
     IEnumerable<ApproveRole> approveRoleList = new List<ApproveRole>();
 
+    //Models
     ApproveRole? approveRole = new();
     ApproveStageDetail? stageDetail = new();
     ApproveStageRole? stageRole = new();
@@ -160,7 +162,9 @@
     EditContext? editContext = new(new ApproveStageMain());
 
     int? _mainId;
+    bool WindowVisible { get; set; }
 
+    //Get by page id
     async Task SetQueryVariables()
     {
         var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
@@ -176,13 +180,8 @@
 
     }
 
-    void CreateRole(GridCommandEventArgs args)
-    {
-        var item = args.Item as ApproveStageRole;
-
-        stageDetail.ApproveStageRoles = stageRoleList;
-    }
-
+   
+    //Grid Actions
     void CreateSequence(GridCommandEventArgs args)
     {
         var item = args.Item as ApproveStageDetail;
@@ -199,6 +198,13 @@
             a++;
         }
     }
+ 
+    void CreateRole(GridCommandEventArgs args)
+    {
+        var item = args.Item as ApproveStageRole;
+
+        stageDetail.ApproveStageRoles = stageRoleList;
+    }
 
     void ApproveRoleChanged(ApproveStageRole approveStageRole, int value)
     {
@@ -206,15 +212,17 @@
         var name = approveRoleList?.FirstOrDefault(x => x.ApproveRoleId == value);
         approveStageRole.ApproveRoleName = name != null && name.ApproveRoleName != null ? name.ApproveRoleName : "";
     }
-
-    async Task GetStageDetailList()
+ 
+    async Task OnRowClickHandler(GridRowClickEventArgs args)
     {
-        var _stageDetailList = await ApproveStageService.ApproveStageDetailLoad(_mainId??0);
-        stageDetailList = _stageDetailList.ToList();
-        //stageDetail = stageDetailList.Any() ? stageDetailList.FirstOrDefault() : new();
+        stageDetail = args.Item as ApproveStageDetail;
+        stageRoleList = stageDetail != null && stageDetail.ApproveStageRoles != null ? stageDetail.ApproveStageRoles : new();
     }
 
-    async Task<IEnumerable<ApproveStageDetail>> GetDbList()
+
+
+    //Get data to delete 
+    async Task<IEnumerable<ApproveStageDetail>> GetDbDetailList()
     {
         var _stageDetailList = await ApproveStageService.ApproveStageDetailLoad(_mainId ?? 0);
         return _stageDetailList.ToList();
@@ -226,29 +234,18 @@
         return _stageRoleList.ToList();
     }
 
-
-    async Task GetStageRoleList(int? id)
-    {
-        var _stageRoleList =await  ApproveStageService.ApproveStageRoleLoad(id);
-        stageRoleList = _stageRoleList?.ToList();
-    }
-
-    async Task GetProcedureList()
-    {
-        procedureList = await ApproveStageService.GetProcedures();
-        procedure = procedureList.Any() ? procedureList.FirstOrDefault() : new();
-    }
-
-    async Task GetBusinessUnitList()
-    {
-        businessUnitList = await BusinessUnitService.GetAllAsync();
-        businessUnit = businessUnitList.Any() ? businessUnitList.FirstOrDefault() : new();
-    }
-
-    async Task GetRoleList()
+   
+    //Get Data
+    async Task GetList()
     {
         approveRoleList = await ApproveStageService.GetRoles();
         approveRole = approveRoleList.Any() ? approveRoleList.FirstOrDefault() : new();
+
+        businessUnitList = await BusinessUnitService.GetAllAsync();
+        businessUnit = businessUnitList.Any() ? businessUnitList.FirstOrDefault() : new();
+
+        procedureList = await ApproveStageService.GetProcedures();
+        procedure = procedureList.Any() ? procedureList.FirstOrDefault() : new();
     }
 
     async Task LoadDateByApproveMainId()
@@ -258,16 +255,25 @@
         businessUnit = businessUnitList.FirstOrDefault(x => x.BusinessUnitId == stageMain.BusinessUnitId);
     }
 
+    async Task GetStageDetailList()
+    {
+        var _stageDetailList = await ApproveStageService.ApproveStageDetailLoad(_mainId ?? 0);
+        stageDetailList = _stageDetailList.ToList();
+    }
+
+
+  
+    //Initialized
     async Task LoadData()
     {
-        await GetRoleList();
-        await GetBusinessUnitList();
-        await GetProcedureList();
+        await GetList();
+        
         if (_mainId > 0)
         {
             await LoadDateByApproveMainId();
             await GetStageDetailList();
         }
+       
         editContext = new EditContext(stageMain);
     }
 
@@ -278,13 +284,9 @@
         await LoadData();
     }
 
-    async Task OnRowClickHandler(GridRowClickEventArgs args)
-    {
-        stageDetail = args.Item as ApproveStageDetail;
-        stageRoleList = stageDetail != null && stageDetail.ApproveStageRoles != null ? stageDetail.ApproveStageRoles : new();
-    }
+    
 
-
+    //Click
     async void SaveClick()
     {
         AppState.Loading = true;
@@ -292,9 +294,10 @@
         var validated = Validate();
         if (validated)
         {
+            
             var deletedStageList = new List<ApproveStageDetail>();
 
-            foreach (var item in await GetDbList())
+            foreach (var item in await GetDbDetailList())
             {
                 bool checkDeleted = stageDetailList.Any(sd => sd.ApproveStageDetailsId == item.ApproveStageDetailsId);
 
@@ -304,9 +307,9 @@
             if (deletedStageList.Any())
                 await ApproveStageService.DeleteDetail(deletedStageList);
 
-           
+
             var deletedRoleList = new List<ApproveStageRole>();
-                
+
             foreach (var item in await GetDbRoleList())
             {
                 bool checkDeleted = stageRoleList.Any(sd => sd.ApproveStageRoleId == item.ApproveStageRoleId);
@@ -317,12 +320,9 @@
             if (deletedRoleList.Any())
                 await ApproveStageService.DeleteRole(deletedRoleList);
 
-
-
             stageMain.ProcedureId = procedure.ProcedureId;
             stageMain.BusinessUnitId = businessUnit.BusinessUnitId;
 
-            stageDetail.ApproveStageMainId = stageMain.ApproveStageMainId;
 
             foreach (var item in stageDetailList)
             {
@@ -330,7 +330,14 @@
             }
 
            
-            _mainId = await ApproveStageService.SaveMain(stageMain);
+            if (_mainId==null)
+            {
+                _mainId = await ApproveStageService.SaveMain(stageMain);
+
+            }else
+            {
+                await ApproveStageService.SaveMain(stageMain);
+            }
           
             await ApproveStageService.SaveDetails(stageDetailList, _mainId);
         }
@@ -339,8 +346,58 @@
         NavigationManager.NavigateTo($"/liststage?id={_mainId}");
     }
 
+    async void DeleteClick()
+    {
+        var deletedId = new List<int>() { stageMain.ApproveStageMainId };
+        var sqlResult = await ApproveStageService.Delete(deletedId);
+        AppState.ShowAlert("Item successfully deleted", Severity.Success);
+        NavigationManager.NavigateTo("/listcompany");
+    }
+   
+    async void BackClick()
+    {
+        //WindowVisible=true;
+        NavigationManager.NavigateTo("/listcompany");
+
+    }
 
 
+    //Called Methods
+    async void DeleteMethod()
+    {
+        var deletedStageList = new List<ApproveStageDetail>();
+
+        foreach (var item in await GetDbDetailList())
+        {
+            bool checkDeleted = stageDetailList.Any(sd => sd.ApproveStageDetailsId == item.ApproveStageDetailsId);
+
+            if (!checkDeleted)
+                deletedStageList.Add(item);
+        }
+        if (deletedStageList.Any())
+            await ApproveStageService.DeleteDetail(deletedStageList);
+
+
+        var deletedRoleList = new List<ApproveStageRole>();
+
+        foreach (var item in await GetDbRoleList())
+        {
+            bool checkDeleted = stageRoleList.Any(sd => sd.ApproveStageRoleId == item.ApproveStageRoleId);
+
+            if (!checkDeleted)
+                deletedRoleList.Add(item);
+        }
+        if (deletedRoleList.Any())
+            await ApproveStageService.DeleteRole(deletedRoleList);
+    }
+    
+    async void BackClickPage()
+    {
+        NavigationManager.NavigateTo("/listcompany");
+    }
+
+
+    //Validate
     bool Validate()
     {
         if (stageMain.ApproveStageName == null)
@@ -361,14 +418,8 @@
         return true;
     }
 
-    async void DeleteClick()
-    {
-        var deletedId = new List<int>() { stageMain.ApproveStageMainId };
-        var sqlResult = await ApproveStageService.Delete(deletedId);
-        AppState.ShowAlert("Item successfully deleted", Severity.Success);
-        NavigationManager.NavigateTo("/listcompany");
-    }
-
+    
+    //Button Settings
     void IDisposable.Dispose()
     {
         AppState.OnBackClick -= BackClick;
@@ -390,22 +441,6 @@
         AppState.OnDeleteClick += DeleteClick;
 
     }
-
-    async void BackClick()
-    {
-        //WindowVisible=true;
-        NavigationManager.NavigateTo("/listcompany");
-
-    }
-
-    async void BackClickPage()
-    {
-        NavigationManager.NavigateTo("/listcompany");
-    }
-
-    bool WindowVisible { get; set; }
- 
-    
 }
 
 
@@ -425,4 +460,3 @@
         <TelerikButton OnClick="@BackClickPage">Bəli!</TelerikButton>
     </WindowContent>
 </TelerikWindow>
-
