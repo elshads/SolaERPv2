@@ -1,1 +1,4 @@
 dotnet publish -c Release -o C:\Users\elshad\Desktop\SolaERPPublished
+
+dotnet publish -c Release -o C:\Users\user\Desktop\SolaERPPublished
+

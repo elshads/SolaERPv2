@@ -1,9 +1,10 @@
-﻿@page "/liststage"
+﻿@page "/approvalstage/card"
 
 @implements IDisposable
 
 @inject ApproveStageService ApproveStageService
 
+@WindowBackVisible
 
 <MudCard Class="k-mb-4">
     <MudCardContent>
@@ -44,23 +45,19 @@
                     </div>
                 </GridLayoutItem>
 
-                <GridLayoutItem Row="1">
-                    <div class="form-editcontext">
-                        <div class="form-editcontext">
-                            <TelerikForm EditContext="@editContext"
-                                         ValidationMessageType="FormValidationMessageType.Inline"
-                                         Columns="@(AppState.MobileView ? 1 : 2)"
-                                         ColumnSpacing="1rem">
-                                <FormValidation>
-                                    <DataAnnotationsValidator></DataAnnotationsValidator>
-                                </FormValidation>
-                                <FormItems>
-                                    <FormItem Field="@nameof(ApproveStageMain.ApproveStageName)" LabelText="Approve Stage Name: " Enabled="true"></FormItem>
-                                </FormItems>
-                                <FormButtons />
-                            </TelerikForm>
-                        </div>
-                    </div>
+                <GridLayoutItem Row="@(!AppState.MobileView? 1 : 2)" Column="@(!AppState.MobileView? 2 : 1)">
+                    <TelerikForm EditContext="@editContext"
+                                 ValidationMessageType="FormValidationMessageType.Inline"
+                                 Columns="@(AppState.MobileView ? 1 : 2)"
+                                 ColumnSpacing="1rem">
+                        <FormValidation>
+                            <DataAnnotationsValidator></DataAnnotationsValidator>
+                        </FormValidation>
+                        <FormItems>
+                            <FormItem Field="@nameof(ApproveStageMain.ApproveStageName)" LabelText="Approve Stage Name: " Enabled="true"></FormItem>
+                        </FormItems>
+                        <FormButtons />
+                    </TelerikForm>
                 </GridLayoutItem>
             </GridLayoutItems>
         </TelerikGridLayout>
@@ -69,75 +66,73 @@
 
 
 
-<div class="k-mt-2">
-    <TelerikGridLayout RowSpacing="8px" ColumnSpacing="8px">
-        <GridLayoutItems>
-            <GridLayoutItem Row="2" Column="1">
+<TelerikGridLayout RowSpacing="8px" ColumnSpacing="8px">
+    <GridLayoutItems>
+        <GridLayoutItem Row="2" Column="1">
 
-                <DataGrid @bind-Data="@stageDetailList"
-                          GridEditMode="GridEditMode.Incell"
-                          CanAdd="true"
-                          CanDelete="true"
-                          OnCreate="CreateSequence"
-                          OnDelete="@((IEnumerable<ApproveStageDetail> items) => DeleteSequence(items))"
-                          ShowCheckBoxColumn="false"
-                          ShowToolbar="false"
-                          DeleteButtonText=""
-                          Height="calc(100vh - 400px)"
-                          ShowSearchBar="false"
-                          OnRowClick="@OnRowClickHandler"
-                          Pageable="false">
-                    <DataGridColumns>
-                        <GridColumn Field="@(nameof(ApproveStageDetail.ApproveStageDetailsName))" Title="Details Name" />
-                        <GridColumn Field="@(nameof(ApproveStageDetail.Sequence))" Title="Sequence" Editable="false" />
-                    </DataGridColumns>
-                </DataGrid>
-
-
-            </GridLayoutItem>
-            <GridLayoutItem Row="@(!AppState.MobileView? 2 : 3)" Column="@(!AppState.MobileView? 2 : 1)">
-
-                <DataGrid @bind-Data="@stageRoleList"
-                          GridEditMode="GridEditMode.Incell"
-                          OnCreate="CreateRole"
-                          CanAdd="true"
-                          CanDelete="true"
-                          ShowToolbar="false"
-                          ShowCheckBoxColumn="false"
-                          DeleteButtonText=""
-                          Height="calc(100vh - 400px)"
-                          ShowSearchBar="false"
-                          Pageable="false">
-                    <DataGridColumns>
-                        <GridColumn Field=@nameof(ApproveStageRole.ApproveRole.ApproveRoleName) Title="Role Name">
-                            <EditorTemplate>
-                                @{
-                                    var selectedStageRole = context as ApproveStageRole;
-                                    <TelerikComboBox Value="@selectedStageRole.ApproveRoleId"
-                                                 ValueChanged="@((int value)=>ApproveRoleChanged(selectedStageRole,value))"
-                                                 ValueExpression="()=>selectedStageRole.ApproveRoleId"
-                                                 Data="@approveRoleList"
-                                                 TextField="ApproveRoleName"
-                                                 ValueField="ApproveRoleId"
-                                                 Placeholder="Select..."
-                                                 Filterable="true"
-                                                 FilterOperator="StringFilterOperator.Contains" />
-                                }
-                            </EditorTemplate>
-
-                        </GridColumn>
-
-                        <GridColumn Field="@(nameof(ApproveStageRole.AmountFrom))" Title="Amount" />
-                        <GridColumn Field="@(nameof(ApproveStageRole.AmountTo))" Title="AmountTo" />
-                    </DataGridColumns>
-                </DataGrid>
+            <DataGrid @bind-Data="@stageDetailList"
+                      GridEditMode="GridEditMode.Incell"
+                      CanAdd="true"
+                      CanDelete="true"
+                      OnCreate="CreateSequence"
+                      OnDelete="@((IEnumerable<ApproveStageDetail> items) => DeleteSequence(items))"
+                      ShowCheckBoxColumn="false"
+                      ShowToolbar="false"
+                      DeleteButtonText=""
+                      Height="calc(100vh - 400px)"
+                      ShowSearchBar="false"
+                      OnRowClick="@OnRowClickHandler"
+                      Pageable="false">
+                <DataGridColumns>
+                    <GridColumn Field="@(nameof(ApproveStageDetail.ApproveStageDetailsName))" Title="Details Name" />
+                    <GridColumn Field="@(nameof(ApproveStageDetail.Sequence))" Title="Sequence" Editable="false" />
+                </DataGridColumns>
+            </DataGrid>
 
 
-            </GridLayoutItem>
+        </GridLayoutItem>
+        <GridLayoutItem Row="@(!AppState.MobileView? 2 : 3)" Column="@(!AppState.MobileView? 2 : 1)">
 
-        </GridLayoutItems>
-    </TelerikGridLayout>
-</div>
+            <DataGrid @bind-Data="@stageRoleList"
+                      GridEditMode="GridEditMode.Incell"
+                      OnCreate="CreateRole"
+                      CanAdd="true"
+                      CanDelete="true"
+                      ShowToolbar="false"
+                      ShowCheckBoxColumn="false"
+                      DeleteButtonText=""
+                      Height="calc(100vh - 400px)"
+                      ShowSearchBar="false"
+                      Pageable="false">
+                <DataGridColumns>
+                    <GridColumn Field=@nameof(ApproveStageRole.ApproveRole.ApproveRoleName) Title="Role Name">
+                        <EditorTemplate>
+                            @{
+                                var selectedStageRole = context as ApproveStageRole;
+                                <TelerikComboBox Value="@selectedStageRole.ApproveRoleId"
+                                             ValueChanged="@((int value)=>ApproveRoleChanged(selectedStageRole,value))"
+                                             ValueExpression="()=>selectedStageRole.ApproveRoleId"
+                                             Data="@approveRoleList"
+                                             TextField="ApproveRoleName"
+                                             ValueField="ApproveRoleId"
+                                             Placeholder="Select..."
+                                             Filterable="true"
+                                             FilterOperator="StringFilterOperator.Contains" />
+                            }
+                        </EditorTemplate>
+
+                    </GridColumn>
+
+                    <GridColumn Field="@(nameof(ApproveStageRole.AmountFrom))" Title="Amount" />
+                    <GridColumn Field="@(nameof(ApproveStageRole.AmountTo))" Title="AmountTo" />
+                </DataGridColumns>
+            </DataGrid>
+
+
+        </GridLayoutItem>
+
+    </GridLayoutItems>
+</TelerikGridLayout>
 
 
 
@@ -162,7 +157,10 @@
     EditContext? editContext = new(new ApproveStageMain());
 
     int? _mainId;
-    bool WindowVisible { get; set; }
+    private bool WindowBackVisible { get; set; }
+    private bool WindowDeleteVisible { get; set; }
+    private bool isSaved { get; set; }
+
 
     //Get by page id
     async Task SetQueryVariables()
@@ -180,7 +178,7 @@
 
     }
 
-   
+
     //Grid Actions
     void CreateSequence(GridCommandEventArgs args)
     {
@@ -198,7 +196,7 @@
             a++;
         }
     }
- 
+
     void CreateRole(GridCommandEventArgs args)
     {
         var item = args.Item as ApproveStageRole;
@@ -212,7 +210,7 @@
         var name = approveRoleList?.FirstOrDefault(x => x.ApproveRoleId == value);
         approveStageRole.ApproveRoleName = name != null && name.ApproveRoleName != null ? name.ApproveRoleName : "";
     }
- 
+
     async Task OnRowClickHandler(GridRowClickEventArgs args)
     {
         stageDetail = args.Item as ApproveStageDetail;
@@ -221,7 +219,7 @@
 
 
 
-    //Get data to delete 
+    //Get data to delete
     async Task<IEnumerable<ApproveStageDetail>> GetDbDetailList()
     {
         var _stageDetailList = await ApproveStageService.ApproveStageDetailLoad(_mainId ?? 0);
@@ -234,7 +232,7 @@
         return _stageRoleList.ToList();
     }
 
-   
+
     //Get Data
     async Task GetList()
     {
@@ -262,18 +260,18 @@
     }
 
 
-  
+
     //Initialized
     async Task LoadData()
     {
         await GetList();
-        
+
         if (_mainId > 0)
         {
             await LoadDateByApproveMainId();
             await GetStageDetailList();
         }
-       
+
         editContext = new EditContext(stageMain);
     }
 
@@ -284,7 +282,6 @@
         await LoadData();
     }
 
-    
 
     //Click
     async void SaveClick()
@@ -294,76 +291,54 @@
         var validated = Validate();
         if (validated)
         {
-            
-            var deletedStageList = new List<ApproveStageDetail>();
+            DeleteDetail();
+            DeleteRole();
 
-            foreach (var item in await GetDbDetailList())
-            {
-                bool checkDeleted = stageDetailList.Any(sd => sd.ApproveStageDetailsId == item.ApproveStageDetailsId);
-
-                if (!checkDeleted)
-                    deletedStageList.Add(item);
-            }
-            if (deletedStageList.Any())
-                await ApproveStageService.DeleteDetail(deletedStageList);
-
-
-            var deletedRoleList = new List<ApproveStageRole>();
-
-            foreach (var item in await GetDbRoleList())
-            {
-                bool checkDeleted = stageRoleList.Any(sd => sd.ApproveStageRoleId == item.ApproveStageRoleId);
-
-                if (!checkDeleted)
-                    deletedRoleList.Add(item);
-            }
-            if (deletedRoleList.Any())
-                await ApproveStageService.DeleteRole(deletedRoleList);
 
             stageMain.ProcedureId = procedure.ProcedureId;
             stageMain.BusinessUnitId = businessUnit.BusinessUnitId;
 
 
             foreach (var item in stageDetailList)
-            {
                 item.ApproveStageMainId = stageMain.ApproveStageMainId;
-            }
 
-           
-            if (_mainId==null)
-            {
+
+            if (_mainId == null)
                 _mainId = await ApproveStageService.SaveMain(stageMain);
-
-            }else
-            {
+            else
                 await ApproveStageService.SaveMain(stageMain);
-            }
-          
+
+
             await ApproveStageService.SaveDetails(stageDetailList, _mainId);
         }
 
+
         AppState.Loading = false;
-        NavigationManager.NavigateTo($"/liststage?id={_mainId}");
+        isSaved = true;
+        NavigationManager.NavigateTo($"/approvalstage/card?id={_mainId}");
     }
 
     async void DeleteClick()
     {
-        var deletedId = new List<int>() { stageMain.ApproveStageMainId };
-        var sqlResult = await ApproveStageService.Delete(deletedId);
-        AppState.ShowAlert("Item successfully deleted", Severity.Success);
-        NavigationManager.NavigateTo("/listcompany");
+        WindowDeleteVisible = true;
+        await InvokeAsync(StateHasChanged);
     }
-   
+
     async void BackClick()
     {
-        //WindowVisible=true;
-        NavigationManager.NavigateTo("/listcompany");
-
+        if (!isSaved)
+        {
+            WindowBackVisible = true;
+            await InvokeAsync(StateHasChanged);
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/approvalstage");
+        }
     }
 
-
     //Called Methods
-    async void DeleteMethod()
+    async void DeleteDetail()
     {
         var deletedStageList = new List<ApproveStageDetail>();
 
@@ -376,8 +351,10 @@
         }
         if (deletedStageList.Any())
             await ApproveStageService.DeleteDetail(deletedStageList);
+    }
 
-
+    async void DeleteRole()
+    {
         var deletedRoleList = new List<ApproveStageRole>();
 
         foreach (var item in await GetDbRoleList())
@@ -390,10 +367,18 @@
         if (deletedRoleList.Any())
             await ApproveStageService.DeleteRole(deletedRoleList);
     }
-    
-    async void BackClickPage()
+
+    void BackClickWindow()
     {
-        NavigationManager.NavigateTo("/listcompany");
+        NavigationManager.NavigateTo("/approvalstage");
+    }
+
+    async void DeleteClickWindow()
+    {
+        var deletedId = new List<int>() { stageMain.ApproveStageMainId };
+        var sqlResult = await ApproveStageService.Delete(deletedId);
+        AppState.ShowAlert("Item successfully deleted", Severity.Success);
+        NavigationManager.NavigateTo("/approvalstage");
     }
 
 
@@ -418,7 +403,7 @@
         return true;
     }
 
-    
+
     //Button Settings
     void IDisposable.Dispose()
     {
@@ -444,9 +429,9 @@
 }
 
 
-<TelerikButton Icon="window" OnClick=@(()=> WindowVisible = true)>Open Modal</TelerikButton>
 
-<TelerikWindow Class="demo-window" Width="400px" Centered="true" @bind-Visible=@WindowVisible Modal="true">
+
+<TelerikWindow Width="400px" Centered="true" @bind-Visible=@WindowBackVisible Modal="true">
     <WindowTitle>
         <strong>Alert!</strong>
     </WindowTitle>
@@ -457,6 +442,29 @@
         <strong>Dəyişiklik etmiş ola bilərsiniz.Yadda saxlamadan yenədə qayıtmaq istiyirsinizmi? </strong>
         <br />
         <br />
-        <TelerikButton OnClick="@BackClickPage">Bəli!</TelerikButton>
+        <TelerikButton OnClick="@BackClickWindow">Bəli!</TelerikButton>
     </WindowContent>
 </TelerikWindow>
+
+
+<TelerikWindow Width="400px" Centered="true" @bind-Visible=@WindowDeleteVisible Modal="true">
+    <WindowTitle>
+        <strong>Alert!</strong>
+    </WindowTitle>
+    <WindowActions>
+        <WindowAction Name="Close" />
+    </WindowActions>
+    <WindowContent>
+        <strong>Silmek istiyirsinizmi? </strong>
+        <br />
+        <br />
+        <TelerikButton OnClick="@DeleteClickWindow">Bəli!</TelerikButton>
+    </WindowContent>
+</TelerikWindow>
+
+
+<style>
+    .k-toolbar.k-grid-toolbar button:nth-child(2) {
+        display: none
+    }
+</style>

@@ -1,24 +1,31 @@
-﻿@page "/listcompany"
+﻿@page "/approvalstage"
 
 @implements IDisposable
 
 @inject ApproveStageService ApproveStageService
 
-<div class="k-pb-4">
-    <label for="bu_list">Business Unit:</label>
-    <ItemDropDownList Id="bu_list"
-                      Data="@businessUnitList"
-                      Item="@businessUnit"
-                      ItemChanged="@BusinessUnitChanged"
-                      UniqueField="BusinessUnitId"
-                      TextField="BusinessUnitCode"
-                      TValue="int"
-                      TItem="BusinessUnit"
-                      SearchFields="@(new List<string> { "BusinessUnitCode", "BusinessUnitName"})"
-                      Width="300px"
-                      PopupWidth="100%"
-                      PopupMaxWidth="500px" />
-</div>
+
+<MudCard Class="k-mb-4">
+    <MudCardContent>
+        <div class="k-pb-4">
+            <label for="bu_list">Business Unit:</label>
+            <ItemDropDownList Id="bu_list"
+                              Data="@businessUnitList"
+                              Item="@businessUnit"
+                              ItemChanged="@BusinessUnitChanged"
+                              UniqueField="BusinessUnitId"
+                              TextField="BusinessUnitCode"
+                              TValue="int"
+                              TItem="BusinessUnit"
+                              SearchFields="@(new List<string> { "BusinessUnitCode", "BusinessUnitName"})"
+                              Width="300px"
+                              PopupWidth="100%"
+                              PopupMaxWidth="500px" />
+        </div>
+
+    </MudCardContent>
+</MudCard>
+
 
 <DataGrid @bind-Data="@stageMainList"
           ShowCheckBoxColumn="false"
@@ -106,7 +113,7 @@
 
     void GoToDetails(int id)
     {
-        NavigationManager.NavigateTo($"/liststage?id={id}");
+        NavigationManager.NavigateTo($"/approvalstage/card?id={id}");
     }
 
     void BackClick()
@@ -116,7 +123,7 @@
 
     void NewClick()
     {
-        NavigationManager.NavigateTo($"/liststage");
+        NavigationManager.NavigateTo($"/approvalstage/card");
     }
 
     void IDisposable.Dispose()
@@ -127,7 +134,6 @@
     void OnAppStateInitialized()
     {
         AppState?.SetDefaults();
-
 
         AppState.CustomButton01Visible = true;
         AppState.CustomButton01Title = "New";
